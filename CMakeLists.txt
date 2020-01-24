@@ -24,7 +24,7 @@ cmake_minimum_required(VERSION 3.10.2)
 # Apple: Must be set before enable_language() or project() as it may influence configuration of the toolchain and flags.
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.12" CACHE STRING "Minimum OS X deployment version")
 
-project(Vulkan-ValidationLayers)
+project(Vulkan-ExtensionLayer)
 
 enable_testing()
 
@@ -42,7 +42,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(PythonInterp 3 QUIET)
 
 if (TARGET Vulkan::Headers)
-    message(STATUS "Using Vulkan headers from Vulkan::Headers target")
+    message(STATUS "${PROJECT_NAME}: Using Vulkan headers from Vulkan::Headers target")
     get_target_property(VulkanHeaders_INCLUDE_DIRS Vulkan::Headers INTERFACE_INCLUDE_DIRECTORIES)
     get_target_property(VulkanRegistry_DIR Vulkan::Registry INTERFACE_INCLUDE_DIRECTORIES)
 else()
@@ -160,13 +160,13 @@ endif()
 
 # Optional codegen target --------------------------------------------------------------------------------------------------------
 if(PYTHONINTERP_FOUND)
-    add_custom_target(VulkanVL_generated_source
+  add_custom_target(VulkanEL_generated_source
                       COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
                               ${VulkanRegistry_DIR} --incremental
                       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/layers/generated
                       )
 else()
-    message("WARNING: VulkanVL_generated_source target requires python 3")
+  message("${PROJECT_NAME}: WARNING: VulkanEL_generated_source target requires python 3")
 endif()
 
 # Add subprojects ----------------------------------------------------------------------------------------------------------------
