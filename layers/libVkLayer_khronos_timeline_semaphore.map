@@ -2,7 +2,6 @@
   global:
     vkGetInstanceProcAddr;
     vkGetDeviceProcAddr;
-    vkEnumerateInstanceLayerProperties;
     vkEnumerateInstanceExtensionProperties;
   local:
     *;
