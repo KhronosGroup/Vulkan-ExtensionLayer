@@ -888,6 +888,7 @@ static VkResult timeline_wait_locked(struct device_data *device,
             int ret = pthread_cond_timedwait(&device->queue_submit,
                                              &device->lock, &abstime);
             assert(ret != EINVAL);
+            (void)ret;
         }
     } while (gettime_ns() < abs_timeout_ns);
 
@@ -1337,6 +1338,7 @@ vk_submit_structure_type_size(const VkBaseInStructure *item)
     default:
         unreachable("Unknown structure for VkSubmitInfo::pNext");
     }
+    return 0;
 }
 
 static VkResult
@@ -1825,6 +1827,7 @@ static VkResult timeline_QueuePresentKHR(
         int ret = pthread_cond_wait(&device->queue_submit,
                                     &device->lock);
         assert(ret != EINVAL);
+        (void)ret;
     } while (!list_empty(&queue->waiting_submissions));
 
     pthread_mutex_unlock(&device->lock);
@@ -1881,6 +1884,7 @@ static VkResult timeline_QueueWaitIdle(
         int ret = pthread_cond_wait(&device->queue_submit,
                                     &device->lock);
         assert(ret != EINVAL);
+        (void)ret;
     } while (!list_empty(&queue->waiting_submissions));
 
     pthread_mutex_unlock(&device->lock);
@@ -1915,6 +1919,7 @@ static VkResult timeline_DeviceWaitIdle(
         int ret = pthread_cond_wait(&device->queue_submit,
                                     &device->lock);
         assert(ret != EINVAL);
+        (void)ret;
     } while (!all_queues_empty(device));
 
     pthread_mutex_unlock(&device->lock);
