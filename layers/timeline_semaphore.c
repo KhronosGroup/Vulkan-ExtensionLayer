@@ -1044,7 +1044,7 @@ static VkResult timeline_CreateSemaphore(
     else
         semaphore->alloc = device->alloc;
 
-    *pSemaphore = (VkSemaphore) semaphore;
+    *pSemaphore = (VkSemaphore)(uintptr_t) semaphore;
 
     return VK_SUCCESS;
 }
@@ -1055,7 +1055,7 @@ static void timeline_DestroySemaphore(
     const VkAllocationCallbacks*                pAllocator)
 {
     struct device_data *device = object_find(&global_map, _device);
-    struct timeline_semaphore *semaphore = object_find(&device->semaphores, _semaphore);
+    struct timeline_semaphore *semaphore = object_find(&device->semaphores, (void*)(uintptr_t)_semaphore);
 
     if (!semaphore)
         return device->vtable.DestroySemaphore(_device, _semaphore, pAllocator);
@@ -1094,7 +1094,7 @@ static VkResult timeline_ImportSemaphoreFdKHR(
     if (result == VK_SUCCESS &&
         (pImportSemaphoreFdInfo->flags & VK_SEMAPHORE_IMPORT_TEMPORARY_BIT)) {
         pthread_mutex_lock(&device->lock);
-        object_map(&device->temporary_import_semaphores, pImportSemaphoreFdInfo->semaphore, device);
+        object_map(&device->temporary_import_semaphores, (void*)(uintptr_t)pImportSemaphoreFdInfo->semaphore, device);
         pthread_mutex_unlock(&device->lock);
     }
     return result;
@@ -1106,7 +1106,7 @@ static VkResult timeline_GetSemaphoreCounterValueKHR(
     uint64_t*                                   pValue)
 {
     struct device_data *device = object_find(&global_map, _device);
-    struct timeline_semaphore *semaphore = object_find(&device->semaphores, _semaphore);
+    struct timeline_semaphore *semaphore = object_find(&device->semaphores, (void*)(uintptr_t)_semaphore);
 
     assert(semaphore);
 
@@ -1134,7 +1134,7 @@ static VkResult timeline_WaitSemaphoresKHR(
         return VK_ERROR_OUT_OF_HOST_MEMORY;
 
     for (uint32_t i = 0; i < pWaitInfo->semaphoreCount; i++)
-        semaphores[i] = object_find(&device->semaphores, pWaitInfo->pSemaphores[i]);
+        semaphores[i] = object_find(&device->semaphores, (void*)(uintptr_t)pWaitInfo->pSemaphores[i]);
 
     pthread_mutex_lock(&device->lock);
 
@@ -1158,7 +1158,7 @@ static VkResult timeline_SignalSemaphoreKHR(
     const VkSemaphoreSignalInfoKHR*             pSignalInfo)
 {
     struct device_data *device = object_find(&global_map, _device);
-    struct timeline_semaphore *semaphore = object_find(&device->semaphores, pSignalInfo->semaphore);
+    struct timeline_semaphore *semaphore = object_find(&device->semaphores, (void*)(uintptr_t)pSignalInfo->semaphore);
 
     assert(semaphore);
 
@@ -1211,7 +1211,7 @@ maybe_clone_semaphore(struct queue_data *queue,
     /* No special treatement if the semaphore doesn't hold a temporary
      * payload.
      */
-    if (!object_find(&device->temporary_import_semaphores, app_semaphore)) {
+    if (!object_find(&device->temporary_import_semaphores, (void*)(uintptr_t)app_semaphore)) {
         *out_layer_semaphore = app_semaphore;
         return VK_SUCCESS;
     }
@@ -1266,7 +1266,7 @@ maybe_clone_semaphore(struct queue_data *queue,
     list_addtail(&wait_point->link, &queue->wait_points);
 
     /* The semaphore doesn't hold a temporary payload anymore. */
-    object_unmap(&device->temporary_import_semaphores, app_semaphore);
+    object_unmap(&device->temporary_import_semaphores, (void*)(uintptr_t)app_semaphore);
 
     *out_layer_semaphore = wait_point->semaphore->semaphore;
 
@@ -1288,7 +1288,7 @@ clone_submit_semaphores(struct queue_data *queue,
 
     for (uint32_t i = 0; i < n_wait_semaphores; i++) {
         struct timeline_semaphore *semaphore =
-            object_find(&device->semaphores, wait_semaphores[i]);
+            object_find(&device->semaphores, (void*)(uintptr_t)wait_semaphores[i]);
         if (semaphore) {
             assert(wait_semaphore_values);
             submit->wait_timeline_semaphores[submit->n_wait_timeline_semaphores++] =
@@ -1306,7 +1306,7 @@ clone_submit_semaphores(struct queue_data *queue,
     }
     for (uint32_t i = 0; i < n_signal_semaphores; i++) {
         struct timeline_semaphore *semaphore =
-            object_find(&device->semaphores, signal_semaphores[i]);
+            object_find(&device->semaphores, (void*)(uintptr_t)signal_semaphores[i]);
         if (semaphore) {
             assert(signal_semaphore_values);
             submit->signal_timeline_semaphores[submit->n_signal_timeline_semaphores++] =
@@ -1858,7 +1858,7 @@ static VkResult timeline_AcquireNextImageKHR(
      */
     if (result == VK_SUCCESS && semaphore != VK_NULL_HANDLE) {
         pthread_mutex_lock(&device->lock);
-        object_map(&device->temporary_import_semaphores, semaphore, device);
+        object_map(&device->temporary_import_semaphores, (void*)(uintptr_t)semaphore, device);
         pthread_mutex_unlock(&device->lock);
     }
     return result;
