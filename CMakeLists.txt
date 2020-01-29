@@ -87,6 +87,9 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
                         -Wextra
                         -Wno-unused-parameter
                         -Wno-missing-field-initializers
+                        -Werror=int-conversion
+                        -Werror=pointer-to-int-cast
+                        -Werror=int-to-pointer-cast
                         -fno-strict-aliasing
                         -fno-builtin-memcmp
                         -fvisibility=hidden)
