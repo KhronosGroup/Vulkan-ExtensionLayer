@@ -17,13 +17,13 @@
 # ~~~
 
 if(WIN32)
-    add_custom_target(mk_layer_config_dir ALL
+    add_custom_target(${PROJECT_NAME}-mk_layer_config_dir ALL
                       COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
-    set_target_properties(mk_layer_config_dir PROPERTIES FOLDER ${LAYERS_HELPER_FOLDER})
+    set_target_properties(${PROJECT_NAME}-mk_layer_config_dir PROPERTIES FOLDER ${LAYERS_HELPER_FOLDER})
 elseif(ANDROID)
 elseif(APPLE)
     if(CMAKE_GENERATOR MATCHES "^Xcode.*")
-        add_custom_target(mk_layer_config_dir ALL
+        add_custom_target(${PROJECT_NAME}-mk_layer_config_dir ALL
                           COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
     endif()
 elseif(UNIX AND NOT APPLE) # i.e. Linux
