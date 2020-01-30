@@ -17,6 +17,8 @@
 #ifndef VK_ALLOC_H_
 #define VK_ALLOC_H_
 
+#include <assert.h>
+#include <string.h>
 #include <vulkan/vulkan.h>
 
 static inline void *vk_alloc(const VkAllocationCallbacks *alloc,

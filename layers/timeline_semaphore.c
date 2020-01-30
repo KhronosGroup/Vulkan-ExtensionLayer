@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <pthread.h>
 #include <errno.h>
+#include <time.h>
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_layer.h>
