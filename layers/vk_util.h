@@ -23,6 +23,11 @@
 
 #include "vk_alloc.h"
 
+// "restrict" is a C feature, and C++ compilers may not support it.
+#ifdef __cplusplus
+#define restrict
+#endif
+
 /**
  * @file vk_util.h
  *
