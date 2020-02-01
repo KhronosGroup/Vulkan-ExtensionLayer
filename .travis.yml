@@ -1,0 +1,57 @@
+language: cpp
+dist: xenial
+
+cache:
+  - ccache
+
+matrix:
+  fast_finish: true # Show final status immediately if a test fails.
+  include:
+
+    # 64-bit Linux GCC build
+    - os: linux
+      compiler: gcc
+      env: ARCH=x86_64
+
+    # 64-bit Linux Clang build
+    - os: linux
+      compiler: clang
+      env: ARCH=x86_64
+
+    # 32-bit Linux GCC build
+    - os: linux
+      compiler: gcc
+      env: ARCH=x86
+
+    # 32-bit Linux Clang build
+    - os: linux
+      compiler: clang
+      env: ARCH=x86
+
+#   # MacOS Clang build
+#   - os: osx
+#     compiler: clang
+
+#   # Windows build
+#   - os: windows
+
+script:
+  # Test oldest supported Vulkan headers
+  - VULKAN_HEADERS_VERSION=1.1.124
+  - wget https://github.com/KhronosGroup/Vulkan-Headers/archive/v$VULKAN_HEADERS_VERSION.zip
+  - unzip v$VULKAN_HEADERS_VERSION.zip && rm v$VULKAN_HEADERS_VERSION.zip
+
+  - if [ $TRAVIS_OS_NAME = linux ] && [ $ARCH = x86 ]; then
+      sudo apt-get install {gcc,g++}-multilib;
+      export CC='gcc -m32';
+      export CXX='g++ -m32';
+      export PKG_CONFIG_PATH='/usr/lib32/pkgconfig';
+    fi
+
+  - cmake .
+    -DVulkanHeaders_INCLUDE_DIR=$PWD/Vulkan-Headers-$VULKAN_HEADERS_VERSION/include
+    -DVulkanRegistry_DIR=$PWD/Vulkan-Headers-$VULKAN_HEADERS_VERSION/registry
+    || travis_terminate 1
+
+  - cmake --build .
+    || travis_terminate 1
