@@ -87,12 +87,12 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
                         -Wextra
                         -Wno-unused-parameter
                         -Wno-missing-field-initializers
-                        -Werror=int-conversion
-                        -Werror=pointer-to-int-cast
                         -Werror=int-to-pointer-cast
                         -fno-strict-aliasing
                         -fno-builtin-memcmp
-                        -fvisibility=hidden)
+                        -fvisibility=hidden
+                        "$<$<COMPILE_LANGUAGE:C>:-Werror=int-conversion>"
+                        "$<$<COMPILE_LANGUAGE:C>:-Werror=pointer-to-int-cast>")
 
     # Treat warnings as errors for versions of GCC and Clang that are shipped on Ubuntu 18.04 or older.
     if((CMAKE_COMPILER_IS_GNUCXX AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.3.0)) OR
