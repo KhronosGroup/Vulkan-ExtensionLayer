@@ -543,10 +543,12 @@ static VkResult device_new(VkDevice _device,
     if (pthread_condattr_init(&condattr) != 0)
         goto err;
 
+#if !defined(__APPLE__)
     if (pthread_condattr_setclock(&condattr, CLOCK_MONOTONIC) != 0) {
         pthread_condattr_destroy(&condattr);
         goto err;
     }
+#endif
     if (pthread_cond_init(&device->queue_submit, &condattr) != 0) {
         pthread_condattr_destroy(&condattr);
         goto err;
