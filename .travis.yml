@@ -28,9 +28,9 @@ matrix:
       compiler: clang
       env: ARCH=x86
 
-#   # MacOS Clang build
-#   - os: osx
-#     compiler: clang
+   # MacOS Clang build
+    - os: osx
+      compiler: clang
 
 #   # Windows build
 #   - os: windows
