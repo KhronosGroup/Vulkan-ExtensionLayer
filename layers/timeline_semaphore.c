@@ -2029,6 +2029,12 @@ static void timeline_GetPhysicalDeviceFeatures2(
     if (timeline_features) {
         timeline_features->timelineSemaphore = true;
     }
+
+    VkPhysicalDeviceVulkan12Features *vulkan12_features =
+        vk_find_struct(pFeatures->pNext, PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
+    if (vulkan12_features) {
+        vulkan12_features->timelineSemaphore = true;
+    }
 }
 
 static void timeline_GetPhysicalDeviceProperties2(
@@ -2087,6 +2093,15 @@ static VkResult timeline_CreateDevice(
     /* Advance the link info for the next element on the chain */
     chain_info->u.pLayerInfo = chain_info->u.pLayerInfo->pNext;
 
+    /* Clear timelineSemaphore before calling icd CreateDevice since icd doesn't support it. */
+    VkPhysicalDeviceVulkan12Features *vulkan12_features =
+        vk_find_struct(pCreateInfo->pNext, PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
+    bool appTimelineSemaphore = false;
+    if (vulkan12_features) {
+        appTimelineSemaphore = vulkan12_features->timelineSemaphore;
+        vulkan12_features->timelineSemaphore = false;
+    }
+
     VkResult result = fpCreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
     if (result != VK_SUCCESS)
         return result;
@@ -2103,6 +2118,11 @@ static VkResult timeline_CreateDevice(
     if (result != VK_SUCCESS) {
         PFN_vkDestroyDevice fpDestroyDevice = (PFN_vkDestroyDevice)fpGetInstanceProcAddr(NULL, "vkDestroyDevice");
         fpDestroyDevice(*pDevice, pAllocator);
+    }
+
+    /* Restore the application's timelineSemaphore flag */
+    if (vulkan12_features) {
+        vulkan12_features->timelineSemaphore = appTimelineSemaphore;
     }
 
     return result;
