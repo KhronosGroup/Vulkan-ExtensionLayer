@@ -1026,10 +1026,10 @@ static VkResult timeline_CreateSemaphore(
 {
     struct device_data *device = object_find(&global_map, _device);
 
-    const VkSemaphoreTypeCreateInfoKHR *type_create_info =
-        vk_find_struct_const(pCreateInfo->pNext, SEMAPHORE_TYPE_CREATE_INFO_KHR);
+    const VkSemaphoreTypeCreateInfo *type_create_info =
+        vk_find_struct_const(pCreateInfo->pNext, SEMAPHORE_TYPE_CREATE_INFO);
     if (!type_create_info ||
-        type_create_info->semaphoreType != VK_SEMAPHORE_TYPE_TIMELINE_KHR) {
+        type_create_info->semaphoreType != VK_SEMAPHORE_TYPE_TIMELINE) {
         return device->vtable.CreateSemaphore(_device, pCreateInfo, pAllocator, pSemaphore);
     }
 
@@ -1104,7 +1104,7 @@ static VkResult timeline_ImportSemaphoreFdKHR(
     return result;
 }
 
-static VkResult timeline_GetSemaphoreCounterValueKHR(
+static VkResult timeline_GetSemaphoreCounterValue(
     VkDevice                                    _device,
     VkSemaphore                                 _semaphore,
     uint64_t*                                   pValue)
@@ -1124,9 +1124,9 @@ static VkResult timeline_GetSemaphoreCounterValueKHR(
     return result;
 }
 
-static VkResult timeline_WaitSemaphoresKHR(
+static VkResult timeline_WaitSemaphores(
     VkDevice                                    _device,
-    const VkSemaphoreWaitInfoKHR*               pWaitInfo,
+    const VkSemaphoreWaitInfo*                  pWaitInfo,
     uint64_t                                    timeout)
 {
     struct device_data *device = object_find(&global_map, _device);
@@ -1147,7 +1147,7 @@ static VkResult timeline_WaitSemaphoresKHR(
                              semaphores,
                              pWaitInfo->pValues,
                              pWaitInfo->semaphoreCount,
-                             (pWaitInfo->flags & VK_SEMAPHORE_WAIT_ANY_BIT_KHR) == 0,
+                             (pWaitInfo->flags & VK_SEMAPHORE_WAIT_ANY_BIT) == 0,
                              absolute_timeout(timeout));
 
     pthread_mutex_unlock(&device->lock);
@@ -1157,9 +1157,9 @@ static VkResult timeline_WaitSemaphoresKHR(
     return result;
 }
 
-static VkResult timeline_SignalSemaphoreKHR(
+static VkResult timeline_SignalSemaphore(
     VkDevice                                    _device,
-    const VkSemaphoreSignalInfoKHR*             pSignalInfo)
+    const VkSemaphoreSignalInfo*                pSignalInfo)
 {
     struct device_data *device = object_find(&global_map, _device);
     struct timeline_semaphore *semaphore = object_find(&device->semaphores, (void*)(uintptr_t)pSignalInfo->semaphore);
@@ -1352,7 +1352,7 @@ clone_submit_pnext(struct device_data *device,
     VkBaseOutStructure *tail = &submit->pnext;
     vk_foreach_struct_const(item, pNext) {
         /* Skip this element. */
-        if (item->sType == VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR)
+        if (item->sType == VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO)
             continue;
 
         size_t item_size = vk_submit_structure_type_size(item);
@@ -1376,7 +1376,7 @@ clone_submit_pnext(struct device_data *device,
 static struct queue_submit *
 clone_submit_info(struct queue_data *queue,
                   const VkSubmitInfo *in_info,
-                  const VkTimelineSemaphoreSubmitInfoKHR *in_timeline_info,
+                  const VkTimelineSemaphoreSubmitInfo *in_timeline_info,
                   VkFence fence)
 {
     struct device_data *device = queue->device;
@@ -1434,7 +1434,7 @@ clone_submit_info(struct queue_data *queue,
 static struct queue_submit *
 clone_bind_sparse_info(struct queue_data *queue,
                        const VkBindSparseInfo *in_info,
-                       const VkTimelineSemaphoreSubmitInfoKHR *in_timeline_info,
+                       const VkTimelineSemaphoreSubmitInfo *in_timeline_info,
                        VkFence fence)
 {
     struct device_data *device = queue->device;
@@ -1700,8 +1700,8 @@ static VkResult timeline_QueueSubmit(
     result = gc_wait_point_list_locked(device, &queue->wait_points);
 
     for (uint32_t i = 0; i < submitCount && result == VK_SUCCESS; i++) {
-        const VkTimelineSemaphoreSubmitInfoKHR *timeline_submit_info =
-            vk_find_struct_const(pSubmits[i].pNext, TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR);
+        const VkTimelineSemaphoreSubmitInfo *timeline_submit_info =
+            vk_find_struct_const(pSubmits[i].pNext, TIMELINE_SEMAPHORE_SUBMIT_INFO);
         VkFence submit_fence = (i == (submitCount - 1)) ? fence : VK_NULL_HANDLE;
 
         if (list_empty(&queue->waiting_submissions) && !timeline_submit_info) {
@@ -1764,8 +1764,8 @@ static VkResult timeline_QueueBindSparse(
     result = gc_wait_point_list_locked(device, &queue->wait_points);
 
     for (uint32_t i = 0; i < bindInfoCount && result == VK_SUCCESS; i++) {
-        const VkTimelineSemaphoreSubmitInfoKHR *timeline_submit_info =
-            vk_find_struct_const(pBindInfo[i].pNext, TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR);
+        const VkTimelineSemaphoreSubmitInfo *timeline_submit_info =
+            vk_find_struct_const(pBindInfo[i].pNext, TIMELINE_SEMAPHORE_SUBMIT_INFO);
         VkFence submit_fence = (i == (bindInfoCount - 1)) ? fence : VK_NULL_HANDLE;
 
         if (list_empty(&queue->waiting_submissions) && !timeline_submit_info) {
@@ -2179,12 +2179,16 @@ static const struct {
 } name_to_funcptr_map[] = {
     { "vkGetDeviceProcAddr", (void *) vkGetDeviceProcAddr },
 #define ADD_HOOK(fn) { "vk" # fn, (void *) timeline_ ## fn }
+#define ADD_HOOK_ALIAS(fn, fn_alias) { "vk" # fn, (void *) timeline_ ## fn_alias }
     ADD_HOOK(CreateSemaphore),
     ADD_HOOK(DestroySemaphore),
     ADD_HOOK(ImportSemaphoreFdKHR),
-    ADD_HOOK(GetSemaphoreCounterValueKHR),
-    ADD_HOOK(WaitSemaphoresKHR),
-    ADD_HOOK(SignalSemaphoreKHR),
+    ADD_HOOK(GetSemaphoreCounterValue),
+    ADD_HOOK(WaitSemaphores),
+    ADD_HOOK(SignalSemaphore),
+    ADD_HOOK_ALIAS(GetSemaphoreCounterValueKHR, GetSemaphoreCounterValue),
+    ADD_HOOK_ALIAS(WaitSemaphoresKHR, WaitSemaphores),
+    ADD_HOOK_ALIAS(SignalSemaphoreKHR, SignalSemaphore),
 
     ADD_HOOK(QueueSubmit),
     ADD_HOOK(QueueBindSparse),

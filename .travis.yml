@@ -37,7 +37,7 @@ matrix:
 
 script:
   # Test oldest supported Vulkan headers
-  - VULKAN_HEADERS_VERSION=1.1.124
+  - VULKAN_HEADERS_VERSION=1.2.131
   - wget https://github.com/KhronosGroup/Vulkan-Headers/archive/v$VULKAN_HEADERS_VERSION.zip
   - unzip v$VULKAN_HEADERS_VERSION.zip && rm v$VULKAN_HEADERS_VERSION.zip
 
