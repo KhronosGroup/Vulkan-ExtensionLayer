@@ -2050,6 +2050,12 @@ static void timeline_GetPhysicalDeviceProperties2(
     if (timeline_properties) {
         timeline_properties->maxTimelineSemaphoreValueDifference = UINT64_MAX;
     }
+
+    VkPhysicalDeviceVulkan12Properties *vulkan12_properties =
+        vk_find_struct(pProperties->pNext, PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES);
+    if (vulkan12_properties) {
+        vulkan12_properties->maxTimelineSemaphoreValueDifference = UINT64_MAX;
+    }
 }
 
 static void timeline_GetPhysicalDeviceExternalSemaphoreProperties(
