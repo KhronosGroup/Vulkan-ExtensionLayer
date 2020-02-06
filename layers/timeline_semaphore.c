@@ -1104,6 +1104,13 @@ static VkResult timeline_ImportSemaphoreFdKHR(
     return result;
 }
 
+static VkResult timeline_ImportSemaphoreFd(
+    VkDevice                                    _device,
+    const VkImportSemaphoreFdInfoKHR*           pImportSemaphoreFdInfo)
+{
+    return timeline_ImportSemaphoreFdKHR(_device, pImportSemaphoreFdInfo);
+}
+
 static VkResult timeline_GetSemaphoreCounterValue(
     VkDevice                                    _device,
     VkSemaphore                                 _semaphore,
@@ -1193,6 +1200,13 @@ static VkResult timeline_SignalSemaphore(
     pthread_mutex_unlock(&device->lock);
 
     return result;
+}
+
+static VkResult timeline_SignalSemaphore(
+    VkDevice                                    _device,
+    const VkSemaphoreSignalInfoKHR*             pSignalInfo)
+{
+    return timeline_SignalSemaphoreKHR(_device, pSignalInfo);
 }
 
 static void
@@ -2084,7 +2098,7 @@ static VkResult timeline_CreateDevice(
                         fpGetDeviceProcAddr,
                         load_data_info->u.pfnSetDeviceLoaderData,
                         pCreateInfo,
-                        pAllocator ? pAllocator : &instance->alloc,
+                        &instance->alloc,
                         instance);
     if (result != VK_SUCCESS) {
         PFN_vkDestroyDevice fpDestroyDevice = (PFN_vkDestroyDevice)fpGetInstanceProcAddr(NULL, "vkDestroyDevice");
@@ -2152,7 +2166,7 @@ static VkResult timeline_CreateInstance(
 
     result = instance_new(*pInstance,
                           fpGetInstanceProcAddr,
-                          pAllocator ? pAllocator : &default_alloc);
+                          &default_alloc);
     if (result != VK_SUCCESS) {
         PFN_vkDestroyInstance fpDestroyInstance =
             (PFN_vkDestroyInstance)fpGetInstanceProcAddr(NULL, "vkDestroyInstance");
