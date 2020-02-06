@@ -1104,6 +1104,13 @@ static VkResult timeline_ImportSemaphoreFdKHR(
     return result;
 }
 
+static VkResult timeline_ImportSemaphoreFd(
+    VkDevice                                    _device,
+    const VkImportSemaphoreFdInfoKHR*           pImportSemaphoreFdInfo)
+{
+    return timeline_ImportSemaphoreFdKHR(_device, pImportSemaphoreFdInfo);
+}
+
 static VkResult timeline_GetSemaphoreCounterValueKHR(
     VkDevice                                    _device,
     VkSemaphore                                 _semaphore,
@@ -1122,6 +1129,14 @@ static VkResult timeline_GetSemaphoreCounterValueKHR(
     pthread_mutex_unlock(&device->lock);
 
     return result;
+}
+
+static VkResult timeline_GetSemaphoreCounterValue(
+    VkDevice                                    _device,
+    VkSemaphore                                 _semaphore,
+    uint64_t*                                   pValue)
+{
+    return timeline_GetSemaphoreCounterValueKHR(_device, _semaphore, pValue);
 }
 
 static VkResult timeline_WaitSemaphoresKHR(
@@ -1155,6 +1170,14 @@ static VkResult timeline_WaitSemaphoresKHR(
     vk_free(&device->alloc, semaphores);
 
     return result;
+}
+
+static VkResult timeline_WaitSemaphores(
+    VkDevice                                    _device,
+    const VkSemaphoreWaitInfoKHR*               pWaitInfo,
+    uint64_t                                    timeout)
+{
+    return timeline_WaitSemaphoresKHR(_device, pWaitInfo, timeout);
 }
 
 static VkResult timeline_SignalSemaphoreKHR(
@@ -1193,6 +1216,13 @@ static VkResult timeline_SignalSemaphoreKHR(
     pthread_mutex_unlock(&device->lock);
 
     return result;
+}
+
+static VkResult timeline_SignalSemaphore(
+    VkDevice                                    _device,
+    const VkSemaphoreSignalInfoKHR*             pSignalInfo)
+{
+    return timeline_SignalSemaphoreKHR(_device, pSignalInfo);
 }
 
 static void
@@ -2084,7 +2114,7 @@ static VkResult timeline_CreateDevice(
                         fpGetDeviceProcAddr,
                         load_data_info->u.pfnSetDeviceLoaderData,
                         pCreateInfo,
-                        pAllocator ? pAllocator : &instance->alloc,
+                        &instance->alloc,
                         instance);
     if (result != VK_SUCCESS) {
         PFN_vkDestroyDevice fpDestroyDevice = (PFN_vkDestroyDevice)fpGetInstanceProcAddr(NULL, "vkDestroyDevice");
@@ -2152,7 +2182,7 @@ static VkResult timeline_CreateInstance(
 
     result = instance_new(*pInstance,
                           fpGetInstanceProcAddr,
-                          pAllocator ? pAllocator : &default_alloc);
+                          &default_alloc);
     if (result != VK_SUCCESS) {
         PFN_vkDestroyInstance fpDestroyInstance =
             (PFN_vkDestroyInstance)fpGetInstanceProcAddr(NULL, "vkDestroyInstance");
@@ -2182,9 +2212,13 @@ static const struct {
     ADD_HOOK(CreateSemaphore),
     ADD_HOOK(DestroySemaphore),
     ADD_HOOK(ImportSemaphoreFdKHR),
+    ADD_HOOK(ImportSemaphoreFd),
     ADD_HOOK(GetSemaphoreCounterValueKHR),
+    ADD_HOOK(GetSemaphoreCounterValue),
     ADD_HOOK(WaitSemaphoresKHR),
+    ADD_HOOK(WaitSemaphores),
     ADD_HOOK(SignalSemaphoreKHR),
+    ADD_HOOK(SignalSemaphore),
 
     ADD_HOOK(QueueSubmit),
     ADD_HOOK(QueueBindSparse),
