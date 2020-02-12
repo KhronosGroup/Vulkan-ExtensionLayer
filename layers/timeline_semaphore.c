@@ -2187,13 +2187,29 @@ static void timeline_DestroyInstance(
     destroy_cb(_instance, pAllocator);
 }
 
-static const struct {
-    const char *name;
-    void *ptr;
-} name_to_funcptr_map[] = {
-    { "vkGetDeviceProcAddr", (void *) vkGetDeviceProcAddr },
 #define ADD_HOOK(fn) { "vk" # fn, (void *) timeline_ ## fn }
 #define ADD_HOOK_ALIAS(fn, fn_alias) { "vk" # fn, (void *) timeline_ ## fn_alias }
+
+typedef struct {
+    const char *name;
+    void *ptr;
+} NAME_TO_FUNCPTR;
+
+static const NAME_TO_FUNCPTR name_to_instance_funcptr_map[] = {
+    ADD_HOOK(CreateInstance),
+    ADD_HOOK(DestroyInstance),
+    ADD_HOOK(CreateDevice),
+    ADD_HOOK(EnumeratePhysicalDevices),
+    ADD_HOOK(EnumerateDeviceExtensionProperties),
+    ADD_HOOK(EnumerateInstanceExtensionProperties),
+    ADD_HOOK(GetPhysicalDeviceFeatures2),
+    ADD_HOOK(GetPhysicalDeviceProperties2),
+    ADD_HOOK(GetPhysicalDeviceExternalSemaphoreProperties),
+};
+
+static const NAME_TO_FUNCPTR name_to_device_funcptr_map[] = {
+    { "vkGetDeviceProcAddr", (void *) vkGetDeviceProcAddr },
+    ADD_HOOK(DestroyDevice),
     ADD_HOOK(CreateSemaphore),
     ADD_HOOK(DestroySemaphore),
     ADD_HOOK(ImportSemaphoreFdKHR),
@@ -2210,34 +2226,34 @@ static const struct {
     ADD_HOOK(DeviceWaitIdle),
     ADD_HOOK(QueuePresentKHR),
     ADD_HOOK(AcquireNextImageKHR),
-
-    ADD_HOOK(CreateInstance),
-    ADD_HOOK(DestroyInstance),
-    ADD_HOOK(CreateDevice),
-    ADD_HOOK(DestroyDevice),
-    ADD_HOOK(EnumeratePhysicalDevices),
-    ADD_HOOK(EnumerateDeviceExtensionProperties),
-    ADD_HOOK(EnumerateInstanceExtensionProperties),
-    ADD_HOOK(GetPhysicalDeviceFeatures2),
-    ADD_HOOK(GetPhysicalDeviceProperties2),
-    ADD_HOOK(GetPhysicalDeviceExternalSemaphoreProperties),
-#undef ADD_HOOK
 };
 
-static void *find_ptr(const char *name)
+#undef ADD_HOOK
+#undef ADD_HOOK_ALIAS
+
+static void *find_ptr(const char *name, bool isInstance)
 {
-    for (uint32_t i = 0; i < ARRAY_SIZE(name_to_funcptr_map); i++) {
-        if (strcmp(name, name_to_funcptr_map[i].name) == 0)
-            return name_to_funcptr_map[i].ptr;
+    const NAME_TO_FUNCPTR* func_map = isInstance ?
+                                      name_to_instance_funcptr_map :
+                                      name_to_device_funcptr_map;
+
+    uint32_t map_size = isInstance ?
+                        ARRAY_SIZE(name_to_instance_funcptr_map) :
+                        ARRAY_SIZE(name_to_device_funcptr_map);
+
+    for (uint32_t i = 0; i < map_size; i++) {
+        if (strcmp(name, func_map[i].name) == 0)
+            return func_map[i].ptr;
     }
 
     return NULL;
 }
 
+
 VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice _device,
                                                                              const char *funcName)
 {
-    void *ptr = find_ptr(funcName);
+    void *ptr = find_ptr(funcName, false);
     if (ptr)
         return ptr;
 
@@ -2252,7 +2268,11 @@ VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkD
 VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance _instance,
                                                                                const char *funcName)
 {
-    void *ptr = find_ptr(funcName);
+    void *ptr = find_ptr(funcName, true);
+
+    if (!ptr)
+        ptr = find_ptr(funcName, false);
+
     if (ptr)
         return ptr;
 
