@@ -1082,6 +1082,8 @@ static void timeline_DestroySemaphore(
 
     pthread_mutex_unlock(&device->lock);
 
+    object_unmap(&device->semaphores, semaphore);
+
     vk_free2(&device->alloc, pAllocator, semaphore);
 }
 
