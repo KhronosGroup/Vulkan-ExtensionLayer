@@ -2017,6 +2017,12 @@ static void timeline_GetPhysicalDeviceFeatures2(
     if (timeline_features) {
         timeline_features->timelineSemaphore = true;
     }
+
+    VkPhysicalDeviceVulkan12Features *vulkan12_features =
+        vk_find_struct(pFeatures->pNext, PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
+    if (vulkan12_features) {
+        vulkan12_features->timelineSemaphore = true;
+    }
 }
 
 static void timeline_GetPhysicalDeviceProperties2(
