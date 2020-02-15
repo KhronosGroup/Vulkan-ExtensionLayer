@@ -2067,6 +2067,190 @@ static void timeline_GetPhysicalDeviceExternalSemaphoreProperties(
     pExternalSemaphoreProperties->externalSemaphoreFeatures = 0;
 }
 
+static void free_device_create_info_pnext(
+    const VkAllocationCallbacks *pAllocator,
+    void *pNext)
+{
+    for (VkBaseOutStructure *item = pNext; item != NULL; ) {
+        void *pFreeNode = item;
+        item = item->pNext;
+
+        vk_free(pAllocator, pFreeNode);
+    }
+}
+
+static size_t vk_device_create_info_type_size(
+    const VkBaseInStructure *item)
+{
+    switch (item->sType) {
+    case VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO:
+        return sizeof(VkLayerDeviceCreateInfo);
+    case  VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO:
+        return sizeof(VkDeviceCreateInfo);
+    case VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO:
+        return sizeof(VkDeviceGroupDeviceCreateInfo);
+    case VK_STRUCTURE_TYPE_DEVICE_MEMORY_OVERALLOCATION_CREATE_INFO_AMD:
+        return sizeof(VkDeviceMemoryOverallocationCreateInfoAMD);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES:
+        return sizeof(VkPhysicalDevice16BitStorageFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES:
+        return sizeof(VkPhysicalDevice8BitStorageFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ASTC_DECODE_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceASTCDecodeFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES:
+        return sizeof(VkPhysicalDeviceBufferDeviceAddressFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceBufferDeviceAddressFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COHERENT_MEMORY_FEATURES_AMD:
+        return sizeof(VkPhysicalDeviceCoherentMemoryFeaturesAMD);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_NV:
+        return sizeof(VkPhysicalDeviceComputeShaderDerivativesFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceConditionalRenderingFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV:
+        return sizeof(VkPhysicalDeviceCooperativeMatrixFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CORNER_SAMPLED_IMAGE_FEATURES_NV:
+        return sizeof(VkPhysicalDeviceCornerSampledImageFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COVERAGE_REDUCTION_MODE_FEATURES_NV:
+        return sizeof(VkPhysicalDeviceCoverageReductionModeFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEDICATED_ALLOCATION_IMAGE_ALIASING_FEATURES_NV:
+        return sizeof(VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceDepthClipEnableFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES:
+        return sizeof(VkPhysicalDeviceDescriptorIndexingFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXCLUSIVE_SCISSOR_FEATURES_NV:
+        return sizeof(VkPhysicalDeviceExclusiveScissorFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2:
+        return sizeof(VkPhysicalDeviceFeatures2);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceFragmentDensityMapFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_NV:
+        return sizeof(VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES:
+        return sizeof(VkPhysicalDeviceHostQueryResetFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES:
+        return sizeof(VkPhysicalDeviceImagelessFramebufferFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceIndexTypeUint8FeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceInlineUniformBlockFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceLineRasterizationFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PRIORITY_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceMemoryPriorityFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV:
+        return sizeof(VkPhysicalDeviceMeshShaderFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES:
+        return sizeof(VkPhysicalDeviceMultiviewFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR:
+        return sizeof(VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES:
+        return sizeof(VkPhysicalDeviceProtectedMemoryFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV:
+        return sizeof(VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES:
+        return sizeof(VkPhysicalDeviceSamplerYcbcrConversionFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceScalarBlockLayoutFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES:
+        return sizeof(VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES:
+        return sizeof(VkPhysicalDeviceShaderAtomicInt64Features);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR:
+        return sizeof(VkPhysicalDeviceShaderClockFeaturesKHR);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES:
+        return sizeof(VkPhysicalDeviceShaderDrawParametersFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES:
+        return sizeof(VkPhysicalDeviceShaderFloat16Int8Features);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV:
+        return sizeof(VkPhysicalDeviceShaderImageFootprintFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL:
+        return sizeof(VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV:
+        return sizeof(VkPhysicalDeviceShaderSMBuiltinsFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES:
+        return sizeof(VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV:
+        return sizeof(VkPhysicalDeviceShadingRateImageFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceSubgroupSizeControlFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceTextureCompressionASTCHDRFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES:
+        return sizeof(VkPhysicalDeviceTimelineSemaphoreFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceTransformFeedbackFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES:
+        return sizeof(VkPhysicalDeviceUniformBufferStandardLayoutFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES:
+        return sizeof(VkPhysicalDeviceVariablePointersFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES:
+        return sizeof(VkPhysicalDeviceVulkan11Features);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES:
+        return sizeof(VkPhysicalDeviceVulkan12Features);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES:
+        return sizeof(VkPhysicalDeviceVulkanMemoryModelFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_IMAGE_ARRAYS_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceYcbcrImageArraysFeaturesEXT);
+    default:
+        unreachable("Unknown structure for VkDeviceCreateInfo::pNext");
+    }
+    return 0;
+}
+
+static void* clone_device_create_info_pnext(
+    const VkAllocationCallbacks *pAllocator,
+    const void *pNext)
+{
+    VkBaseOutStructure *head = NULL;
+    VkBaseOutStructure *tail = NULL;
+
+    vk_foreach_struct_const(item, pNext) {
+        size_t item_size = vk_device_create_info_type_size(item);
+        struct VkBaseOutStructure *new_item =
+            vk_alloc(pAllocator, item_size, 8, VK_SYSTEM_ALLOCATION_SCOPE_DEVICE);
+
+        if (new_item == NULL) {
+            free_device_create_info_pnext(pAllocator, head);
+            return NULL;
+        }
+
+        memcpy(new_item, item, item_size);
+        new_item->pNext = NULL;
+
+        // Overwrite the timelineSemaphore
+        if (item->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES) {
+            ((VkPhysicalDeviceVulkan12Features*)new_item)->timelineSemaphore = false;
+        }
+
+        if (item->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR) {
+            ((VkPhysicalDeviceTimelineSemaphoreFeaturesKHR*)new_item)->timelineSemaphore = false;
+        }
+
+        if (head == NULL)
+            head = new_item;
+
+        if (tail)
+            tail->pNext = new_item;
+
+        tail = new_item;
+
+    }
+
+    return head;
+}
+
 static VkResult timeline_CreateDevice(
     VkPhysicalDevice                            physicalDevice,
     const VkDeviceCreateInfo*                   pCreateInfo,
@@ -2088,7 +2272,35 @@ static VkResult timeline_CreateDevice(
     /* Advance the link info for the next element on the chain */
     chain_info->u.pLayerInfo = chain_info->u.pLayerInfo->pNext;
 
-    VkResult result = fpCreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
+    /* Clear timelineSemaphore before calling icd CreateDevice since icd possibly doesn't support it.
+     * Even icd supports it, do not enable it when this layer is enabled.
+     */
+    const VkPhysicalDeviceVulkan12Features *vulkan12_features =
+        vk_find_struct_const(pCreateInfo->pNext, PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
+    const VkPhysicalDeviceTimelineSemaphoreFeaturesKHR *timeline_features =
+        vk_find_struct_const(pCreateInfo->pNext, PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR);
+
+    VkDeviceCreateInfo *pNewCreateInfo = NULL;
+
+    if (vulkan12_features || timeline_features) {
+        pNewCreateInfo = clone_device_create_info_pnext(pAllocator ? pAllocator : &instance->alloc,
+                                                        pCreateInfo);
+
+        if (pNewCreateInfo == NULL)
+            return VK_ERROR_OUT_OF_HOST_MEMORY;
+    }
+
+    VkResult result = fpCreateDevice(physicalDevice,
+                                     pNewCreateInfo ? pNewCreateInfo : pCreateInfo,
+                                     pAllocator,
+                                     pDevice);
+
+    /* Free the cloned CreateInfo */
+    if (pNewCreateInfo) {
+        free_device_create_info_pnext(pAllocator ? pAllocator : &instance->alloc,
+                                      pNewCreateInfo);
+    }
+
     if (result != VK_SUCCESS)
         return result;
 
