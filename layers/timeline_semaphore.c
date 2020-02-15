@@ -80,6 +80,7 @@ struct object_map {
 struct instance_data {
     struct vulkan_vtable vtable;
     VkInstance instance;
+    uint32_t physicalDeviceCount;
 
     VkAllocationCallbacks alloc;
 };
@@ -2135,6 +2136,8 @@ static VkResult timeline_EnumeratePhysicalDevices(
                 object_unmap(&global_map, pPhysicalDevices[i]);
             object_map(&global_map, pPhysicalDevices[i], instance);
         }
+
+        instance->physicalDeviceCount = MAX2(instance->physicalDeviceCount, *pPhysicalDeviceCount);
     }
 
     return result;
@@ -2182,6 +2185,25 @@ static void timeline_DestroyInstance(
 {
     struct instance_data *instance = object_find(&global_map, _instance);
     PFN_vkDestroyInstance destroy_cb = instance->vtable.DestroyInstance;
+
+    // Unmap physical devices from global_map
+    VkPhysicalDevice* pPhysicalDevices = vk_alloc(&instance->alloc,
+            sizeof(VkPhysicalDevice) * instance->physicalDeviceCount,
+            8, VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
+
+    if (pPhysicalDevices)
+    {
+        VkResult result = instance->vtable.EnumeratePhysicalDevices(_instance,
+                                                                    &instance->physicalDeviceCount,
+                                                                    pPhysicalDevices);
+
+        if (result == VK_SUCCESS || result == VK_INCOMPLETE) {
+            for (uint32_t i = 0; i < instance->physicalDeviceCount; i++)
+                object_unmap(&global_map, pPhysicalDevices[i]);
+        }
+
+        vk_free(&instance->alloc, pPhysicalDevices);
+    }
 
     instance_destroy(instance);
     destroy_cb(_instance, pAllocator);
