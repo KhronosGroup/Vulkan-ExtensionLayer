@@ -533,7 +533,13 @@ static VkResult device_new(VkDevice _device,
     device->physical_device = physical_device;
     device->set_device_loader_data = pfnSetDeviceLoaderData;
     device->queues = (struct queue_data *) (device + 1);
-    device->n_queues = n_queues;
+
+    list_inithead(&device->free_point_fences);
+    list_inithead(&device->free_point_semaphores);
+    list_inithead(&device->free_wait_points);
+    list_inithead(&device->free_points);
+
+    object_map(&global_map, device->device, device);
 
     fill_device_vtable(&device->vtable, device->device, fpGetDeviceProcAddr);
 
@@ -564,13 +570,6 @@ static VkResult device_new(VkDevice _device,
         goto err;
     device->temporary_import_semaphores.map = hash_table_new();
 
-    list_inithead(&device->free_point_fences);
-    list_inithead(&device->free_point_semaphores);
-    list_inithead(&device->free_wait_points);
-    list_inithead(&device->free_points);
-
-    object_map(&global_map, device->device, device);
-
     uint32_t queue_family_count;
     instance->vtable.GetPhysicalDeviceQueueFamilyProperties(device->physical_device,
                                                             &queue_family_count,
@@ -585,12 +584,11 @@ static VkResult device_new(VkDevice _device,
                                                             queue_family_props);
 
 
-    uint32_t queue_idx = 0;
     for (uint32_t qci = 0; qci < create_info->queueCreateInfoCount; qci++) {
         uint32_t queue_family_idx = create_info->pQueueCreateInfos[qci].queueFamilyIndex;
 
         for (uint32_t qi = 0; qi < create_info->pQueueCreateInfos[qci].queueCount; qi++) {
-            struct queue_data *queue = &device->queues[queue_idx++];
+            struct queue_data *queue = &device->queues[device->n_queues++];
 
             queue->device = device;
             queue->props = queue_family_props[queue_family_idx];
