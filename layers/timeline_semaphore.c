@@ -2101,7 +2101,7 @@ static VkResult timeline_CreateDevice(
                         pAllocator ? pAllocator : &instance->alloc,
                         instance);
     if (result != VK_SUCCESS) {
-        PFN_vkDestroyDevice fpDestroyDevice = (PFN_vkDestroyDevice)fpGetInstanceProcAddr(NULL, "vkDestroyDevice");
+        PFN_vkDestroyDevice fpDestroyDevice = (PFN_vkDestroyDevice)fpGetDeviceProcAddr(*pDevice, "vkDestroyDevice");
         fpDestroyDevice(*pDevice, pAllocator);
     }
 
