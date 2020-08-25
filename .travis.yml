@@ -1,3 +1,6 @@
+# Build Configuration for Travis CI
+# https://travis-ci.org
+
 language: cpp
 dist: xenial
 
@@ -35,23 +38,50 @@ matrix:
 #   # Windows build
 #   - os: windows
 
-script:
-  # Test oldest supported Vulkan headers
-  - VULKAN_HEADERS_VERSION=1.2.131
-  - wget https://github.com/KhronosGroup/Vulkan-Headers/archive/v$VULKAN_HEADERS_VERSION.zip
-  - unzip v$VULKAN_HEADERS_VERSION.zip && rm v$VULKAN_HEADERS_VERSION.zip
+# Use set -e so that the build fails when a command fails.
+# The default action for Travis-CI is to continue running even if a command fails.
+# See https://github.com/travis-ci/travis-ci/issues/1066.
+# Use the YAML block scalar header (|) to allow easier multiline script coding.
 
-  - if [ $TRAVIS_OS_NAME = linux ] && [ $ARCH = x86 ]; then
+before_install:
+  - set -e
+  - |
+    if [ $TRAVIS_OS_NAME = linux ] && [ $ARCH = x86 ]; then
       sudo apt-get install {gcc,g++}-multilib;
       export CC='gcc -m32';
       export CXX='g++ -m32';
       export PKG_CONFIG_PATH='/usr/lib32/pkgconfig';
     fi
+  - export core_count=$(nproc || echo 4) && echo core_count = $core_count
+  - |
+    if [ $TRAVIS_OS_NAME = linux ]; then
+      # ccache not supported on MacOs
+      ccache --version
+      ccache --zero-stats
+      export CCACHE_COMPRESS=true
+      export CCACHE_COMPRESSLEVEL=9
+    fi
+  - set +e
 
-  - cmake .
-    -DVulkanHeaders_INCLUDE_DIR=$PWD/Vulkan-Headers-$VULKAN_HEADERS_VERSION/include
-    -DVulkanRegistry_DIR=$PWD/Vulkan-Headers-$VULKAN_HEADERS_VERSION/registry
-    || travis_terminate 1
+script:
+  - |
+    if [[ "${TRAVIS_OS_NAME}" != "osx" ]]; then
+      set -e
+    fi
+  - |
+    mkdir build
+    cd build
+    python ../scripts/update_deps.py
+    cmake -C helper.cmake ..
+    cmake --build . -- -j$core_count
+  - |
+    if [[ "${TRAVIS_OS_NAME}" != "osx" ]]; then
+      set +e
+    fi
 
-  - cmake --build .
-    || travis_terminate 1
+notifications:
+  email:
+    recipients:
+      - s.fricke@samsung.com
+    on_success: change
+    on_failure: always
