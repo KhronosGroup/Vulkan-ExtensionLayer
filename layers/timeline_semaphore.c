@@ -37,7 +37,9 @@
     ENTRY_POINT(EnumeratePhysicalDevices) \
     ENTRY_POINT(EnumerateDeviceExtensionProperties) \
     ENTRY_POINT(GetPhysicalDeviceFeatures2) \
+    ENTRY_POINT(GetPhysicalDeviceFeatures2KHR) \
     ENTRY_POINT(GetPhysicalDeviceProperties2) \
+    ENTRY_POINT(GetPhysicalDeviceProperties2KHR) \
     ENTRY_POINT(GetPhysicalDeviceQueueFamilyProperties) \
     ENTRY_POINT(GetPhysicalDeviceExternalSemaphoreProperties) \
     \
@@ -2003,6 +2005,21 @@ static VkResult timeline_EnumerateDeviceExtensionProperties(
     return vk_outarray_status(&out);
 }
 
+static void timeline_GetPhysicalDeviceFeatures2KHR(
+    VkPhysicalDevice                            physicalDevice,
+    VkPhysicalDeviceFeatures2*                  pFeatures)
+{
+    struct instance_data *instance = object_find(&global_map, physicalDevice);
+
+    instance->vtable.GetPhysicalDeviceFeatures2KHR(physicalDevice, pFeatures);
+
+    VkPhysicalDeviceTimelineSemaphoreFeaturesKHR *timeline_features =
+        vk_find_struct(pFeatures->pNext, PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR);
+    if (timeline_features) {
+        timeline_features->timelineSemaphore = true;
+    }
+}
+
 static void timeline_GetPhysicalDeviceFeatures2(
     VkPhysicalDevice                            physicalDevice,
     VkPhysicalDeviceFeatures2*                  pFeatures)
@@ -2021,6 +2038,21 @@ static void timeline_GetPhysicalDeviceFeatures2(
         vk_find_struct(pFeatures->pNext, PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
     if (vulkan12_features) {
         vulkan12_features->timelineSemaphore = true;
+    }
+}
+
+static void timeline_GetPhysicalDeviceProperties2KHR(
+    VkPhysicalDevice                            physicalDevice,
+    VkPhysicalDeviceProperties2*                pProperties)
+{
+    struct instance_data *instance = object_find(&global_map, physicalDevice);
+
+    instance->vtable.GetPhysicalDeviceProperties2KHR(physicalDevice, pProperties);
+
+    VkPhysicalDeviceTimelineSemaphorePropertiesKHR *timeline_properties =
+        vk_find_struct(pProperties->pNext, PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES_KHR);
+    if (timeline_properties) {
+        timeline_properties->maxTimelineSemaphoreValueDifference = UINT64_MAX;
     }
 }
 
@@ -2434,7 +2466,9 @@ static const NAME_TO_FUNCPTR name_to_instance_funcptr_map[] = {
     ADD_HOOK(EnumeratePhysicalDevices),
     ADD_HOOK(EnumerateDeviceExtensionProperties),
     ADD_HOOK(EnumerateInstanceExtensionProperties),
+    ADD_HOOK(GetPhysicalDeviceFeatures2KHR),
     ADD_HOOK(GetPhysicalDeviceFeatures2),
+    ADD_HOOK(GetPhysicalDeviceProperties2KHR),
     ADD_HOOK(GetPhysicalDeviceProperties2),
     ADD_HOOK(GetPhysicalDeviceExternalSemaphoreProperties),
 };
