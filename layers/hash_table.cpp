@@ -19,6 +19,8 @@
 extern "C"
 {
 
+#include "hash_table.h"
+
 struct hash_table
 {
     hash_table() {}
