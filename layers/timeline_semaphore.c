@@ -1253,7 +1253,7 @@ maybe_clone_semaphore(struct queue_data *queue,
     wait_point->point = NULL;
     wait_point->semaphore->queue = queue;
 
-    VkPipelineStageFlags wait_stage_mask = 0;
+    VkPipelineStageFlags wait_stage_mask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
     VkSubmitInfo info = {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
         .pWaitSemaphores = &app_semaphore,
