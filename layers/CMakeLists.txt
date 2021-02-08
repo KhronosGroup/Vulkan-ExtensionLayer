@@ -31,8 +31,15 @@ else()
     message(FATAL_ERROR "Unsupported Platform!")
 endif()
 
+if(WIN32)
+# timeline_semaphore doesn't build on windows yet
 set(TARGET_NAMES
-    VkLayer_khronos_timeline_semaphore)
+    VkLayer_khronos_synchronization2)
+else()
+set(TARGET_NAMES
+    VkLayer_khronos_timeline_semaphore
+    VkLayer_khronos_synchronization2)
+endif()
 
 # Install the layer json files
 if(WIN32)
@@ -63,12 +70,16 @@ if(WIN32)
 
         add_library(VkLayer_${target} SHARED ${ARGN} VkLayer_${target}.def)
         target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
+	target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
+	add_dependencies(VkLayer_${target} VkExtLayer_utils)
         install(TARGETS VkLayer_${target} DESTINATION ${CMAKE_INSTALL_LIBDIR})
     endmacro()
 elseif(APPLE)
     macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
         add_library(VkLayer_${target} SHARED ${ARGN})
         target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
+	target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
+	add_dependencies(VkLayer_${target} VkExtLayer_utils)
         set_target_properties(VkLayer_${target}
                               PROPERTIES LINK_FLAGS
                                          "-Wl"
@@ -80,12 +91,17 @@ else(UNIX AND NOT APPLE) # i.e.: Linux
     macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
         add_library(VkLayer_${target} SHARED ${ARGN})
         target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
+	target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
+	add_dependencies(VkLayer_${target} VkExtLayer_utils)
         set_target_properties(VkLayer_${target} PROPERTIES LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/libVkLayer_${target}.map,-Bsymbolic,--exclude-libs,ALL")
         install(TARGETS VkLayer_${target} DESTINATION ${CMAKE_INSTALL_LIBDIR})
     endmacro()
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/generated ${VulkanHeaders_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}
+                    ${PROJECT_SOURCE_DIR}/utils
+                    ${PROJECT_SOURCE_DIR}/utils/generated
+		    ${VulkanHeaders_INCLUDE_DIRS})
 
 if(WIN32)
     # Applies to all configurations
@@ -109,12 +125,21 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
     set_source_files_properties(parameter_validation.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-const-variable")
 endif()
 
+
+if(NOT WIN32)
 set(TIMELINE_SEMAPHORE_FILES
     hash_table.cpp
     timeline_semaphore.c)
 
 AddVkLayer(khronos_timeline_semaphore ""
     ${TIMELINE_SEMAPHORE_FILES})
+endif()
+
+set(SYNCHRONIZATION2_FILES
+    synchronization2.cpp)
+
+AddVkLayer(khronos_synchronization2 ""
+    ${SYNCHRONIZATION2_FILES})
 
 # The output file needs Unix "/" separators or Windows "\" separators On top of that, Windows separators actually need to be doubled
 # because the json format uses backslash escapes

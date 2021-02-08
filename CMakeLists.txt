@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2019 Valve Corporation
-# Copyright (c) 2014-2019 LunarG, Inc.
+# Copyright (c) 2014-2021 Valve Corporation
+# Copyright (c) 2014-2021 LunarG, Inc.
 # Copyright (c) 2019      Intel Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +26,8 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.12" CACHE STRING "Minimum OS X deployment ve
 
 project(Vulkan-ExtensionLayer)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 enable_testing()
 
 # User-interface declarations ----------------------------------------------------------------------------------------------------
@@ -36,6 +38,9 @@ enable_testing()
 set(API_NAME "Vulkan" CACHE STRING "API name to use when building")
 string(TOLOWER ${API_NAME} API_LOWERCASE)
 add_definitions(-DAPI_NAME="${API_NAME}")
+
+# Enable beta Vulkan extensions
+add_definitions(-DVK_ENABLE_BETA_EXTENSIONS)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -168,3 +173,4 @@ endif()
 # Add subprojects ----------------------------------------------------------------------------------------------------------------
 
 add_subdirectory(layers)
+add_subdirectory(utils)
