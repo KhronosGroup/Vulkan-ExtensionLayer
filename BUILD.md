@@ -36,6 +36,47 @@ the validation layers. You must also take note of the headers' install
 directory and pass it on the CMake command line for building this repository,
 as described below.
 
+#### Google Test
+
+The extension layer tests depend on the
+[Google Test](https://github.com/google/googletest)
+framework and do not build unless this framework is downloaded into the
+repository's `external` directory.
+
+To obtain the framework, change your current directory to the top of your
+Vulkan-ExtensionLayer repository and run:
+
+    git clone https://github.com/google/googletest.git external/googletest
+    cd external/googletest
+    git checkout tags/release-1.10.0
+
+before configuring your build with CMake.
+
+If you do not need the tests, there is no need to download this
+framework.
+
+#### glslang and SPIRV-Headers
+
+The extension layer tests depend on glslang and SPIRV-Headers to build
+so these components are only needed if the tests are built and run.
+
+These components can be used from an installed LunarG SDK or an installed Linux package.
+
+If these components are not available from any of these methods and/or it is important
+to use the latest code, then you must build
+[glslang repository](https://github.com/KhronosGroup/glslang.git)
+and
+[SPIRV-Headers repository](https://github.com/KhronosGroup/SPIRV-Headers.git)
+with their install targets. Take note of the install directory locations and pass
+them on the CMake command line by adding the following definitions:
+
+```
+-DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir
+-DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir
+```
+
+If you do not intend to run the tests, you do not need these repositories.
+
 ### Building Dependent Repositories with Known-Good Revisions
 
 There is a Python utility script, `scripts/update_deps.py`, that you can use to
@@ -79,7 +120,7 @@ specific requirements for configuring and building these components.
   the platform-specific sections later in this document.
 - When using update_deps.py to change architectures (x64, Win32...)
   or build configurations (debug, release...) it is strongly recommended to
-  add the '--clean-repo' parameter. This ensures compatibility among dependent
+  add the `--clean-repo` parameter. This ensures compatibility among dependent
   components.
   dependent components will produce consistent build artifacts.
 - The `update_deps.py` script fetches and builds the dependent repositories in
