@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2019 Valve Corporation
-# Copyright (c) 2014-2019 LunarG, Inc.
+# Copyright (c) 2014-2021 Valve Corporation
+# Copyright (c) 2014-2021 LunarG, Inc.
 # Copyright (c) 2019      Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -129,7 +129,7 @@ string(REPLACE "\\"
 # TARGET_FILE_DIR, specifically)
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generator.cmake" "configure_file(\"\${INPUT_FILE}\" \"\${OUTPUT_FILE}\")")
 foreach(TARGET_NAME ${TARGET_NAMES})
-    set(CONFIG_DEFINES -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in" -DVK_VERSION=1.1.${vk_header_version})
+    set(CONFIG_DEFINES -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in" -DVK_VERSION=1.2.${vk_header_version})
     # If this json file is not a metalayer, get the needed properties from that target
     if(TARGET ${TARGET_NAME})
         set(CONFIG_DEFINES
