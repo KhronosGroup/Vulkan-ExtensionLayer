@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2019 Valve Corporation
-# Copyright (c) 2014-2019 LunarG, Inc.
+# Copyright (c) 2014-2021 Valve Corporation
+# Copyright (c) 2014-2021 LunarG, Inc.
 # Copyright (c) 2019      Intel Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +26,8 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.12" CACHE STRING "Minimum OS X deployment ve
 
 project(Vulkan-ExtensionLayer)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 enable_testing()
 
 # User-interface declarations ----------------------------------------------------------------------------------------------------
@@ -36,6 +38,9 @@ enable_testing()
 set(API_NAME "Vulkan" CACHE STRING "API name to use when building")
 string(TOLOWER ${API_NAME} API_LOWERCASE)
 add_definitions(-DAPI_NAME="${API_NAME}")
+
+# Enable beta Vulkan extensions
+add_definitions(-DVK_ENABLE_BETA_EXTENSIONS)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -125,8 +130,146 @@ elseif(MSVC)
     add_compile_options("/w34245")
 endif()
 
+if(TARGET gtest OR IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/googletest)
+    option(BUILD_TESTS "Build tests" ON)
+else()
+    option(BUILD_TESTS "Build tests" OFF)
+endif()
+
+option(INSTALL_TESTS "Install tests" OFF)
 option(BUILD_LAYERS "Build layers" ON)
 option(BUILD_LAYER_SUPPORT_FILES "Generate layer files" OFF) # For generating files when not building layers
+
+if(BUILD_TESTS)
+    # Options for Linux only
+    if(UNIX AND NOT APPLE) # i.e. Linux
+        include(FindPkgConfig)
+        option(BUILD_WSI_XCB_SUPPORT "Build XCB WSI support" ON)
+        option(BUILD_WSI_XLIB_SUPPORT "Build Xlib WSI support" ON)
+        option(BUILD_WSI_WAYLAND_SUPPORT "Build Wayland WSI support" ON)
+        set(DEMOS_WSI_SELECTION "XCB" CACHE STRING "Select WSI target for demos (XCB, XLIB, WAYLAND, DISPLAY)")
+
+        if(BUILD_WSI_XCB_SUPPORT)
+            find_package(XCB REQUIRED)
+        endif()
+
+        if(BUILD_WSI_XLIB_SUPPORT)
+            find_package(X11 REQUIRED)
+        endif()
+
+        if(BUILD_WSI_WAYLAND_SUPPORT)
+            find_package(Wayland REQUIRED)
+            include_directories(${WAYLAND_CLIENT_INCLUDE_DIR})
+        endif()
+    endif()
+
+
+    set(GLSLANG_INSTALL_DIR "GLSLANG-NOTFOUND" CACHE PATH "Absolute path to a glslang install directory")
+    if(NOT GLSLANG_INSTALL_DIR AND NOT DEFINED ENV{GLSLANG_INSTALL_DIR} AND NOT TARGET glslang)
+        message(FATAL_ERROR "Must define location of glslang binaries -- see BUILD.md")
+    endif()
+
+    # CMake command line option overrides environment variable
+    if(NOT GLSLANG_INSTALL_DIR)
+        set(GLSLANG_INSTALL_DIR $ENV{GLSLANG_INSTALL_DIR})
+    endif()
+
+    # CMake command line option overrides environment variable
+    if(NOT SPIRV_HEADERS_INSTALL_DIR)
+        set(SPIRV_HEADERS_INSTALL_DIR $ENV{SPIRV_HEADERS_INSTALL_DIR})
+    endif()
+
+    if(NOT SPIRV_TOOLS_INSTALL_DIR)
+        set(SPIRV_TOOLS_INSTALL_DIR $ENV{SPIRV_TOOLS_INSTALL_DIR})
+    endif()
+
+    if (NOT TARGET glslang)
+        if(NOT SPIRV_HEADERS_INSTALL_DIR)
+            message(FATAL_ERROR "Must define location of SPIRV-Headers -- see BUILD.md")
+        endif()
+
+        message(STATUS "Using glslang install located at ${GLSLANG_INSTALL_DIR}")
+        set(GLSLANG_SEARCH_PATH "${GLSLANG_INSTALL_DIR}/lib")
+        set(GLSLANG_DEBUG_SEARCH_PATH "${GLSLANG_INSTALL_DIR}/lib")
+        set(GLSLANG_SPIRV_INCLUDE_DIR "${GLSLANG_INSTALL_DIR}/include/glslang" CACHE PATH "Path to glslang spirv headers")
+        set(SPIRV_HEADERS_INCLUDE_DIR "${SPIRV_HEADERS_INSTALL_DIR}/include" CACHE PATH "Path to spirv-headers")
+
+        set(GLSLANG_LIBRARIES glslang OGLCompiler OSDependent MachineIndependent GenericCodeGen HLSL SPIRV SPVRemapper)
+
+        # Add glslang static libraries as imported targets
+        foreach(GLSLANG_LIBRARY ${GLSLANG_LIBRARIES})
+            add_library(${GLSLANG_LIBRARY} STATIC IMPORTED)
+            find_library("${GLSLANG_LIBRARY}_PATH" NAMES "${GLSLANG_LIBRARY}" HINTS ${GLSLANG_SEARCH_PATH})
+            set_target_properties(${GLSLANG_LIBRARY}
+                                  PROPERTIES IMPORTED_LOCATION
+                                             "${${GLSLANG_LIBRARY}_PATH}")
+            if (WIN32)
+                find_library("${GLSLANG_LIBRARY}_DEBUG_PATH" NAMES "${GLSLANG_LIBRARY}d" HINTS ${GLSLANG_DEBUG_SEARCH_PATH})
+                set_target_properties(${GLSLANG_LIBRARY}
+                                      PROPERTIES IMPORTED_LOCATION_DEBUG
+                                                 "${${GLSLANG_LIBRARY}_DEBUG_PATH}")
+            endif()
+        endforeach()
+
+        # Circular dependencies exist between glslang static libs, add them all as link dependencies for each other
+        foreach(GLSLANG_LIBRARY ${GLSLANG_LIBRARIES})
+            set_target_properties(${GLSLANG_LIBRARY}
+                                  PROPERTIES INTERFACE_LINK_LIBRARIES
+                                             "${GLSLANG_LIBRARIES}")
+        endforeach()
+    else()
+        set(GLSLANG_SPIRV_INCLUDE_DIR "${glslang_SOURCE_DIR}" CACHE PATH "Path to glslang spirv headers")
+        set(GLSLANG_LIBRARIES glslang SPIRV SPVRemapper)
+    endif()
+
+    # spirv-tools
+    if (NOT TARGET SPIRV-Tools)
+        if(NOT SPIRV_TOOLS_INSTALL_DIR)
+            set(SPIRV_TOOLS_INSTALL_DIR "${GLSLANG_INSTALL_DIR}")
+        endif()
+
+        set(SPIRV_TOOLS_BINARY_ROOT "${SPIRV_TOOLS_INSTALL_DIR}/lib"
+            CACHE PATH "User defined path to the SPIRV-Tools binaries for this project")
+        set(SPIRV_TOOLS_OPT_BINARY_ROOT "${SPIRV_TOOLS_INSTALL_DIR}/lib"
+            CACHE PATH "User defined path to the SPIRV-Tools-opt binaries for this project")
+        set(SPIRV_TOOLS_INCLUDE_DIR "${SPIRV_TOOLS_INSTALL_DIR}/include" CACHE PATH "Path to spirv tools headers")
+        set(SPIRV_TOOLS_SEARCH_PATH "${SPIRV_TOOLS_INSTALL_DIR}/lib")
+        set(SPIRV_TOOLS_DEBUG_SEARCH_PATH "${SPIRV_TOOLS_INSTALL_DIR}/lib")
+        set(SPIRV_TOOLS_OPT_SEARCH_PATH "${SPIRV_TOOLS_INSTALL_DIR}/lib")
+        set(SPIRV_TOOLS_OPT_DEBUG_SEARCH_PATH "${SPIRV_TOOLS_INSTALL_DIR}/lib")
+
+        find_library(SPIRV_TOOLS_LIB NAMES SPIRV-Tools HINTS ${SPIRV_TOOLS_SEARCH_PATH})
+        find_library(SPIRV_TOOLS_OPT_LIB NAMES SPIRV-Tools-opt HINTS ${SPIRV_TOOLS_OPT_SEARCH_PATH})
+
+        if(WIN32)
+            add_library(SPIRV-Tools-opt STATIC IMPORTED)
+            add_library(SPIRV-Tools STATIC IMPORTED)
+
+            find_library(SPIRV_TOOLS_DLIB NAMES SPIRV-Toolsd HINTS ${SPIRV_TOOLS_DEBUG_SEARCH_PATH})
+            find_library(SPIRV_TOOLS_OPT_DLIB NAMES SPIRV-Tools-optd HINTS ${SPIRV_TOOLS_OPT_DEBUG_SEARCH_PATH})
+
+            set_target_properties(SPIRV-Tools
+                                  PROPERTIES IMPORTED_LOCATION
+                                             "${SPIRV_TOOLS_LIB}"
+                                             IMPORTED_LOCATION_DEBUG
+                                             "${SPIRV_TOOLS_DLIB}")
+            set_target_properties(SPIRV-Tools-opt
+                                  PROPERTIES IMPORTED_LOCATION
+                                             "${SPIRV_TOOLS_OPT_LIB}"
+                                             IMPORTED_LOCATION_DEBUG
+                                             "${SPIRV_TOOLS_OPT_DLIB}")
+
+            set(SPIRV_TOOLS_LIBRARIES SPIRV-Tools-opt SPIRV-Tools)
+        else()
+            set(SPIRV_TOOLS_LIBRARIES ${SPIRV_TOOLS_OPT_LIB} ${SPIRV_TOOLS_LIB})
+        endif()
+    else()
+        set(SPIRV_TOOLS_LIBRARIES SPIRV-Tools SPIRV-Tools-opt)
+        set(SPIRV_TOOLS_INCLUDE_DIR "${spirv-tools_SOURCE_DIR}/include" CACHE PATH "Path to spirv tools headers")
+    endif()
+
+    set(GLSLANG_LIBRARIES ${GLSLANG_LIBRARIES} ${SPIRV_TOOLS_LIBRARIES})
+endif()
 
 # Generate dependent helper files ------------------------------------------------------------------------------------------------
 
@@ -168,3 +311,8 @@ endif()
 # Add subprojects ----------------------------------------------------------------------------------------------------------------
 
 add_subdirectory(layers)
+add_subdirectory(utils)
+if(BUILD_TESTS)
+    add_subdirectory(external)
+    add_subdirectory(tests)
+endif()
