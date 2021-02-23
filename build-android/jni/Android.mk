@@ -37,7 +37,7 @@ LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -DVK
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := VkLayer_khronos_synchronization
+LOCAL_MODULE := VkLayer_khronos_synchronization2
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/synchronization2.cpp
 LOCAL_C_INCLUDES += $(VULKAN_INCLUDE) \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils \
@@ -54,11 +54,11 @@ include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_MODULE := VkExtensionLayerTests
 LOCAL_SRC_FILES += $(SRC_DIR)/tests/extension_layer_tests.cpp \
-		    $(SRC_DIR)/tests/vktestbinding.cpp \
-		    $(SRC_DIR)/tests/synchronization2_tests.cpp \
-		    $(SRC_DIR)/tests/vkrenderframework.cpp \
-		    $(SRC_DIR)/tests/vktestframeworkandroid.cpp \
-		    $(SRC_DIR)/tests/test_environment.cpp
+                   $(SRC_DIR)/tests/vktestbinding.cpp \
+                   $(SRC_DIR)/tests/synchronization2_tests.cpp \
+                   $(SRC_DIR)/tests/vkrenderframework.cpp \
+                   $(SRC_DIR)/tests/vktestframeworkandroid.cpp \
+                   $(SRC_DIR)/tests/test_environment.cpp
 LOCAL_C_INCLUDES += $(VULKAN_INCLUDE) \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils/generated \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils \
@@ -77,11 +77,11 @@ include $(BUILD_EXECUTABLE)
 include $(CLEAR_VARS)
 LOCAL_MODULE := VulkanExtensionLayerTests
 LOCAL_SRC_FILES += $(SRC_DIR)/tests/extension_layer_tests.cpp \
-		    $(SRC_DIR)/tests/vktestbinding.cpp \
-		    $(SRC_DIR)/tests/synchronization2_tests.cpp \
-		    $(SRC_DIR)/tests/vkrenderframework.cpp \
-		    $(SRC_DIR)/tests/vktestframeworkandroid.cpp \
-		    $(SRC_DIR)/tests/test_environment.cpp
+                   $(SRC_DIR)/tests/vktestbinding.cpp \
+                   $(SRC_DIR)/tests/synchronization2_tests.cpp \
+                   $(SRC_DIR)/tests/vkrenderframework.cpp \
+                   $(SRC_DIR)/tests/vktestframeworkandroid.cpp \
+                   $(SRC_DIR)/tests/test_environment.cpp
 LOCAL_C_INCLUDES += $(VULKAN_INCLUDE) \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils/generated \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils \

@@ -98,8 +98,6 @@ bool CheckTimelineSemaphoreSupportAndInitState(VkRenderFramework *renderFramewor
 
 class VkExtensionLayerTest : public VkRenderFramework {
   public:
-    const char *kValidationLayerName = "VK_LAYER_KHRONOS_validation";
-
     void Init(VkPhysicalDeviceFeatures *features = nullptr, VkPhysicalDeviceFeatures2 *features2 = nullptr,
               const VkCommandPoolCreateFlags flags = 0, void *instance_pnext = nullptr);
     bool AddSurfaceInstanceExtension();
