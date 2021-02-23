@@ -1168,7 +1168,7 @@ void VkImageObj::ImageMemoryBarrier(VkCommandBufferObj *cmd_buf, VkImageAspectFl
                                     VK_ACCESS_SHADER_WRITE_BIT |
                                     VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
                                     VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-                                    VK_MEMORY_OUTPUT_COPY_BIT*/, 
+                                    VK_MEMORY_OUTPUT_COPY_BIT*/,
                                     VkFlags input_mask /*=
                                     VK_ACCESS_HOST_READ_BIT |
                                     VK_ACCESS_INDIRECT_COMMAND_READ_BIT |

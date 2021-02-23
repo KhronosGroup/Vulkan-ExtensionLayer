@@ -70,16 +70,16 @@ if(WIN32)
 
         add_library(VkLayer_${target} SHARED ${ARGN} VkLayer_${target}.def)
         target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
-	target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
-	add_dependencies(VkLayer_${target} VkExtLayer_utils)
+        target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
+        add_dependencies(VkLayer_${target} VkExtLayer_utils)
         install(TARGETS VkLayer_${target} DESTINATION ${CMAKE_INSTALL_LIBDIR})
     endmacro()
 elseif(APPLE)
     macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
         add_library(VkLayer_${target} SHARED ${ARGN})
         target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
-	target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
-	add_dependencies(VkLayer_${target} VkExtLayer_utils)
+        target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
+        add_dependencies(VkLayer_${target} VkExtLayer_utils)
         set_target_properties(VkLayer_${target}
                               PROPERTIES LINK_FLAGS
                                          "-Wl"
@@ -91,8 +91,8 @@ else(UNIX AND NOT APPLE) # i.e.: Linux
     macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
         add_library(VkLayer_${target} SHARED ${ARGN})
         target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
-	target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
-	add_dependencies(VkLayer_${target} VkExtLayer_utils)
+        target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
+        add_dependencies(VkLayer_${target} VkExtLayer_utils)
         set_target_properties(VkLayer_${target} PROPERTIES LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/libVkLayer_${target}.map,-Bsymbolic,--exclude-libs,ALL")
         install(TARGETS VkLayer_${target} DESTINATION ${CMAKE_INSTALL_LIBDIR})
     endmacro()
@@ -101,7 +101,7 @@ endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${PROJECT_SOURCE_DIR}/utils
                     ${PROJECT_SOURCE_DIR}/utils/generated
-		    ${VulkanHeaders_INCLUDE_DIRS})
+                    ${VulkanHeaders_INCLUDE_DIRS})
 
 if(WIN32)
     # Applies to all configurations
@@ -119,12 +119,6 @@ else()
     # Use of pthread_condattr_setclock requires a "recent" POSIX setting.
     add_definitions(-D_POSIX_C_SOURCE=200112)
 endif()
-
-# Clang warns about unused const variables. Generated files may purposely contain unused consts, so silence this warning in Clang
-if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-    set_source_files_properties(parameter_validation.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-const-variable")
-endif()
-
 
 if(NOT WIN32)
 set(TIMELINE_SEMAPHORE_FILES
