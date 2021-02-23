@@ -32,7 +32,7 @@ This repository has a required dependency on the
 You must clone the headers repository and build its `install` target before
 building this repository. The Vulkan-Headers repository is required because it
 contains the Vulkan API definition files (registry) that are required to build
-the validation layers. You must also take note of the headers' install
+the extension layers. You must also take note of the headers' install
 directory and pass it on the CMake command line for building this repository,
 as described below.
 
@@ -111,6 +111,11 @@ For 32-bit Windows, continue with:
     cmake -A Win32 -C helper.cmake ..
     cmake --build .
 
+For Android, continue with:
+
+    cd build-android
+    ./build_all.sh
+
 Please see the more detailed build information later in this file if you have
 specific requirements for configuring and building these components.
 
@@ -146,3 +151,34 @@ specific requirements for configuring and building these components.
   execution.
 - Please use `update_deps.py --help` to list additional options and read the
   internal documentation in `update_deps.py` for further information.
+
+# Testing instructions
+
+Assuming Google Test instructions above were followed, the build should output a
+`vk_extension_layer_tests` executable (or APK on Android) to run. The tests should
+enable the layer explicitly, so make sure the path if needed.
+
+For 64-bit Linux and MacOS, example of testing Sync2 tests:
+```bash
+    # In build directory
+    ./tests/vk_extension_layer_tests --gtest_filter=*Sync2Test*
+```
+
+For Android, example of testing Sync2 tests:
+```bash
+    # in build-android directory
+
+    # Uninstall if old version on device
+    adb uninstall com.example.VulkanExtensionLayerTests
+    # Install new version
+    adb install -r -g bin/VulkanExtensionLayerTests.apk
+
+    # To run test
+    adb shell am start -a android.intent.action.MAIN -c android-intent.category.LAUNCH -n com.example.VulkanExtensionLayerTests/android.app.NativeActivity --es args --gtest_filter="*Sync2*"
+
+    # To log info
+    adb logcat -c && adb logcat *:S VulkanExtensionLayerTests
+    # To see dumpped info
+    adb shell cat /sdcard/Android/data/com.example.VulkanExtensionLayerTests/files/out.txt
+    adb shell cat /sdcard/Android/data/com.example.VulkanExtensionLayerTests/files/err.txt
+```
