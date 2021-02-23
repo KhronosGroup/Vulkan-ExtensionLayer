@@ -177,19 +177,6 @@ static std::shared_ptr<DeviceData> GetDeviceData(const void* object) {
     return result != device_data_map.end() ? result->second : nullptr;
 }
 
-VKAPI_ATTR VkResult VKAPI_CALL EnumerateInstanceLayerProperties(uint32_t* pPropertyCount, VkLayerProperties* pProperties) {
-    if (pProperties == NULL) {
-        *pPropertyCount = 1;
-        return VK_SUCCESS;
-    }
-    if (*pPropertyCount < 1) {
-        return VK_INCOMPLETE;
-    }
-    *pPropertyCount = 1;
-    pProperties[0] = kGlobalLayer;
-    return VK_SUCCESS;
-}
-
 VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice, const char* pLayerName, uint32_t* pPropertyCount,
                                             VkExtensionProperties* pProperties) {
     auto instance_data = GetInstanceData(physicalDevice);
@@ -1361,7 +1348,6 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> kInstanceFuncti
     ADD_HOOK(CreateInstance),
     ADD_HOOK(DestroyInstance),
     ADD_HOOK(EnumeratePhysicalDevices),
-    ADD_HOOK(EnumerateInstanceLayerProperties),
     ADD_HOOK(EnumerateDeviceExtensionProperties),
     ADD_HOOK(CreateDevice),
     ADD_HOOK(GetPhysicalDeviceFeatures2),
@@ -1442,5 +1428,38 @@ vkNegotiateLoaderLayerInterfaceVersion(VkNegotiateLayerInterface* pVersionStruct
         pVersionStruct->pfnGetPhysicalDeviceProcAddr = nullptr;
     }
 
+    return VK_SUCCESS;
+}
+
+// loader-layer interface v0 - Needed for Android loader using explicit layers
+extern "C" VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL
+vkEnumerateInstanceExtensionProperties(const char* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties) {
+    if (pLayerName && strncmp(pLayerName, synchronization2::kGlobalLayer.layerName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
+        if (!pProperties) {
+            *pPropertyCount = 1;
+            return VK_SUCCESS;
+        }
+        if (*pPropertyCount < 1) {
+            return VK_INCOMPLETE;
+        }
+        pProperties[0] = synchronization2::kDeviceExtension;
+        *pPropertyCount = 1;
+        return VK_SUCCESS;
+    }
+    return VK_ERROR_LAYER_NOT_PRESENT;
+}
+
+// loader-layer interface v0 - Needed for Android loader using explicit layers
+extern "C" VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(uint32_t* pPropertyCount,
+                                                                                             VkLayerProperties* pProperties) {
+    if (pProperties == NULL) {
+        *pPropertyCount = 1;
+        return VK_SUCCESS;
+    }
+    if (*pPropertyCount < 1) {
+        return VK_INCOMPLETE;
+    }
+    *pPropertyCount = 1;
+    pProperties[0] = synchronization2::kGlobalLayer;
     return VK_SUCCESS;
 }
