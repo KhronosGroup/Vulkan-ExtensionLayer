@@ -143,12 +143,13 @@ string(REPLACE "\\"
                RELATIVE_PATH_PREFIX
                "${RELATIVE_PATH_PREFIX}")
 
+set(vk_full_version "1.2.${vk_header_version}")
 # Run each .json.in file through the generator We need to create the generator.cmake script so that the generator can be run at
 # compile time, instead of configure time Running at compile time lets us use cmake generator expressions (TARGET_FILE_NAME and
 # TARGET_FILE_DIR, specifically)
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generator.cmake" "configure_file(\"\${INPUT_FILE}\" \"\${OUTPUT_FILE}\")")
 foreach(TARGET_NAME ${TARGET_NAMES})
-    set(CONFIG_DEFINES -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in" -DVK_VERSION=1.2.${vk_header_version})
+	set(CONFIG_DEFINES -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in" -DVK_VERSION=${vk_full_version})
     # If this json file is not a metalayer, get the needed properties from that target
     if(TARGET ${TARGET_NAME})
         set(CONFIG_DEFINES
@@ -171,7 +172,7 @@ if(UNIX)
         set(INSTALL_DEFINES
             -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in"
             -DOUTPUT_FILE="${CMAKE_CURRENT_BINARY_DIR}/staging-json/${TARGET_NAME}.json"
-            -DVK_VERSION=1.1.${vk_header_version})
+            -DVK_VERSION=${vk_full_version})
         # If this json file is not a metalayer, get the needed properties from that target
         if(TARGET ${TARGET_NAME})
             set(INSTALL_DEFINES ${INSTALL_DEFINES} -DRELATIVE_LAYER_BINARY="$<TARGET_FILE_NAME:${TARGET_NAME}>")
