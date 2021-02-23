@@ -17,7 +17,7 @@ There are some extensions and features in Vulkan that are not available everywhe
 | Layer                               | Extension provided        | Version | File                        | Status   |
 |:-----------------------------------:|:-------------------------:|:-------:|:---------------------------:|:--------:|
 | VK_LAYER_KHRONOS_timeline_semaphore | VK_KHR_timeline_semaphore | 1       | layers/timeline_semaphore.c | complete |
-| VK_LAYER_KHRONOS_synchronization2   | VK_KHR_synchronization2   | 1       | layers/synchronization2.cpp | complete |
+| [VK_LAYER_KHRONOS_synchronization2](docs/synchronization2_layer.md)   | VK_KHR_synchronization2   | 1       | layers/synchronization2.cpp | complete |
 
 ## Information for Developing or Contributing:
 
@@ -26,7 +26,7 @@ Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file in this repository for mo
 ## How to Build and Run
 
 [BUILD.md](BUILD.md)
-Includes directions for building all components.
+Includes directions for building all components and testing them.
 
 ## License
 This work is released as open source under a Apache-style license from Khronos including a Khronos copyright.
