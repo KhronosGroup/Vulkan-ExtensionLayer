@@ -179,8 +179,6 @@ static std::shared_ptr<DeviceData> GetDeviceData(const void* object) {
 
 VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice, const char* pLayerName, uint32_t* pPropertyCount,
                                             VkExtensionProperties* pProperties) {
-    auto instance_data = GetInstanceData(physicalDevice);
-
     if (pLayerName && strncmp(pLayerName, kGlobalLayer.layerName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
         if (!pProperties) {
             *pPropertyCount = 1;
@@ -192,8 +190,12 @@ VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysicalDevi
         pProperties[0] = kDeviceExtension;
         *pPropertyCount = 1;
         return VK_SUCCESS;
+    } else {
+        // Only call down if not the layer
+        // Android will pass a null physicalDevice with the layer name so can't get instance data from it
+        auto instance_data = GetInstanceData(physicalDevice);
+        return instance_data->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
     }
-    return instance_data->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
 }
 
 static void CheckDeviceFeatures(PhysicalDeviceData &pdd, VkPhysicalDeviceFeatures2* pFeatures) {
@@ -332,6 +334,9 @@ VKAPI_ATTR void VKAPI_CALL DestroyInstance(VkInstance instance, const VkAllocati
 }
 
 #define INIT_HOOK(_vt, _dev, fn) _vt.fn = reinterpret_cast<PFN_vk##fn>(vtable.GetDeviceProcAddr(_dev, "vk" #fn))
+#define INIT_HOOK_ALIAS(_vt, _dev, fn, fn_alias) \
+    _vt.fn_alias = (_vt.fn_alias != nullptr) ? _vt.fn_alias : reinterpret_cast<PFN_vk##fn>(vtable.GetDeviceProcAddr(_dev, "vk" #fn))
+
 DeviceData::DeviceData(VkDevice device, PFN_vkGetDeviceProcAddr gpa, const DeviceFeatures& feat, bool enable,
                        const VkAllocationCallbacks* alloc)
     : device(device), allocator(alloc), features(feat), enable_layer(enable), image_map() {
@@ -347,11 +352,13 @@ DeviceData::DeviceData(VkDevice device, PFN_vkGetDeviceProcAddr gpa, const Devic
         INIT_HOOK(vtable, device, CmdWriteTimestamp);
         INIT_HOOK(vtable, device, QueueSubmit);
         INIT_HOOK(vtable, device, CreateRenderPass2);
+        INIT_HOOK_ALIAS(vtable, device, CreateRenderPass2KHR, CreateRenderPass2);
         INIT_HOOK(vtable, device, CmdWriteBufferMarkerAMD);
         INIT_HOOK(vtable, device, GetQueueCheckpointDataNV);
     }
 }
 #undef INIT_HOOK
+#undef INIT_HOOK_ALIAS
 
 static VkLayerDeviceCreateInfo* GetChainInfo(const VkDeviceCreateInfo* pCreateInfo, VkLayerFunction func) {
     auto chain_info = reinterpret_cast<VkLayerDeviceCreateInfo*>(const_cast<void*>(pCreateInfo->pNext));
@@ -1339,6 +1346,9 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateRenderPass2(VkDevice device, const VkRender
     return device_data->vtable.CreateRenderPass2(device, &create_info, pAllocator, pRenderPass);
 }
 
+VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetDeviceProcAddr(VkDevice device, const char* pName);
+VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetInstanceProcAddr(VkInstance instance, const char* pName);
+
 #define ADD_HOOK(fn) \
     { "vk" #fn, (PFN_vkVoidFunction)fn }
 #define ADD_HOOK_ALIAS(fn, fn_alias) \
@@ -1377,22 +1387,25 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> kDeviceFunction
 
     ADD_HOOK(CmdWriteBufferMarker2AMD),
     ADD_HOOK(GetQueueCheckpointData2NV),
+
+    // Needs to point to itself as Android loaders calls vkGet*ProcAddr to itself. Without these hooks, when the app calls
+    // vkGetDeviceProcAddr to get layer functions it will fail on Android
+    ADD_HOOK(GetInstanceProcAddr),
+    ADD_HOOK(GetDeviceProcAddr),
 };
 #undef ADD_HOOK
 #undef ADD_HOOK_ALIAS
 
-}  // namespace synchronization2
-
-extern "C" VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance instance, const char* pName) {
-    auto instance_result = synchronization2::kInstanceFunctions.find(pName);
-    if (instance_result != synchronization2::kInstanceFunctions.end()) {
+VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetInstanceProcAddr(VkInstance instance, const char* pName) {
+    auto instance_result = kInstanceFunctions.find(pName);
+    if (instance_result != kInstanceFunctions.end()) {
         return instance_result->second;
     }
-    auto dev_result = synchronization2::kDeviceFunctions.find(pName);
-    if (dev_result != synchronization2::kDeviceFunctions.end()) {
+    auto dev_result = kDeviceFunctions.find(pName);
+    if (dev_result != kDeviceFunctions.end()) {
         return dev_result->second;
     }
-    auto instance_data = synchronization2::GetInstanceData(instance);
+    auto instance_data = GetInstanceData(instance);
     if (instance_data != nullptr && instance_data->vtable.GetInstanceProcAddr) {
         PFN_vkVoidFunction result = instance_data->vtable.GetInstanceProcAddr(instance, pName);
         return result;
@@ -1400,11 +1413,11 @@ extern "C" VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanc
     return nullptr;
 }
 
-extern "C" VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice device, const char* pName) {
-    auto device_data = synchronization2::GetDeviceData(device);
+VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetDeviceProcAddr(VkDevice device, const char* pName) {
+    auto device_data = GetDeviceData(device);
     if (device_data && device_data->enable_layer) {
-        auto result = synchronization2::kDeviceFunctions.find(pName);
-        if (result != synchronization2::kDeviceFunctions.end()) {
+        auto result = kDeviceFunctions.find(pName);
+        if (result != kDeviceFunctions.end()) {
             return result->second;
         }
     }
@@ -1415,6 +1428,16 @@ extern "C" VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceP
     return nullptr;
 }
 
+}  // namespace synchronization2
+
+extern "C" VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance instance, const char* pName) {
+    return synchronization2::GetInstanceProcAddr(instance, pName);
+}
+
+extern "C" VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice device, const char* pName) {
+    return synchronization2::GetDeviceProcAddr(device, pName);
+}
+
 extern "C" VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL
 vkNegotiateLoaderLayerInterfaceVersion(VkNegotiateLayerInterface* pVersionStruct) {
     assert(pVersionStruct != nullptr);
@@ -1423,8 +1446,8 @@ vkNegotiateLoaderLayerInterfaceVersion(VkNegotiateLayerInterface* pVersionStruct
     // Fill in the function pointers if our version is at least capable of having the structure contain them.
     if (pVersionStruct->loaderLayerInterfaceVersion >= 2) {
         pVersionStruct->loaderLayerInterfaceVersion = 2;
-        pVersionStruct->pfnGetInstanceProcAddr = vkGetInstanceProcAddr;
-        pVersionStruct->pfnGetDeviceProcAddr = vkGetDeviceProcAddr;
+        pVersionStruct->pfnGetInstanceProcAddr = synchronization2::GetInstanceProcAddr;
+        pVersionStruct->pfnGetDeviceProcAddr = synchronization2::GetDeviceProcAddr;
         pVersionStruct->pfnGetPhysicalDeviceProcAddr = nullptr;
     }
 
@@ -1435,15 +1458,8 @@ vkNegotiateLoaderLayerInterfaceVersion(VkNegotiateLayerInterface* pVersionStruct
 extern "C" VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL
 vkEnumerateInstanceExtensionProperties(const char* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties) {
     if (pLayerName && strncmp(pLayerName, synchronization2::kGlobalLayer.layerName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
-        if (!pProperties) {
-            *pPropertyCount = 1;
-            return VK_SUCCESS;
-        }
-        if (*pPropertyCount < 1) {
-            return VK_INCOMPLETE;
-        }
-        pProperties[0] = synchronization2::kDeviceExtension;
-        *pPropertyCount = 1;
+        // VK_KHR_synchronization2 is a device extension and don't want to have it labeled as both instance and device extension
+        *pPropertyCount = 0;
         return VK_SUCCESS;
     }
     return VK_ERROR_LAYER_NOT_PRESENT;
@@ -1462,4 +1478,20 @@ extern "C" VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLay
     *pPropertyCount = 1;
     pProperties[0] = synchronization2::kGlobalLayer;
     return VK_SUCCESS;
+}
+
+// loader-layer interface v0 - Needed for Android loader using explicit layers
+extern "C" VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice,
+                                                                                               const char* pLayerName,
+                                                                                               uint32_t* pPropertyCount,
+                                                                                               VkExtensionProperties* pProperties) {
+    // Want to have this call down chain if multiple layers are enabling extenions
+    return synchronization2::EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
+}
+
+// Deprecated, but needed or else Android loader will not call into the exported vkEnumerateDeviceExtensionProperties
+extern "C" VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceLayerProperties(VkPhysicalDevice,
+                                                                                           uint32_t* pPropertyCount,
+                                                                                           VkLayerProperties* pProperties) {
+    return vkEnumerateInstanceLayerProperties(pPropertyCount, pProperties);
 }
