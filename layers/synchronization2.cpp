@@ -18,7 +18,6 @@
  * Author: Jeremy Gebben <jeremyg@lunarg.com>
  */
 #include <vulkan/vk_layer.h>
-#include <cassert>
 #include <ctype.h>
 #include <cstring>
 #include <iostream>
@@ -28,6 +27,7 @@
 #include <utility>
 #include "synchronization2.h"
 #include "allocator.h"
+#include "log.h"
 #include "vk_format_utils.h"
 #include "vk_layer_config.h"
 #include "vk_safe_struct.h"
@@ -249,7 +249,7 @@ static VkLayerInstanceCreateInfo* GetChainInfo(const VkInstanceCreateInfo* pCrea
     while (chain_info && !(chain_info->sType == VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO && chain_info->function == func)) {
         chain_info = reinterpret_cast<VkLayerInstanceCreateInfo*>(const_cast<void*>(chain_info->pNext));
     }
-    assert(chain_info != NULL);
+    ASSERT(chain_info != NULL);
     return chain_info;
 }
 
@@ -260,7 +260,7 @@ VkResult EnumerateAll(std::vector<T>* vect, std::function<VkResult(uint32_t*, T*
     do {
         uint32_t count = 0;
         result = func(&count, nullptr);
-        assert(result == VK_SUCCESS);
+        ASSERT(result == VK_SUCCESS);
         vect->resize(count);
         result = func(&count, vect->data());
     } while (result == VK_INCOMPLETE);
@@ -270,7 +270,7 @@ VkResult EnumerateAll(std::vector<T>* vect, std::function<VkResult(uint32_t*, T*
 VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkInstance* pInstance) {
     VkLayerInstanceCreateInfo* chain_info = GetChainInfo(pCreateInfo, VK_LAYER_LINK_INFO);
 
-    assert(chain_info->u.pLayerInfo);
+    ASSERT(chain_info->u.pLayerInfo);
     auto gpa = chain_info->u.pLayerInfo->pfnNextGetInstanceProcAddr;
     auto create_instance = reinterpret_cast<PFN_vkCreateInstance>(gpa(NULL, "vkCreateInstance"));
     if (create_instance == NULL) {
@@ -358,7 +358,7 @@ static VkLayerDeviceCreateInfo* GetChainInfo(const VkDeviceCreateInfo* pCreateIn
     while (chain_info && !(chain_info->sType == VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO && chain_info->function == func)) {
         chain_info = reinterpret_cast<VkLayerDeviceCreateInfo*>(const_cast<void*>(chain_info->pNext));
     }
-    assert(chain_info != NULL);
+    ASSERT(chain_info != NULL);
     return chain_info;
 }
 
@@ -439,7 +439,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
 
     VkLayerDeviceCreateInfo* chain_info = GetChainInfo(pCreateInfo, VK_LAYER_LINK_INFO);
 
-    assert(chain_info->u.pLayerInfo);
+    ASSERT(chain_info->u.pLayerInfo);
     PFN_vkGetInstanceProcAddr instance_proc_addr = chain_info->u.pLayerInfo->pfnNextGetInstanceProcAddr;
     PFN_vkCreateDevice create_device = (PFN_vkCreateDevice)instance_proc_addr(instance_data->instance, "vkCreateDevice");
     PFN_vkGetDeviceProcAddr gdpa = chain_info->u.pLayerInfo->pfnNextGetDeviceProcAddr;
@@ -837,7 +837,7 @@ DependencyInfoV1::DependencyInfoV1(const DeviceData& device_data, uint32_t info_
             const VkImageMemoryBarrier2KHR& barrier_v2 = info->pImageMemoryBarriers[j];
 
             auto image_data = device_data.image_map.find(barrier_v2.image);
-            assert(image_data != device_data.image_map.end());
+            ASSERT(image_data != device_data.image_map.end());
             ImageAspect aspect = image_data->second.aspect;
 
             src_stage_mask |= ConvertPipelineStageMask(barrier_v2.srcStageMask, kFirst, device_data.features);
@@ -1417,8 +1417,8 @@ extern "C" VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceP
 
 extern "C" VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL
 vkNegotiateLoaderLayerInterfaceVersion(VkNegotiateLayerInterface* pVersionStruct) {
-    assert(pVersionStruct != nullptr);
-    assert(pVersionStruct->sType == LAYER_NEGOTIATE_INTERFACE_STRUCT);
+    ASSERT(pVersionStruct != nullptr);
+    ASSERT(pVersionStruct->sType == LAYER_NEGOTIATE_INTERFACE_STRUCT);
 
     // Fill in the function pointers if our version is at least capable of having the structure contain them.
     if (pVersionStruct->loaderLayerInterfaceVersion >= 2) {
