@@ -74,7 +74,7 @@ using CmdVector = std::vector<T, extension_layer::CmdAlloc<T>>;
 
 // help structs for converting submit infos.
 struct TimelineSemaphoreSubmitInfo {
-    TimelineSemaphoreSubmitInfo(const VkSubmitInfo2KHR& v2, const VkAllocationCallbacks*);
+    TimelineSemaphoreSubmitInfo(const DeviceFeatures& features, const VkSubmitInfo2KHR& v2, const VkAllocationCallbacks*);
     explicit TimelineSemaphoreSubmitInfo(const VkAllocationCallbacks*);
 
     VkTimelineSemaphoreSubmitInfo info;
@@ -83,7 +83,7 @@ struct TimelineSemaphoreSubmitInfo {
 };
 
 struct DeviceGroupSubmitInfo {
-    DeviceGroupSubmitInfo(const VkSubmitInfo2KHR& v2, const VkAllocationCallbacks* alloc);
+    DeviceGroupSubmitInfo(const DeviceFeatures& features, const VkSubmitInfo2KHR& v2, const VkAllocationCallbacks* alloc);
     explicit DeviceGroupSubmitInfo(const VkAllocationCallbacks* alloc);
 
     VkDeviceGroupSubmitInfo info;
@@ -135,6 +135,7 @@ struct DependencyInfoV1 {
 struct PhysicalDeviceData {
     VkPhysicalDevice physical_device = VK_NULL_HANDLE;
     bool lower_has_sync2 = false;
+    uint32_t api_version;
 };
 
 #define DECLARE_HOOK(fn) PFN_vk##fn fn
@@ -153,6 +154,7 @@ struct InstanceData {
     }
 
     VkInstance instance;
+    uint32_t api_version;
     bool force_enable;
     const VkAllocationCallbacks* allocator;
     struct InstanceDispatchTable {
@@ -164,6 +166,7 @@ struct InstanceData {
         DECLARE_HOOK(EnumerateDeviceExtensionProperties);
         DECLARE_HOOK(GetPhysicalDeviceFeatures2);
         DECLARE_HOOK(GetPhysicalDeviceFeatures2KHR);
+        DECLARE_HOOK(GetPhysicalDeviceProperties);
     } vtable;
 
     vk_concurrent_unordered_map<VkPhysicalDevice, std::shared_ptr<PhysicalDeviceData>> physical_device_map;
@@ -175,9 +178,17 @@ struct ImageData {
 };
 
 struct DeviceFeatures {
-    explicit DeviceFeatures(const VkDeviceCreateInfo* create_info);
+    DeviceFeatures(uint32_t api_version, const VkDeviceCreateInfo* create_info);
     DeviceFeatures()
-        : sync2(false), geometry(false), tessellation(false), meshShader(false), taskShader(false), shadingRateImage(false), advancedBlend(false) {}
+        : sync2(false),
+          geometry(false),
+          tessellation(false),
+          meshShader(false),
+          taskShader(false),
+          shadingRateImage(false),
+          advancedBlend(false),
+          timelineSemaphore(false),
+          deviceGroup(false) {}
 
     bool sync2;
     bool geometry;
@@ -186,6 +197,8 @@ struct DeviceFeatures {
     bool taskShader;
     bool shadingRateImage;
     bool advancedBlend;
+    bool timelineSemaphore;
+    bool deviceGroup;
 };
 
 struct DeviceData {
@@ -199,6 +212,7 @@ struct DeviceData {
     const VkAllocationCallbacks* allocator;
     DeviceFeatures features;
     bool enable_layer;
+    uint32_t api_version;
     vk_concurrent_unordered_map<VkImage, ImageData> image_map;
     struct DeviceDispatchTable {
         DECLARE_HOOK(GetDeviceProcAddr);
