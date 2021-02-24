@@ -31,6 +31,7 @@
 
 void Sync2Test::SetUp() {
     VkExtensionLayerTest::SetUp();
+    SetTargetApiVersion(VK_API_VERSION_1_2);
     instance_layers_.push_back("VK_LAYER_KHRONOS_synchronization2");
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
@@ -1158,9 +1159,6 @@ TEST_F(Sync2Test, QueueSubmitTimelineSemaphore) {
     }
 
     m_errorMonitor->ExpectSuccess();
-    //  if (!CheckTimelineSemaphoreSupportAndInitState(this)) {
-    //    GTEST_SKIP() << kSkipPrefix << "  Timeline semaphore not supported, skipping test" << std::endl;
-    //  }
 
     VkSemaphoreTypeCreateInfoKHR semaphore_type_create_info{};
     semaphore_type_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR;

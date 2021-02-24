@@ -111,6 +111,8 @@ class VkExtensionLayerTest : public VkRenderFramework {
     uint32_t m_target_api_version = 0;
     bool m_enableWSI;
 
+    uint32_t SetTargetApiVersion(uint32_t target_api_version);
+    uint32_t DeviceValidationVersion();
     VkExtensionLayerTest();
 };
 
