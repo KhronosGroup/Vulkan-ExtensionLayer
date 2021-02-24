@@ -20,6 +20,7 @@
 #include <vulkan/vk_layer.h>
 #include <ctype.h>
 #include <cstring>
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -243,6 +244,7 @@ InstanceData::InstanceData(VkInstance inst, PFN_vkGetInstanceProcAddr gpa, const
     INIT_HOOK(vtable, instance, EnumerateDeviceExtensionProperties);
     INIT_HOOK(vtable, instance, GetPhysicalDeviceFeatures2);
     INIT_HOOK(vtable, instance, GetPhysicalDeviceFeatures2KHR);
+    INIT_HOOK(vtable, instance, GetPhysicalDeviceProperties);
 }
 #undef INIT_HOOK
 
@@ -293,6 +295,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreat
         instance_data_map.insert(DispatchKey(*pInstance), instance_data);
 
         instance_data->force_enable = GetForceEnable();
+        instance_data->api_version = pCreateInfo->pApplicationInfo ? pCreateInfo->pApplicationInfo->apiVersion : 0;
         SetupCustomStypes();
     } catch (const std::bad_alloc&) {
         auto destroy_instance = reinterpret_cast<PFN_vkDestroyInstance>(gpa(NULL, "vkDestroyInstance"));
@@ -308,6 +311,7 @@ VKAPI_ATTR VkResult VKAPI_CALL EnumeratePhysicalDevices(VkInstance instance, uin
         instance_data->vtable.EnumeratePhysicalDevices(instance_data->instance, pPhysicalDeviceCount, pPhysicalDevices);
     if (result == VK_SUCCESS && pPhysicalDevices != nullptr) {
         for (uint32_t i = 0; i < *pPhysicalDeviceCount; i++) {
+            VkPhysicalDeviceProperties properties{};
             auto physical_device = pPhysicalDevices[i];
 
             if (instance_data->physical_device_map.find(physical_device) != instance_data->physical_device_map.end()) {
@@ -315,6 +319,10 @@ VKAPI_ATTR VkResult VKAPI_CALL EnumeratePhysicalDevices(VkInstance instance, uin
             }
             auto pdd = std::make_shared<PhysicalDeviceData>();
             pdd->physical_device = physical_device;
+
+            instance_data->vtable.GetPhysicalDeviceProperties(physical_device, &properties);
+            pdd->api_version = properties.apiVersion;
+
             instance_data->physical_device_map.insert(physical_device, pdd);
         }
     }
@@ -369,14 +377,26 @@ static VkLayerDeviceCreateInfo* GetChainInfo(const VkDeviceCreateInfo* pCreateIn
     return chain_info;
 }
 
-DeviceFeatures::DeviceFeatures(const VkDeviceCreateInfo* create_info)
-    : sync2(false), geometry(false), tessellation(false), meshShader(false), taskShader(false), shadingRateImage(false), advancedBlend(false) {
+DeviceFeatures::DeviceFeatures(uint32_t api_version, const VkDeviceCreateInfo* create_info)
+    : sync2(false),
+      geometry(false),
+      tessellation(false),
+      meshShader(false),
+      taskShader(false),
+      shadingRateImage(false),
+      advancedBlend(false),
+      timelineSemaphore(false),
+      deviceGroup(false) {
     if (create_info->pEnabledFeatures != nullptr) {
         //Note: explicit checks against 0 are required to avoid warnings from VS2015
         geometry = 0 != create_info->pEnabledFeatures->geometryShader;
         tessellation = 0 != create_info->pEnabledFeatures->tessellationShader;
     }
     const VkBaseInStructure* chain = reinterpret_cast<const VkBaseInStructure*>(create_info->pNext);
+
+    if (api_version >= VK_MAKE_VERSION(1, 2, 0)) {
+        timelineSemaphore = true;
+    }
     while (chain != nullptr) {
         switch (chain->sType) {
             case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES_KHR: {
@@ -401,6 +421,14 @@ DeviceFeatures::DeviceFeatures(const VkDeviceCreateInfo* create_info)
                 auto shading_rate = reinterpret_cast<const VkPhysicalDeviceShadingRateImageFeaturesNV*>(chain);
                 shadingRateImage = 0 != shading_rate->shadingRateImage;
             } break;
+            case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES: {
+                auto timeline_sem = reinterpret_cast<const VkPhysicalDeviceTimelineSemaphoreFeatures*>(chain);
+                timelineSemaphore = 0 != timeline_sem->timelineSemaphore;
+            } break;
+            case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES_KHR: {
+                deviceGroup = true;
+            } break;
+
             default:
                 break;
         }
@@ -453,7 +481,10 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
     if (instance_data->vtable.CreateDevice == NULL) {
         return VK_ERROR_INITIALIZATION_FAILED;
     }
-    DeviceFeatures features(pCreateInfo);
+    uint32_t effective_api_version =
+        (instance_data->api_version != 0) ? std::min(instance_data->api_version, pdd->api_version) : pdd->api_version;
+
+    DeviceFeatures features(effective_api_version, pCreateInfo);
 
     // Advance the link info for the next element on the chain
     chain_info->u.pLayerInfo = chain_info->u.pLayerInfo->pNext;
@@ -1031,13 +1062,18 @@ DeviceGroupSubmitInfo::DeviceGroupSubmitInfo(const VkAllocationCallbacks* alloc)
     info.sType = VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO;
 }
 
-DeviceGroupSubmitInfo::DeviceGroupSubmitInfo(const VkSubmitInfo2KHR& v2, const VkAllocationCallbacks* alloc)
+DeviceGroupSubmitInfo::DeviceGroupSubmitInfo(const DeviceFeatures& features, const VkSubmitInfo2KHR& v2,
+                                             const VkAllocationCallbacks* alloc)
     : info{},
       wait_vec(decltype(wait_vec)::allocator_type(alloc)),
       cmd_vec(decltype(cmd_vec)::allocator_type(alloc)),
       signal_vec(decltype(cmd_vec)::allocator_type(alloc)) {
     info.sType = VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO;
-    info.pNext = v2.pNext;  // shallow copy
+    // skip translation if this feature isn't enabled
+    if (!features.deviceGroup) {
+        return;
+    }
+
     if (v2.waitSemaphoreInfoCount > 0) {
         wait_vec.reserve(v2.waitSemaphoreInfoCount);
         for (uint32_t i = 0; i < v2.waitSemaphoreInfoCount; i++) {
@@ -1070,9 +1106,16 @@ TimelineSemaphoreSubmitInfo::TimelineSemaphoreSubmitInfo(const VkAllocationCallb
     info.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
 }
 
-TimelineSemaphoreSubmitInfo::TimelineSemaphoreSubmitInfo(const VkSubmitInfo2KHR& v2, const VkAllocationCallbacks* alloc)
+TimelineSemaphoreSubmitInfo::TimelineSemaphoreSubmitInfo(const DeviceFeatures& features, const VkSubmitInfo2KHR& v2,
+                                                         const VkAllocationCallbacks* alloc)
     : info{}, wait_vec(decltype(wait_vec)::allocator_type(alloc)), signal_vec(decltype(signal_vec)::allocator_type(alloc)) {
     info.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+
+    // skip translation if this feature isn't enabled
+    if (!features.timelineSemaphore) {
+        return;
+    }
+
     if (v2.waitSemaphoreInfoCount > 0) {
         wait_vec.reserve(v2.waitSemaphoreInfoCount);
         for (uint32_t i = 0; i < v2.waitSemaphoreInfoCount; i++) {
@@ -1091,15 +1134,15 @@ TimelineSemaphoreSubmitInfo::TimelineSemaphoreSubmitInfo(const VkSubmitInfo2KHR&
     }
 }
 
-SubmitData::SubmitData(const VkSubmitInfo2KHR& v2, const VkAllocationCallbacks* alloc, const DeviceFeatures &features)
+SubmitData::SubmitData(const VkSubmitInfo2KHR& v2, const VkAllocationCallbacks* alloc, const DeviceFeatures& features)
     : info{},
       wait_sem_vec(decltype(wait_sem_vec)::allocator_type(alloc)),
       wait_dst_vec(decltype(wait_dst_vec)::allocator_type(alloc)),
       cmd_vec(decltype(cmd_vec)::allocator_type(alloc)),
       signal_vec(decltype(signal_vec)::allocator_type(alloc)),
       protect(v2),
-      timeline_sem(v2, alloc),
-      device_group(v2, alloc) {
+      timeline_sem(features, v2, alloc),
+      device_group(features, v2, alloc) {
     info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     if (v2.waitSemaphoreInfoCount > 0) {
         wait_sem_vec.reserve(v2.waitSemaphoreInfoCount);
@@ -1130,10 +1173,22 @@ SubmitData::SubmitData(const VkSubmitInfo2KHR& v2, const VkAllocationCallbacks* 
         info.signalSemaphoreCount = VecSize(signal_vec);
         info.pSignalSemaphores = signal_vec.data();
     }
-    protect.pNext = v2.pNext;
-    timeline_sem.info.pNext = &protect;
-    device_group.info.pNext = &timeline_sem.info;
-    info.pNext = &device_group.info;
+    const void* tail = v2.pNext;
+    // This structure is only needed for a protected submit. Not
+    // including it is equivalent to setting protectedSubmit to false.
+    if (protect.protectedSubmit) {
+        protect.pNext = tail;
+        tail = &protect;
+    }
+    if (features.timelineSemaphore) {
+        timeline_sem.info.pNext = tail;
+        tail = &timeline_sem.info;
+    }
+    if (features.deviceGroup) {
+        device_group.info.pNext = tail;
+        tail = &device_group.info;
+    }
+    info.pNext = tail;
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL QueueSubmit2KHR(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2KHR* pSubmits, VkFence fence) {
