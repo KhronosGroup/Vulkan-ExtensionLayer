@@ -201,6 +201,9 @@ bool VkExtensionLayerTest::CheckSynchronization2SupportAndInitState() {
     }
     if (DeviceExtensionSupported(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, 0)) {
         m_device_extension_names.push_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
+        // implicit required extension
+        m_device_extension_names.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
     }
 
     auto sync2_features = lvl_init_struct<VkPhysicalDeviceSynchronization2FeaturesKHR>();
@@ -227,6 +230,18 @@ bool VkExtensionLayerTest::CheckSynchronization2SupportAndInitState() {
     vk::GetQueueCheckpointData2NV =
         reinterpret_cast<PFN_vkGetQueueCheckpointData2NV>(vk::GetDeviceProcAddr(device(), "vkGetQueueCheckpointData2NV"));
 
+    // Since signature are the same, make simple and override the core version if device in not 1.2
+
+    if (DeviceValidationVersion() <= VK_API_VERSION_1_2) {
+        vk::CmdBeginRenderPass2 =
+            reinterpret_cast<PFN_vkCmdBeginRenderPass2>(vk::GetDeviceProcAddr(device(), "vkCmdBeginRenderPass2KHR"));
+        vk::CmdEndRenderPass2 =
+            reinterpret_cast<PFN_vkCmdEndRenderPass2>(vk::GetDeviceProcAddr(device(), "vkCmdEndRenderPass2KHR"));
+        vk::CmdNextSubpass2 = reinterpret_cast<PFN_vkCmdNextSubpass2>(vk::GetDeviceProcAddr(device(), "vkCmdNextSubpass2KHR"));
+        vk::CreateRenderPass2 =
+            reinterpret_cast<PFN_vkCreateRenderPass2>(vk::GetDeviceProcAddr(device(), "vkCreateRenderPass2KHR"));
+    }
+
     return true;
 }
 
@@ -251,7 +266,7 @@ VkExtensionLayerTest::VkExtensionLayerTest() {
     app_info_.applicationVersion = 1;
     app_info_.pEngineName = "unittest";
     app_info_.engineVersion = 1;
-    app_info_.apiVersion = VK_API_VERSION_1_2;
+    app_info_.apiVersion = VK_API_VERSION_1_0;
 
     // Find out what version the instance supports and record the default target instance
     auto enumerateInstanceVersion = (PFN_vkEnumerateInstanceVersion)vk::GetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion");
@@ -324,6 +339,20 @@ bool VkExtensionLayerTest::AddSwapchainDeviceExtension() {
     }
     m_device_extension_names.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     return true;
+}
+
+uint32_t VkExtensionLayerTest::SetTargetApiVersion(uint32_t target_api_version) {
+    if (target_api_version == 0) target_api_version = VK_API_VERSION_1_0;
+    if (target_api_version <= m_instance_api_version) {
+        m_target_api_version = target_api_version;
+        app_info_.apiVersion = m_target_api_version;
+    }
+    return m_target_api_version;
+}
+
+uint32_t VkExtensionLayerTest::DeviceValidationVersion() {
+    // The validation layers assume the version we are validating to is the apiVersion unless the device apiVersion is lower
+    return std::min(m_target_api_version, physDevProps().apiVersion);
 }
 
 #if defined(ANDROID) && defined(VALIDATION_APK)
