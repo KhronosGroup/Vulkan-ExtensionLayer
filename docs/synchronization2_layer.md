@@ -65,11 +65,26 @@ To force the layer to be enabled for Vulkan applications, you can set the `VK_IN
 
 ### Android
 
-#### Permissions
+#### Packaging layer with application
 
 This layer should not require your application to need any additional permissions.
 
+At `vkCreateInstance` time add the layer
+
+```c++
+// std::vector<const char *> instance_layers
+instance_layers.push_back("VK_LAYER_KHRONOS_synchronization2");
+
+VkInstanceCreateInfo info;
+info.enabledLayerCount = static_cast<uint32_t>(instance_layers_.size());
+info.ppEnabledLayerNames = instance_layers_.data();
+```
+
+For this to work `libVkLayer_khronos_synchronization2.so` needs to be packaged inside the APK as Android will be able to read in the layer from there. One can open the APK in Android Studio to verify the binary is there. Make sure to match up the correct ABI as well (`armeabi-v7a`, `arm64-v8a`, etc).
+
 #### Globally Enabling the Layer
+
+This will require a debugable application or additional permissions. For more information please read the [Android Developer page](https://developer.android.com/ndk/guides/graphics/validation-layer#enable-layers-outside-app)
 
 Use ADB to enable the layer for your project by:
 
