@@ -21,7 +21,6 @@
 #include <ctype.h>
 #include <cstring>
 #include <algorithm>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -1005,7 +1004,7 @@ VKAPI_ATTR void VKAPI_CALL CmdWaitEvents2KHR(VkCommandBuffer commandBuffer, uint
             VecSize(dep_info.image_barriers), reinterpret_cast<VkImageMemoryBarrier*>(dep_info.image_barriers.data()));
     } catch (const std::bad_alloc& e) {
         // We don't have a way to return an error here.
-        std::cerr << __func__ << " bad_alloc: " << e.what() << std::endl;
+        LOG("bad_alloc: %s\n", e.what());
         return;
     }
 }
@@ -1039,7 +1038,7 @@ VKAPI_ATTR void VKAPI_CALL CmdPipelineBarrier2KHR(VkCommandBuffer commandBuffer,
                                                dep_info.buffer_barriers.data(), VecSize(dep_info.image_barriers),
                                                dep_info.image_barriers.data());
     } catch (const std::bad_alloc& e) {
-        std::cerr << __func__ << " bad_alloc: " << e.what() << std::endl;
+        LOG("bad_alloc: %s\n", e.what());
         return;
     }
 }
@@ -1318,13 +1317,18 @@ VKAPI_ATTR void VKAPI_CALL GetQueueCheckpointData2NV(VkQueue queue, uint32_t* pC
         }
     } catch (const std::bad_alloc& e) {
         // We don't have a way to return an error here.
-        std::cerr << __func__ << " bad_alloc: " << e.what() << std::endl;
+        LOG("bad_alloc: %s\n", e.what());
     }
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL CreateRenderPass2(VkDevice device, const VkRenderPassCreateInfo2* pCreateInfo, const VkAllocationCallbacks* pAllocator,
                            VkRenderPass* pRenderPass) {
     auto device_data = GetDeviceData(device);
+
+    if (device_data->vtable.CreateRenderPass2 == nullptr) {
+        LOG("Device does not support CreateRenderPass2\n");
+        return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+    }
 
     // make a shallow copy of the structure so we can mess with it.
     VkRenderPassCreateInfo2 create_info = *pCreateInfo;
