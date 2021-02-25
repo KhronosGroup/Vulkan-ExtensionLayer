@@ -1080,7 +1080,7 @@ TEST_F(Sync2Test, TwoSubmitInfosWithSemaphoreOneQueueSubmitsOneFence) {
         sem_info[1].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
         sem_info[1].semaphore = semaphore;
         sem_info[1].stageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
-        submit_info[1].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info[1].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
         submit_info[1].commandBufferInfoCount = 1;
         submit_info[1].pCommandBufferInfos = &cb_info[1];
         submit_info[1].waitSemaphoreInfoCount = 1;
