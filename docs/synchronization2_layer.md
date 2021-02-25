@@ -15,7 +15,7 @@ By default, it will disable itself if the underlying driver provides the extensi
 It has a force\_enable setting that can be adjusted by either environment variables
 or by using the `vk_layer_settings.txt` file.
 
-<br></br>
+Even though the `VK_KHR_synchronization2` extension requires the `VK_KHR_get_physical_device_properties2` and `VK_KHR_create_renderpass2` extensions, this layer will work on devices that do not implement them. See the `Sync2CompatTest.Vulkan10` test case for an example of how to do this.
 
 
 ## Enabling the Layer
