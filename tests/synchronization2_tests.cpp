@@ -1238,3 +1238,100 @@ TEST_F(Sync2Test, SubmitInfoDeviceMask) {
     vk::QueueWaitIdle(m_device->m_queue);
 }
 #endif
+
+// in a separate group to avoid the convience stuff in SetUp() above
+TEST_F(Sync2CompatTest, Vulkan10) {
+    TEST_DESCRIPTION("Minimal Vulkan 1.0 compatibility test.");
+    static const VkApplicationInfo app_info = {
+        VK_STRUCTURE_TYPE_APPLICATION_INFO, NULL, "sync2_test", 1, NULL, 0, VK_API_VERSION_1_0,
+    };
+    static const char *layer_name = "VK_LAYER_KHRONOS_synchronization2";
+    static const char *ext_name = "VK_KHR_synchronization2";
+    static const VkInstanceCreateInfo inst_info = {
+        VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, NULL, 0, &app_info, 1, &layer_name, 0, NULL,
+    };
+
+    VkInstance instance;
+
+    ASSERT_VK_SUCCESS(vk::CreateInstance(&inst_info, NULL, &instance));
+
+    uint32_t gpu_count = 0;
+    VkPhysicalDevice *gpus = NULL;
+
+    ASSERT_VK_SUCCESS(vk::EnumeratePhysicalDevices(instance, &gpu_count, NULL));
+
+    gpus = new VkPhysicalDevice[gpu_count];
+    ASSERT_VK_SUCCESS(vk::EnumeratePhysicalDevices(instance, &gpu_count, gpus));
+
+    const float priority = 1.0f;
+
+    VkDeviceQueueCreateInfo queue_info = {
+        VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, NULL, 0, UINT32_MAX, 1, &priority,
+    };
+    uint32_t queue_count = 0;
+    VkQueueFamilyProperties *queue_props = NULL;
+    vk::GetPhysicalDeviceQueueFamilyProperties(gpus[0], &queue_count, NULL);
+    ASSERT_NE(queue_count, 0);
+
+    queue_props = new VkQueueFamilyProperties[queue_count];
+    vk::GetPhysicalDeviceQueueFamilyProperties(gpus[0], &queue_count, NULL);
+    (void)queue_props;
+
+    queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queue_info.pNext = NULL;
+    queue_info.flags = 0;
+    queue_info.queueFamilyIndex = 0;
+    queue_info.queueCount = 1;
+
+    auto sync2_features = lvl_init_struct<VkPhysicalDeviceSynchronization2FeaturesKHR>();
+    sync2_features.synchronization2 = true;
+    VkPhysicalDeviceFeatures features{};
+    vk::GetPhysicalDeviceFeatures(gpus[0], &features);
+
+    VkDeviceCreateInfo dev_info = {
+        VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, &sync2_features, 0, 1, &queue_info, 0, NULL, 1, &ext_name, &features,
+    };
+    VkDevice device;
+    ASSERT_VK_SUCCESS(vk::CreateDevice(gpus[0], &dev_info, NULL, &device));
+
+    VkQueue queue;
+    vk::GetDeviceQueue(device, queue_info.queueFamilyIndex, 0, &queue);
+
+    vk::QueueSubmit2KHR = reinterpret_cast<PFN_vkQueueSubmit2KHR>(vk::GetDeviceProcAddr(device, "vkQueueSubmit2KHR"));
+
+    VkSemaphoreCreateInfo semaphore_create_info{};
+    semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    VkSemaphore semaphore;
+    ASSERT_VK_SUCCESS(vk::CreateSemaphore(device, &semaphore_create_info, nullptr, &semaphore));
+
+    VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    VkSemaphoreSubmitInfoKHR sem_info[2] = {};
+    VkSubmitInfo2KHR submit_info[2] = {};
+
+    sem_info[0].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
+    sem_info[0].semaphore = semaphore;
+    sem_info[0].value = 1;
+    sem_info[0].stageMask = stageFlags;
+    submit_info[0].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
+    submit_info[0].signalSemaphoreInfoCount = 1;
+    submit_info[0].pSignalSemaphoreInfos = &sem_info[0];
+
+    sem_info[1].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
+    sem_info[1].semaphore = semaphore;
+    sem_info[1].value = 1;
+    sem_info[1].stageMask = stageFlags;
+    submit_info[1].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
+    submit_info[1].waitSemaphoreInfoCount = 1;
+    submit_info[1].pWaitSemaphoreInfos = &sem_info[1];
+
+    vk::QueueSubmit2KHR(queue, 2, submit_info, VK_NULL_HANDLE);
+
+    ASSERT_VK_SUCCESS(vk::QueueWaitIdle(queue));
+
+    vk::DestroySemaphore(device, semaphore, nullptr);
+
+    vk::DestroyDevice(device, NULL);
+
+    vk::DestroyInstance(instance, NULL);
+}
