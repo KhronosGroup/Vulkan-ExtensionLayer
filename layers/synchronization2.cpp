@@ -219,7 +219,9 @@ VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceFeatures2(VkPhysicalDevice physicalD
     auto instance_data = GetInstanceData(physicalDevice);
     auto pdd = instance_data->GetPhysicalDeviceData(physicalDevice);
 
-    instance_data->vtable.GetPhysicalDeviceFeatures2(physicalDevice, pFeatures);
+    if (instance_data->vtable.GetPhysicalDeviceFeatures2 != nullptr) {
+        instance_data->vtable.GetPhysicalDeviceFeatures2(physicalDevice, pFeatures);
+    }
 
     CheckDeviceFeatures(*pdd, pFeatures);
 }
@@ -228,7 +230,9 @@ VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceFeatures2KHR(VkPhysicalDevice physic
     auto instance_data = GetInstanceData(physicalDevice);
     auto pdd = instance_data->GetPhysicalDeviceData(physicalDevice);
 
-    instance_data->vtable.GetPhysicalDeviceFeatures2KHR(physicalDevice, pFeatures);
+    if (instance_data->vtable.GetPhysicalDeviceFeatures2KHR != nullptr) {
+        instance_data->vtable.GetPhysicalDeviceFeatures2KHR(physicalDevice, pFeatures);
+    }
 
     CheckDeviceFeatures(*pdd, pFeatures);
 }
@@ -396,6 +400,10 @@ DeviceFeatures::DeviceFeatures(uint32_t api_version, const VkDeviceCreateInfo* c
 
     if (api_version >= VK_MAKE_VERSION(1, 2, 0)) {
         timelineSemaphore = true;
+    }
+    if (create_info->pEnabledFeatures != nullptr) {
+        geometry = 0 != create_info->pEnabledFeatures->geometryShader;
+        tessellation = 0 != create_info->pEnabledFeatures->tessellationShader;
     }
     while (chain != nullptr) {
         switch (chain->sType) {
