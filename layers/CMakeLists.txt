@@ -103,7 +103,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${PROJECT_SOURCE_DIR}/utils/generated
                     ${VulkanHeaders_INCLUDE_DIRS})
 
-if(WIN32)
+if(MSVC)
     # Applies to all configurations
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -DNOMINMAX)
     # Avoid: fatal error C1128: number of sections exceeded object file format limit: compile with /bigobj
