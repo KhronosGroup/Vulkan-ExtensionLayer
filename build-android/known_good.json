@@ -6,7 +6,15 @@
       "sub_dir": "Vulkan-Headers",
       "build_dir": "Vulkan-Headers/build",
       "install_dir": "Vulkan-Headers/build/install",
-      "commit": "v1.2.170"
+      "commit": "v1.2.172"
+    },
+    {
+      "name": "Vulkan-Tools",
+      "url": "https://github.com/KhronosGroup/Vulkan-Tools.git",
+      "sub_dir": "Vulkan-Tools",
+      "build_dir": "Vulkan-Tools/build",
+      "install_dir": "Vulkan-Tools/build/install",
+      "commit": "v1.2.172"
     },
     {
       "name" : "glslang",
