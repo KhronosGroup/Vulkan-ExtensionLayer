@@ -1,6 +1,6 @@
 {
-    "file_format_version" : "1.1.0",
-    "layer" : {
+    "file_format_version" : "1.2.0",
+    "layer": {
         "name": "VK_LAYER_KHRONOS_synchronization2",
         "type": "GLOBAL",
         "library_path": "@RELATIVE_LAYER_BINARY@",
@@ -10,8 +10,8 @@
         "instance_extensions": [],
         "device_extensions": [
             {
-                "name" : "VK_KHR_synchronization2",
-                "spec_version" : "1",
+                "name": "VK_KHR_synchronization2",
+                "spec_version": "1",
                 "entrypoints": [
                     "vkCmdSetEvent2KHR",
                     "vkCmdResetEvent2KHR",
@@ -22,6 +22,16 @@
                     "vkCmdWriteBufferMarker2AMD",
                     "vkGetQueueCheckpointData2NV"
                 ]
+            }
+        ],
+        "settings": [
+            {
+                "key": "force_enable",
+                "env": "VK_SYNC2_FORCE_ENABLE",
+                "label": "Force Enable",
+                "description": "Force the layer to be active even if the underlying driver already supports the synchonization2 extension.",
+                "type": "BOOL",
+                "default": false
             }
         ]
     }
