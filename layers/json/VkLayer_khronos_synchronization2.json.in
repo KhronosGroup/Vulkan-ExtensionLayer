@@ -7,6 +7,8 @@
         "api_version": "@VK_VERSION@",
         "implementation_version": "1",
         "description": "Khronos Synchronization2 layer",
+        "url": "https://vulkan.lunarg.com/doc/sdk/latest/windows/synchronization_usage.html",
+        "status": "STABLE",
         "instance_extensions": [],
         "device_extensions": [
             {
