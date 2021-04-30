@@ -1,5 +1,5 @@
 {
-    "file_format_version" : "1.2.0",
+    "file_format_version": "1.2.0",
     "layer": {
         "name": "VK_LAYER_KHRONOS_synchronization2",
         "type": "GLOBAL",
@@ -26,15 +26,17 @@
                 ]
             }
         ],
-        "settings": [
-            {
-                "key": "force_enable",
-                "env": "VK_SYNC2_FORCE_ENABLE",
-                "label": "Force Enable",
-                "description": "Force the layer to be active even if the underlying driver already supports the synchonization2 extension.",
-                "type": "BOOL",
-                "default": false
-            }
-        ]
+        "features": {
+            "settings": [
+                {
+                    "key": "force_enable",
+                    "env": "VK_SYNC2_FORCE_ENABLE",
+                    "label": "Force Enable",
+                    "description": "Force the layer to be active even if the underlying driver already supports the synchonization2 extension.",
+                    "type": "BOOL",
+                    "default": false
+                }
+            ]
+        }
     }
 }
