@@ -377,7 +377,7 @@ if(PYTHONINTERP_FOUND)
   add_custom_target(VulkanEL_generated_source
                       COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
                               ${VulkanRegistry_DIR} --incremental
-                      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/layers/generated
+                      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/utils/generated
                       )
 else()
   message("${PROJECT_NAME}: WARNING: VulkanEL_generated_source target requires python 3")
