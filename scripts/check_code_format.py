@@ -29,7 +29,7 @@
 # Notes:
 #    Exits with non 0 exit code if formatting is needed.
 #    Requires python3 to run correctly
-#    In standalone mode (outside of travis), changes must be rebased on master
+#    In standalone mode (outside of CI), changes must be rebased on master
 #        to get meaningful and complete results
 
 import os
@@ -56,14 +56,8 @@ def CPrint(msg_type, msg_string):
     print(txtcolors.get(msg_type, txtcolors['NO_COLOR']) + msg_string + txtcolors['NO_COLOR'])
 #
 #
-# Get list of files involved in this branch
-target_files_data = subprocess.check_output(['git', 'diff', '--name-only', 'origin/master'])
-target_files = target_files_data.decode('utf-8')
-target_files = target_files.split("\n")
-#
-#
 # Check clang-formatting of source code diff
-def VerifyClangFormatSource():
+def VerifyClangFormatSource(target_refspec, target_files):
     CPrint('', "\nChecking PR source code for clang-format errors:")
     retval = 0
     good_file_pattern = re.compile('.*\\.(cpp|cc|c\+\+|cxx|c|h|hpp)$')
@@ -71,7 +65,7 @@ def VerifyClangFormatSource():
     diff_files = ' '.join([str(elem) for elem in diff_files_list])
     retval = 0
     if diff_files != '':
-        git_diff = subprocess.Popen(('git', 'diff', '-U0', 'origin/master', '--', diff_files), stdout=subprocess.PIPE)
+        git_diff = subprocess.Popen(('git', 'diff', '-U0', target_refspec, '--', diff_files), stdout=subprocess.PIPE)
         diff_files_data = subprocess.check_output(('python3', './scripts/clang-format-diff.py', '-p1', '-style=file'), stdin=git_diff.stdout)
         diff_files_data = diff_files_data.decode('utf-8')
         if diff_files_data != '':
@@ -84,7 +78,7 @@ def VerifyClangFormatSource():
 #
 #
 # Check copyright dates for modified files
-def VerifyCopyrights():
+def VerifyCopyrights(target_refspec, target_files):
     CPrint('', "\nChecking PR source files for correct copyright information:")
     retval = 0
     current_year = str(date.today().year)
@@ -101,18 +95,12 @@ def VerifyCopyrights():
 #
 #
 # Check commit message formats for commits in this PR/Branch
-def VerifyCommitMessageFormat():
+def VerifyCommitMessageFormat(target_refspec, target_files):
     CPrint('', "\nChecking PR commit messages for consistency issues:")
     retval = 0
 
-    # Construct correct commit list under Travis CI
-    if 'TRAVIS_BUILD_DIR' in os.environ:
-        pr_commit_range = os.environ.get('TRAVIS_COMMIT_RANGE')
-        pr_commit_range = pr_commit_range.replace("...", "..")
-        pr_commit_range_parms = ['git', 'log', pr_commit_range, '--pretty=format:"XXXNEWLINEXXX"%n%B']
-    else:
-        # Construct a direct commit list
-        pr_commit_range_parms = ['git', 'log', '--no-merges', '--left-only', 'HEAD...origin/master', '--pretty=format:"XXXNEWLINEXXX"%n%B']
+    # Construct correct commit list
+    pr_commit_range_parms = ['git', 'log', '--no-merges', '--left-only', target_refspec, '--pretty=format:"XXXNEWLINEXXX"%n%B']
 
     commit_data = check_output(pr_commit_range_parms)
     commit_text = commit_data.decode('utf-8')
@@ -191,29 +179,64 @@ def VerifyCommitMessageFormat():
         CPrint('HELP_MSG', "     state_tracker: Remove 'using std::*' statements")
         CPrint('HELP_MSG', "     stateless: Account for DynStateWithCount for multiViewport\n")
         CPrint('HELP_MSG', "Refer to this document for additional detail:")
-        CPrint('HELP_MSG', "https://github.com/KhronosGroup/Vulkan-ExtensionLayer/blob/master/CONTRIBUTING.md#coding-conventions-and-formatting")
+        CPrint('HELP_MSG', "https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/CONTRIBUTING.md#coding-conventions-and-formatting")
     return retval
 #
 #
 # Entrypoint
 def main():
+    DEFAULT_REFSPEC = 'origin/master'
+
     parser = argparse.ArgumentParser(description='''Usage: python3 ./scripts/check_code_format.py
     - Reqires python3 and clang-format 7.0+
     - Run script in repo root
-    - May produce inaccurate clang-format results if local branch is not rebased on origin/master
+    - May produce inaccurate clang-format results if local branch is not rebased on the TARGET_REFSPEC
     ''', formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--target-refspec', metavar='TARGET_REFSPEC', type=str, dest='target_refspec', help = 'Refspec to '
+        + 'diff against (default is origin/master)', default=DEFAULT_REFSPEC)
+    parser.add_argument('--base-refspec', metavar='BASE_REFSPEC', type=str, dest='base_refspec', help = 'Base refspec to '
+        + ' compare (default is HEAD)', default='HEAD')
+    parser.add_argument('--fetch-main', dest='fetch_main', action='store_true', help='Fetch the master branch first.'
+        + ' Useful with --target-refspec=FETCH_HEAD to compare against what is currently on master')
     args = parser.parse_args()
 
     if sys.version_info[0] != 3:
         print("This script requires Python 3. Run script with [-h] option for more details.")
         exit()
 
+    target_refspec = args.target_refspec
+    base_refspec = args.base_refspec
+
+    if args.fetch_main:
+        print('Fetching master branch...')
+        subprocess.check_call(['git', 'fetch', 'https://github.com/KhronosGroup/Vulkan-ValidationLayers.git', 'master'])
+
+    # Check if this is a merge commit
+    commit_parents = check_output(['git', 'rev-list', '--parents', '-n', '1', 'HEAD'])
+    if len(commit_parents.split(b' ')) > 2:
+        # If this is a merge commit, this is a PR being built, and has been merged into master for testing.
+        # The first parent (HEAD^) is going to be master, the second parent (HEAD^2) is going to be the PR commit.
+        # TODO (ncesario) We should *ONLY* get here when on github CI, building a PR. Should probably print a
+        #      warning if this happens locally.
+        target_refspec = 'HEAD^'
+        base_refspec = 'HEAD^2'
+
+    diff_range = f'{target_refspec}...{base_refspec}'
+    rdiff_range = f'{base_refspec}...{target_refspec}'
+
+    #
+    #
+    # Get list of files involved in this branch
+    target_files_data = subprocess.check_output(['git', 'diff', '--name-only', diff_range])
+    target_files = target_files_data.decode('utf-8')
+    target_files = target_files.split("\n")
+
     if os.path.isfile('check_code_format.py'):
         os.chdir('..')
 
-    clang_format_failure = VerifyClangFormatSource()
-    copyright_failure = VerifyCopyrights()
-    commit_msg_failure = VerifyCommitMessageFormat()
+    clang_format_failure = VerifyClangFormatSource(diff_range, target_files)
+    copyright_failure = VerifyCopyrights(diff_range, target_files)
+    commit_msg_failure = VerifyCommitMessageFormat(rdiff_range, target_files)
 
     if clang_format_failure or copyright_failure or commit_msg_failure:
         CPrint('ERR_MSG', "\nOne or more format checks failed.\n\n")
