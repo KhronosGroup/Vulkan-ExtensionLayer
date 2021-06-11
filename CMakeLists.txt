@@ -34,6 +34,11 @@ enable_testing()
 # This section contains variables that affect development GUIs (e.g. CMake GUI and IDEs), such as option(), folders, and variables
 # with the CACHE property.
 
+option(VEL_CPP_STANDARD "Set the C++ standard to build against. The value will be passed to cmake's CXX_STANDARD property. Default = 11" 11)
+if (NOT VEL_CPP_STANDARD)
+    set(VEL_CPP_STANDARD 11)
+endif()
+
 # API_NAME allows renaming builds to avoid conflicts with installed SDKs.  It is referenced by layers/vk_loader_platform.h
 set(API_NAME "Vulkan" CACHE STRING "API name to use when building")
 string(TOLOWER ${API_NAME} API_LOWERCASE)
@@ -44,10 +49,57 @@ add_definitions(-DVK_ENABLE_BETA_EXTENSIONS)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(PythonInterp 3 QUIET)
+if (UPDATE_DEPS)
+    find_package(PythonInterp 3 REQUIRED)
+
+    if (CMAKE_GENERATOR_PLATFORM)
+        set(_target_arch ${CMAKE_GENERATOR_PLATFORM})
+    else()
+        message(WARNING "CMAKE_GENERATOR_PLATFORM not set. Using x64 as target architecture.")
+        set(_target_arch x64)
+    endif()
+
+    if (NOT CMAKE_BUILD_TYPE)
+        message(WARNING "CMAKE_BUILD_TYPE not set. Using Debug for dependency build type")
+        set(_build_type Debug)
+    else()
+        set(_build_type ${CMAKE_BUILD_TYPE})
+    endif()
+
+    message("********************************************************************************")
+    message("* NOTE: Adding target vvl_update_deps to run as needed for updating            *")
+    message("*       dependencies.                                                          *")
+    message("********************************************************************************")
+
+    # Add a target so that update_deps.py will run when necessary
+    # NOTE: This is triggered off of the timestamps of known_good.json and helper.cmake
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/external/helper.cmake
+                       COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scripts/update_deps.py --dir ${CMAKE_CURRENT_LIST_DIR}/external --arch ${_target_arch} --config ${_build_type} --generator "${CMAKE_GENERATOR}"
+                       DEPENDS ${CMAKE_CURRENT_LIST_DIR}/scripts/known_good.json)
+
+    add_custom_target(vvl_update_deps DEPENDS ${CMAKE_CURRENT_LIST_DIR}/external/helper.cmake)
+
+    # Check if update_deps.py needs to be run on first cmake run
+    if (${CMAKE_CURRENT_LIST_DIR}/scripts/known_good.json IS_NEWER_THAN ${CMAKE_CURRENT_LIST_DIR}/external/helper.cmake)
+        execute_process(
+            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scripts/update_deps.py --dir ${CMAKE_CURRENT_LIST_DIR}/external --arch ${_target_arch} --config ${_build_type} --generator "${CMAKE_GENERATOR}"
+            WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+            RESULT_VARIABLE _update_deps_result
+        )
+        if (NOT (${_update_deps_result} EQUAL 0))
+            message(FATAL_ERROR "Could not run update_deps.py which is necessary to download dependencies.")
+        endif()
+    endif()
+    include(${CMAKE_CURRENT_LIST_DIR}/external/helper.cmake)
+else()
+    message("********************************************************************************")
+    message("* NOTE: Not adding target to run update_deps.py automatically.                 *")
+    message("********************************************************************************")
+    find_package(PythonInterp 3 QUIET)
+endif()
 
 if (TARGET Vulkan::Headers)
-    message(STATUS "${PROJECT_NAME}: Using Vulkan headers from Vulkan::Headers target")
+    message(STATUS "Using Vulkan headers from Vulkan::Headers target")
     get_target_property(VulkanHeaders_INCLUDE_DIRS Vulkan::Headers INTERFACE_INCLUDE_DIRECTORIES)
     get_target_property(VulkanRegistry_DIR Vulkan::Registry INTERFACE_INCLUDE_DIRECTORIES)
 else()
@@ -87,27 +139,37 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(LAYERS_HELPER_FOLDER "Helper Targets")
 
 # Platform-specific compiler switches
+option(BUILD_WERROR "Treat compiler warnings as errors" ON)
+if(MAKE_C_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-Wconversion
+
+                        # TODO These warnings also get turned on with -Wconversion in some versions of clang.
+                        #      Leave off until further investigation.
+                        -Wno-sign-conversion
+                        -Wno-shorten-64-to-32
+                        -Wno-string-conversion
+                        -Wno-implicit-int-conversion
+                        -Wno-enum-enum-conversion)
+
+endif()
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wall
                         -Wextra
                         -Wno-unused-parameter
                         -Wno-missing-field-initializers
-                        -Werror=int-to-pointer-cast
                         -fno-strict-aliasing
                         -fno-builtin-memcmp
-                        -fvisibility=hidden
-                        "$<$<COMPILE_LANGUAGE:C>:-Werror=int-conversion>"
-                        "$<$<COMPILE_LANGUAGE:C>:-Werror=pointer-to-int-cast>")
+                        -fvisibility=hidden)
 
-    # Treat warnings as errors for versions of GCC and Clang that are shipped on Ubuntu 18.04 or older.
-    if((CMAKE_COMPILER_IS_GNUCXX AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.3.0)) OR
-       (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 3.8.0)))
-        add_compile_options(-Werror)
+    # Treat warnings as errors for versions of GCC and c++11-compliant Clang versions that are shipped on Ubuntu 18.04 or older.
+    if(BUILD_WERROR)
+        if ((CMAKE_COMPILER_IS_GNUCXX AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.3.0)) OR
+           (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 6.0.0)))
+            add_compile_options(-Werror)
+        endif()
     endif()
 
     set(CMAKE_C_STANDARD 99)
-    set(CMAKE_CXX_STANDARD 11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 
     # For GCC version 7.1 or greater, we need to disable the implicit fallthrough warning since there's no consistent way to satisfy
     # all compilers until they all accept the C++17 standard.
@@ -115,10 +177,10 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         add_compile_options(-Wimplicit-fallthrough=0)
     endif()
 elseif(MSVC)
-    # Treat warnings as errors
-    add_compile_options("/WX")
-    # Disable RTTI
-    add_compile_options("/GR-")
+    if(BUILD_WERROR)
+        # Treat warnings as errors
+        add_compile_options("/WX")
+    endif()
     # Warn about nested declarations
     add_compile_options("/w34456")
     # Warn about potentially uninitialized variables
@@ -128,6 +190,19 @@ elseif(MSVC)
     add_compile_options("/w34057")
     # Warn about signed/unsigned mismatch.
     add_compile_options("/w34245")
+endif()
+
+if(MAKE_C_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-Wconversion
+
+                        # TODO These warnings also get turned on with -Wconversion in some versions of clang.
+                        #      Leave off until further investigation.
+                        -Wno-sign-conversion
+                        -Wno-shorten-64-to-32
+                        -Wno-string-conversion
+                        -Wno-implicit-int-conversion
+                        -Wno-enum-enum-conversion)
+
 endif()
 
 if(TARGET gtest OR IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/googletest)

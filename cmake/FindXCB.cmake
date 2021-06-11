@@ -43,7 +43,7 @@ foreach(comp ${XCB_FIND_COMPONENTS})
     list(APPEND XCB_INCLUDE_DIRS ${${compname}_INCLUDE_DIR})
     list(APPEND XCB_LIBRARIES ${${compname}_LIBRARY})
 
-    if(NOT ${comp}_FOUND)
+    if(NOT ${compname}_FOUND)
         set(XCB_FOUND false)
     endif()
 endforeach()

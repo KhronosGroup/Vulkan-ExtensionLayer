@@ -60,43 +60,29 @@ elseif(UNIX) # UNIX includes APPLE
 endif()
 
 # System-specific macros to create a library target.
-if(WIN32)
-    macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
+macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
+    add_library(VkLayer_${target} SHARED ${ARGN} VkLayer_${target}.def)
+    set_target_properties(VkLayer_${target} PROPERTIES CXX_STANDARD ${VEL_CPP_STANDARD})
+    target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
+    target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
+    if(WIN32)
         file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/VkLayer_${target}.def DEF_FILE)
         add_custom_target(copy-${target}-def-file ALL
                           COMMAND ${CMAKE_COMMAND} -E copy_if_different ${DEF_FILE} VkLayer_${target}.def
                           VERBATIM)
         set_target_properties(copy-${target}-def-file PROPERTIES FOLDER ${LAYERS_HELPER_FOLDER})
-
-        add_library(VkLayer_${target} SHARED ${ARGN} VkLayer_${target}.def)
-        target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
-        target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
-        add_dependencies(VkLayer_${target} VkExtLayer_utils)
-        install(TARGETS VkLayer_${target} DESTINATION ${CMAKE_INSTALL_LIBDIR})
-    endmacro()
-elseif(APPLE)
-    macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
-        add_library(VkLayer_${target} SHARED ${ARGN})
-        target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
-        target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
-        add_dependencies(VkLayer_${target} VkExtLayer_utils)
+        target_compile_definitions(VkLayer_${target} PUBLIC NOMINMAX)
+    elseif(APPLE)
         set_target_properties(VkLayer_${target}
                               PROPERTIES LINK_FLAGS
                                          "-Wl"
                                          INSTALL_RPATH
                                          "@loader_path/")
-        install(TARGETS VkLayer_${target} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-    endmacro()
-else(UNIX AND NOT APPLE) # i.e.: Linux
-    macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
-        add_library(VkLayer_${target} SHARED ${ARGN})
-        target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
-        target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
-        add_dependencies(VkLayer_${target} VkExtLayer_utils)
+    else(UNIX AND NOT APPLE) # i.e.: Linux
         set_target_properties(VkLayer_${target} PROPERTIES LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/libVkLayer_${target}.map,-Bsymbolic,--exclude-libs,ALL")
-        install(TARGETS VkLayer_${target} DESTINATION ${CMAKE_INSTALL_LIBDIR})
-    endmacro()
-endif()
+    endif()
+    install(TARGETS VkLayer_${target} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endmacro()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${PROJECT_SOURCE_DIR}/utils

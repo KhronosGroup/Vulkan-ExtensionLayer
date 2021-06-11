@@ -93,7 +93,7 @@ class DispatchTableHelperOutputGenerator(OutputGenerator):
     # Called once at the beginning of each run
     def beginFile(self, genOpts):
         OutputGenerator.beginFile(self, genOpts)
-        
+
         # Initialize members that require the tree
         self.handle_types = GetHandleTypes(self.registry.tree)
 
@@ -248,6 +248,10 @@ class DispatchTableHelperOutputGenerator(OutputGenerator):
         for feature in features:
             feature_name = feature.get('name')
             if 'VK_VERSION_1_0' == feature_name:
+                continue
+            feature_supported = feature.get('supported')
+            # If feature is not yet supported, skip it
+            if feature_supported == 'disabled':
                 continue
             for require_element in feature.findall('require'):
                 for command in require_element.findall('command'):
