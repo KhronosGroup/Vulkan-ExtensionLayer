@@ -32,6 +32,7 @@
 #include "vk_layer_config.h"
 #include "vk_safe_struct.h"
 
+#error
 // required by vk_safe_struct
 std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
 
