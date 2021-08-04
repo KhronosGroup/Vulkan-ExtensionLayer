@@ -87,12 +87,8 @@ def BuildVEL(args):
         RunShellCmd(gtest_checkout_cmd, GTEST_DIR)
 
     utils.make_dirs(VEL_BUILD_DIR)
-    print("Run update_deps.py for VEL Repository")
-    update_cmd = f'python3 scripts/update_deps.py --dir {EXTERNAL_DIR_NAME} --config {args.configuration} --arch {args.arch}'
-    RunShellCmd(update_cmd)
-
     print("Run CMake for Extension Layer")
-    cmake_cmd = f'cmake -DCMAKE_BUILD_TYPE={args.configuration.capitalize()} {args.cmake} ..'
+    cmake_cmd = f'cmake -DUPDATE_DEPS=ON -DCMAKE_BUILD_TYPE={args.configuration.capitalize()} {args.cmake} ..'
     if IsWindows(): cmake_cmd = cmake_cmd + f' -A {args.arch}'
     RunShellCmd(cmake_cmd, VEL_BUILD_DIR)
 
