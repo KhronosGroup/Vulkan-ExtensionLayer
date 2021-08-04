@@ -209,7 +209,7 @@ def main():
 
     if args.fetch_main:
         print('Fetching master branch...')
-        subprocess.check_call(['git', 'fetch', 'https://github.com/KhronosGroup/Vulkan-ValidationLayers.git', 'master'])
+        subprocess.check_call(['git', 'fetch', 'https://github.com/KhronosGroup/Vulkan-ExtensionLayer.git', 'master'])
 
     # Check if this is a merge commit
     commit_parents = check_output(['git', 'rev-list', '--parents', '-n', '1', 'HEAD'])
