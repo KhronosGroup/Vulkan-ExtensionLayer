@@ -74,3 +74,6 @@ jobs:
       - name: Test CMake minimum version requirements
         run: python3 scripts/cmake_test_min.py
         if: matrix.cc == 'gcc' && matrix.config == 'release'
+      - name: Verify generated code is up to date
+        run: python3 scripts/github_ci_check_codegen.py
+        if: matrix.cc == 'gcc' && matrix.config == 'release'

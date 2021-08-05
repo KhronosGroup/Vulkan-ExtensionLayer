@@ -34,7 +34,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        common_ci.BuildVEL(args)
+        common_ci.CheckVELCodegenConsistency()
 
     except subprocess.CalledProcessError as proc_error:
         print('Command "%s" failed with return code %s' % (' '.join(proc_error.cmd), proc_error.returncode))
