@@ -9697,6 +9697,52 @@ struct safe_VkSemaphoreGetZirconHandleInfoFUCHSIA {
 };
 #endif // VK_USE_PLATFORM_FUCHSIA
 
+struct safe_VkSubpassShadingPipelineCreateInfoHUAWEI {
+    VkStructureType sType;
+    void* pNext;
+    VkRenderPass renderPass;
+    uint32_t subpass;
+    safe_VkSubpassShadingPipelineCreateInfoHUAWEI(const VkSubpassShadingPipelineCreateInfoHUAWEI* in_struct);
+    safe_VkSubpassShadingPipelineCreateInfoHUAWEI(const safe_VkSubpassShadingPipelineCreateInfoHUAWEI& copy_src);
+    safe_VkSubpassShadingPipelineCreateInfoHUAWEI& operator=(const safe_VkSubpassShadingPipelineCreateInfoHUAWEI& copy_src);
+    safe_VkSubpassShadingPipelineCreateInfoHUAWEI();
+    ~safe_VkSubpassShadingPipelineCreateInfoHUAWEI();
+    void initialize(const VkSubpassShadingPipelineCreateInfoHUAWEI* in_struct);
+    void initialize(const safe_VkSubpassShadingPipelineCreateInfoHUAWEI* copy_src);
+    VkSubpassShadingPipelineCreateInfoHUAWEI *ptr() { return reinterpret_cast<VkSubpassShadingPipelineCreateInfoHUAWEI *>(this); }
+    VkSubpassShadingPipelineCreateInfoHUAWEI const *ptr() const { return reinterpret_cast<VkSubpassShadingPipelineCreateInfoHUAWEI const *>(this); }
+};
+
+struct safe_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI {
+    VkStructureType sType;
+    void* pNext;
+    VkBool32 subpassShading;
+    safe_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI(const VkPhysicalDeviceSubpassShadingFeaturesHUAWEI* in_struct);
+    safe_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI(const safe_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI& copy_src);
+    safe_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI& operator=(const safe_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI& copy_src);
+    safe_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI();
+    ~safe_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI();
+    void initialize(const VkPhysicalDeviceSubpassShadingFeaturesHUAWEI* in_struct);
+    void initialize(const safe_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI* copy_src);
+    VkPhysicalDeviceSubpassShadingFeaturesHUAWEI *ptr() { return reinterpret_cast<VkPhysicalDeviceSubpassShadingFeaturesHUAWEI *>(this); }
+    VkPhysicalDeviceSubpassShadingFeaturesHUAWEI const *ptr() const { return reinterpret_cast<VkPhysicalDeviceSubpassShadingFeaturesHUAWEI const *>(this); }
+};
+
+struct safe_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI {
+    VkStructureType sType;
+    void* pNext;
+    uint32_t maxSubpassShadingWorkgroupSizeAspectRatio;
+    safe_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI(const VkPhysicalDeviceSubpassShadingPropertiesHUAWEI* in_struct);
+    safe_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI(const safe_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI& copy_src);
+    safe_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI& operator=(const safe_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI& copy_src);
+    safe_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI();
+    ~safe_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI();
+    void initialize(const VkPhysicalDeviceSubpassShadingPropertiesHUAWEI* in_struct);
+    void initialize(const safe_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI* copy_src);
+    VkPhysicalDeviceSubpassShadingPropertiesHUAWEI *ptr() { return reinterpret_cast<VkPhysicalDeviceSubpassShadingPropertiesHUAWEI *>(this); }
+    VkPhysicalDeviceSubpassShadingPropertiesHUAWEI const *ptr() const { return reinterpret_cast<VkPhysicalDeviceSubpassShadingPropertiesHUAWEI const *>(this); }
+};
+
 struct safe_VkPhysicalDeviceInvocationMaskFeaturesHUAWEI {
     VkStructureType sType;
     void* pNext;
