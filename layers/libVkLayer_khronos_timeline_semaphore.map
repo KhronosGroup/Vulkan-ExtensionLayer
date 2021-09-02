@@ -3,6 +3,9 @@
     vkGetInstanceProcAddr;
     vkGetDeviceProcAddr;
     vkEnumerateInstanceExtensionProperties;
+    vkEnumerateInstanceLayerProperties;
+    vkEnumerateDeviceExtensionProperties;
+    vkEnumerateDeviceLayerProperties;
   local:
     *;
 };
