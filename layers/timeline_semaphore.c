@@ -2460,6 +2460,7 @@ typedef struct {
 } NAME_TO_FUNCPTR;
 
 static const NAME_TO_FUNCPTR name_to_instance_funcptr_map[] = {
+    { "vkGetInstanceProcAddr", (void *) vkGetInstanceProcAddr },
     ADD_HOOK(CreateInstance),
     ADD_HOOK(DestroyInstance),
     ADD_HOOK(CreateDevice),
@@ -2548,4 +2549,40 @@ VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(V
     struct instance_data *instance = object_find(&global_map, _instance);
     if (instance->vtable.GetInstanceProcAddr == NULL) return NULL;
     return instance->vtable.GetInstanceProcAddr(_instance, funcName);
+}
+
+VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionProperties(const char *pLayerName,
+                                                                                      uint32_t *pPropertyCount,
+                                                                                      VkExtensionProperties *pProperties) {
+    return timeline_EnumerateInstanceExtensionProperties(pLayerName, pPropertyCount, pProperties);
+}
+
+VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(uint32_t *pPropertyCount,
+                                                                                  VkLayerProperties *pProperties) {
+    if (pProperties == NULL) {
+        *pPropertyCount = 1;
+        return VK_SUCCESS;
+    }
+    if (*pPropertyCount < 1) {
+        return VK_INCOMPLETE;
+    }
+    *pPropertyCount = 1;
+    pProperties[0] = (VkLayerProperties){.layerName = "VK_LAYER_KHRONOS_timeline_semaphore",
+                                         .specVersion = VK_MAKE_VERSION(1, 1, VK_HEADER_VERSION),
+                                         .implementationVersion = 1,
+                                         .description = "Khronos timeline Semaphore layer"};
+    return VK_SUCCESS;
+}
+
+VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice,
+                                                                                    const char *pLayerName,
+                                                                                    uint32_t *pPropertyCount,
+                                                                                    VkExtensionProperties *pProperties) {
+    return timeline_EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
+}
+
+VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceLayerProperties(VkPhysicalDevice physicalDevice,
+                                                                                uint32_t *pPropertyCount,
+                                                                                VkLayerProperties *pProperties) {
+    return vkEnumerateInstanceLayerProperties(pPropertyCount, pProperties);
 }
