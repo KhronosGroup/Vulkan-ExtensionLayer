@@ -77,6 +77,9 @@ add_library(VkExtLayer_utils
             ./generated/lvt_function_pointers.cpp)
 
 target_link_libraries(VkExtLayer_utils PUBLIC Vulkan::Headers)
+if(ANDROID)
+    target_link_libraries(VkExtLayer_utils PUBLIC log)
+endif()
 if(WIN32)
    target_compile_definitions(VkExtLayer_utils PUBLIC _CRT_SECURE_NO_WARNINGS)
 endif()
