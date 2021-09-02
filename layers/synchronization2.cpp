@@ -31,6 +31,7 @@
 #include "vk_format_utils.h"
 #include "vk_layer_config.h"
 #include "vk_safe_struct.h"
+#include "vk_util.h"
 
 // required by vk_safe_struct
 std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
@@ -177,25 +178,34 @@ static std::shared_ptr<DeviceData> GetDeviceData(const void* object) {
     return result != device_data_map.end() ? result->second : nullptr;
 }
 
-VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice, const char* pLayerName, uint32_t* pPropertyCount,
-                                            VkExtensionProperties* pProperties) {
-    if (pLayerName && strncmp(pLayerName, kGlobalLayer.layerName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
-        if (!pProperties) {
-            *pPropertyCount = 1;
-            return VK_SUCCESS;
-        }
-        if (*pPropertyCount < 1) {
-            return VK_INCOMPLETE;
-        }
-        pProperties[0] = kDeviceExtension;
-        *pPropertyCount = 1;
-        return VK_SUCCESS;
-    } else {
-        // Only call down if not the layer
-        // Android will pass a null physicalDevice with the layer name so can't get instance data from it
+VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice, const char* pLayerName,
+                                                                  uint32_t* pPropertyCount, VkExtensionProperties* pProperties) {
+    if (pLayerName && strncmp(pLayerName, kGlobalLayer.layerName, VK_MAX_EXTENSION_NAME_SIZE)) {
         auto instance_data = GetInstanceData(physicalDevice);
         return instance_data->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
     }
+
+    if (!pLayerName) {
+        uint32_t count = 0;
+        auto instance_data = GetInstanceData(physicalDevice);
+        instance_data->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, &count, nullptr);
+        if (!pProperties) {
+            *pPropertyCount = count + 1;
+            return VK_SUCCESS;
+        }
+        if (*pPropertyCount <= count) {
+            instance_data->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
+            return VK_INCOMPLETE;
+        }
+        instance_data->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, &count, pProperties);
+        pProperties[count] = kDeviceExtension;
+        *pPropertyCount = count + 1;
+        return VK_SUCCESS;
+    }
+
+    VK_OUTARRAY_MAKE(out, pProperties, pPropertyCount);
+    vk_outarray_append(&out, prop) { *prop = kDeviceExtension; }
+    return vk_outarray_status(&out);
 }
 
 static void CheckDeviceFeatures(PhysicalDeviceData &pdd, VkPhysicalDeviceFeatures2* pFeatures) {
