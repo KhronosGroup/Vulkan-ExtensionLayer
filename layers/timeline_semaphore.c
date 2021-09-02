@@ -1939,7 +1939,7 @@ static VkResult timeline_EnumerateInstanceExtensionProperties(
     VkExtensionProperties*                      pProperties)
 {
     if (!pLayerName ||
-        strcmp(pLayerName, "VK_LAYER_MESA_timeline_semaphore")) {
+        strcmp(pLayerName, "VK_LAYER_KHRONOS_timeline_semaphore")) {
         return VK_ERROR_LAYER_NOT_PRESENT;
     }
 
@@ -1965,7 +1965,7 @@ static VkResult timeline_EnumerateDeviceExtensionProperties(
     struct instance_data *instance = object_find(&global_map, physicalDevice);
 
     if (pLayerName &&
-        strcmp(pLayerName, "VK_LAYER_MESA_timeline_semaphore")) {
+        strcmp(pLayerName, "VK_LAYER_KHRONOS_timeline_semaphore")) {
         return instance->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName,
                                                                    pPropertyCount, pProperties);
     }
