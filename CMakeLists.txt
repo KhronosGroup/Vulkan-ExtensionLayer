@@ -190,6 +190,8 @@ elseif(MSVC)
     add_compile_options("/w34057")
     # Warn about signed/unsigned mismatch.
     add_compile_options("/w34245")
+    # Warn zero sized arrays in structs or unions
+    add_compile_options("/wd4200")
 endif()
 
 if(MAKE_C_COMPILER_ID MATCHES "Clang")

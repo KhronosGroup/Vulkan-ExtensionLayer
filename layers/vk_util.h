@@ -28,6 +28,21 @@
 #define restrict
 #endif
 
+#ifdef _MSC_VER                 /* Visual Studio */
+#pragma warning(disable : 4127) /* disable: C4127: conditional expression is constant */
+#define FORCE_INLINE static __forceinline
+#else
+#if defined(__cplusplus) || defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L /* C99 */
+#ifdef __GNUC__
+#define FORCE_INLINE static inline __attribute__((always_inline))
+#else
+#define FORCE_INLINE static inline
+#endif
+#else
+#define FORCE_INLINE static
+#endif /* __STDC_VERSION__ */
+#endif
+
 /**
  * @file vk_util.h
  *
@@ -176,16 +191,25 @@ _vk_outarray_next(struct _vk_outarray *a, size_t elem_size)
       struct _vk_outarray base; \
       elem_t meta[]; \
    }
-
+#ifdef __cplusplus
+#define vk_outarray_typeof_elem(a) std::remove_reference<decltype((a)->meta[0])>::type
+#else
 #define vk_outarray_typeof_elem(a) __typeof__((a)->meta[0])
+#endif
 #define vk_outarray_sizeof_elem(a) sizeof((a)->meta[0])
 
 #define vk_outarray_init(a, data, len) \
    _vk_outarray_init(&(a)->base, (data), (len))
 
+#ifdef __cplusplus
+#define VK_OUTARRAY_MAKE(name, data, len)                               \
+    vk_outarray(std::remove_reference<decltype((data)[0])>::type) name; \
+    vk_outarray_init(&name, (data), (len))
+#else
 #define VK_OUTARRAY_MAKE(name, data, len) \
    vk_outarray(__typeof__((data)[0])) name; \
    vk_outarray_init(&name, (data), (len))
+#endif
 
 #define vk_outarray_status(a) \
    _vk_outarray_status(&(a)->base)
@@ -250,24 +274,20 @@ struct vk_multialloc {
 static inline uint64_t
 align_u64(uint64_t v, uint64_t a)
 {
-    assert(a != 0 && a == (a & -a));
+    assert(a != 0 && a == (a & -(int64_t)a));
     return (v + a - 1) & ~(a - 1);
 }
 
-__attribute__((always_inline))
-static inline void
-_vk_multialloc_add(struct vk_multialloc *ma,
-                   void **ptr, size_t size, size_t align)
-{
-   size_t offset = align_u64(ma->size, align);
-   ma->size = offset + size;
-   ma->align = MAX2(ma->align, align);
+FORCE_INLINE void _vk_multialloc_add(struct vk_multialloc *ma, void **ptr, size_t size, size_t align) {
+    size_t offset = (size_t)align_u64(ma->size, align);
+    ma->size = offset + size;
+    ma->align = MAX2(ma->align, align);
 
-   /* Store the offset in the pointer. */
-   *ptr = (void *)(uintptr_t)offset;
+    /* Store the offset in the pointer. */
+    *ptr = (void *)(uintptr_t)offset;
 
-   assert(ma->ptr_count < ARRAY_SIZE(ma->ptrs));
-   ma->ptrs[ma->ptr_count++] = ptr;
+    assert(ma->ptr_count < ARRAY_SIZE(ma->ptrs));
+    ma->ptrs[ma->ptr_count++] = ptr;
 }
 
 #define vk_multialloc_add_size(_ma, _ptr, _size) \
@@ -276,26 +296,21 @@ _vk_multialloc_add(struct vk_multialloc *ma,
 #define vk_multialloc_add(_ma, _ptr, _count) \
    vk_multialloc_add_size(_ma, _ptr, (_count) * sizeof(**(_ptr)));
 
-__attribute__((always_inline))
-static inline void *
-vk_multialloc_alloc(struct vk_multialloc *ma,
-                    const VkAllocationCallbacks *alloc,
-                    VkSystemAllocationScope scope)
-{
-   void *ptr = vk_alloc(alloc, ma->size, ma->align, scope);
-   if (!ptr)
-      return NULL;
+FORCE_INLINE void *vk_multialloc_alloc(struct vk_multialloc *ma, const VkAllocationCallbacks *alloc,
+                                       VkSystemAllocationScope scope) {
+    void *ptr = vk_alloc(alloc, ma->size, ma->align, scope);
+    if (!ptr) return NULL;
 
-   /* Fill out each of the pointers with their final value.
-    *
-    *   for (uint32_t i = 0; i < ma->ptr_count; i++)
-    *      *ma->ptrs[i] = ptr + (uintptr_t)*ma->ptrs[i];
-    *
-    * Unfortunately, even though ma->ptr_count is basically guaranteed to be a
-    * constant, GCC is incapable of figuring this out and unrolling the loop
-    * so we have to give it a little help.
-    */
-   assert(ARRAY_SIZE(ma->ptrs) == 10);
+    /* Fill out each of the pointers with their final value.
+     *
+     *   for (uint32_t i = 0; i < ma->ptr_count; i++)
+     *      *ma->ptrs[i] = ptr + (uintptr_t)*ma->ptrs[i];
+     *
+     * Unfortunately, even though ma->ptr_count is basically guaranteed to be a
+     * constant, GCC is incapable of figuring this out and unrolling the loop
+     * so we have to give it a little help.
+     */
+    assert(ARRAY_SIZE(ma->ptrs) == 10);
 #define _VK_MULTIALLOC_UPDATE_POINTER(_i) \
    if ((_i) < ma->ptr_count) \
        *ma->ptrs[_i] = (void *)((uintptr_t) ptr + (uintptr_t)*ma->ptrs[_i])
@@ -314,14 +329,9 @@ vk_multialloc_alloc(struct vk_multialloc *ma,
    return ptr;
 }
 
-__attribute__((always_inline))
-static inline void *
-vk_multialloc_alloc2(struct vk_multialloc *ma,
-                     const VkAllocationCallbacks *parent_alloc,
-                     const VkAllocationCallbacks *alloc,
-                     VkSystemAllocationScope scope)
-{
-   return vk_multialloc_alloc(ma, alloc ? alloc : parent_alloc, scope);
+FORCE_INLINE void *vk_multialloc_alloc2(struct vk_multialloc *ma, const VkAllocationCallbacks *parent_alloc,
+                                        const VkAllocationCallbacks *alloc, VkSystemAllocationScope scope) {
+    return vk_multialloc_alloc(ma, alloc ? alloc : parent_alloc, scope);
 }
 
 #endif /* VK_UTIL_H_ */
