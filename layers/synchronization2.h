@@ -23,6 +23,7 @@
 #undef VK_NO_PROTOTYPES
 #include <vector>
 #include <memory>
+#include <unordered_set>
 
 #include "allocator.h"
 #include "vk_concurrent_unordered_map.h"
@@ -177,6 +178,11 @@ struct ImageData {
     ImageAspect aspect;
 };
 
+struct SwapchainData {
+    VkFormat format;
+    std::unordered_set<VkImage> images;
+};
+
 struct DeviceFeatures {
     DeviceFeatures(uint32_t api_version, const VkDeviceCreateInfo* create_info);
     DeviceFeatures()
@@ -214,11 +220,15 @@ struct DeviceData {
     bool enable_layer;
     uint32_t api_version;
     vk_concurrent_unordered_map<VkImage, ImageData> image_map;
+    vk_concurrent_unordered_map<VkSwapchainKHR, SwapchainData> swapchain_map;
     struct DeviceDispatchTable {
         DECLARE_HOOK(GetDeviceProcAddr);
         DECLARE_HOOK(DestroyDevice);
         DECLARE_HOOK(CreateImage);
         DECLARE_HOOK(DestroyImage);
+        DECLARE_HOOK(CreateSwapchainKHR);
+        DECLARE_HOOK(GetSwapchainImagesKHR);
+        DECLARE_HOOK(DestroySwapchainKHR);
         DECLARE_HOOK(CmdSetEvent);
         DECLARE_HOOK(CmdResetEvent);
         DECLARE_HOOK(CmdWaitEvents);

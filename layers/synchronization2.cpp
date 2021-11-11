@@ -366,6 +366,9 @@ DeviceData::DeviceData(VkDevice device, PFN_vkGetDeviceProcAddr gpa, const Devic
         INIT_HOOK(vtable, device, DestroyDevice);
         INIT_HOOK(vtable, device, CreateImage);
         INIT_HOOK(vtable, device, DestroyImage);
+        INIT_HOOK(vtable, device, CreateSwapchainKHR);
+        INIT_HOOK(vtable, device, GetSwapchainImagesKHR);
+        INIT_HOOK(vtable, device, DestroySwapchainKHR);
         INIT_HOOK(vtable, device, CmdSetEvent);
         INIT_HOOK(vtable, device, CmdResetEvent);
         INIT_HOOK(vtable, device, CmdWaitEvents);
@@ -940,6 +943,44 @@ VKAPI_ATTR void VKAPI_CALL DestroyImage(VkDevice device, VkImage image, const Vk
     device_data->image_map.erase(image);
 }
 
+VKAPI_ATTR VkResult VKAPI_CALL CreateSwapchainKHR(VkDevice device, const VkSwapchainCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchain) {
+    auto device_data = GetDeviceData(device);
+    VkResult result = device_data->vtable.CreateSwapchainKHR(device, pCreateInfo, pAllocator, pSwapchain);
+    if (result == VK_SUCCESS) {
+        SwapchainData swapchain_data{pCreateInfo->imageFormat};
+        device_data->swapchain_map.insert(*pSwapchain, swapchain_data);
+    }
+    return result;
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL GetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain, uint32_t* pSwapchainImageCount, VkImage* pSwapchainImages) {
+    auto device_data = GetDeviceData(device);
+    VkResult result = device_data->vtable.GetSwapchainImagesKHR(device, swapchain, pSwapchainImageCount, pSwapchainImages);
+    if (result == VK_SUCCESS && pSwapchainImages) {
+        auto iter = device_data->swapchain_map.find(swapchain);
+        if (iter != device_data->swapchain_map.end()) {
+            ImageData image_data{ImageAspectFromFormat(iter->second.format)};
+            for (uint32_t i = 0; i < *pSwapchainImageCount; i++) {
+                device_data->image_map.insert(pSwapchainImages[i], image_data);
+            }
+        }
+    }
+    return result;
+}
+
+VKAPI_ATTR void VKAPI_CALL DestroySwapchainKHR(VkDevice device, VkSwapchainKHR swapchain, const VkAllocationCallbacks* pAllocator) {
+    auto device_data = GetDeviceData(device);
+    device_data->vtable.DestroySwapchainKHR(device, swapchain, pAllocator);
+    auto iter = device_data->swapchain_map.find(swapchain);
+    if (iter != device_data->swapchain_map.end()) {
+        for (auto image: iter->second.images) {
+            device_data->image_map.erase(image);
+        }
+        device_data->swapchain_map.erase(swapchain);
+    }
+}
+
+
 VKAPI_ATTR void VKAPI_CALL CmdSetEvent(VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags stage_mask) {
     auto device_data = GetDeviceData(commandBuffer);
 
@@ -1445,6 +1486,9 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> kDeviceFunction
     ADD_HOOK(DestroyDevice),
     ADD_HOOK(CreateImage),
     ADD_HOOK(DestroyImage),
+    ADD_HOOK(CreateSwapchainKHR),
+    ADD_HOOK(GetSwapchainImagesKHR),
+    ADD_HOOK(DestroySwapchainKHR),
 
     // NOTE: we need to hook the original synchronization functions
     // to translate VK_PIPELINE_STAGE_NONE_KHR.
