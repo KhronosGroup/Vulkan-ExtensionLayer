@@ -241,6 +241,14 @@ bool VkExtensionLayerTest::CheckSynchronization2SupportAndInitState() {
         vk::CreateRenderPass2 =
             reinterpret_cast<PFN_vkCreateRenderPass2>(vk::GetDeviceProcAddr(device(), "vkCreateRenderPass2KHR"));
     }
+    vk::CreateSwapchainKHR =
+            reinterpret_cast<PFN_vkCreateSwapchainKHR>(vk::GetDeviceProcAddr(device(), "vkCreateSwapchainKHR"));
+    vk::GetSwapchainImagesKHR =
+            reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(vk::GetDeviceProcAddr(device(), "vkGetSwapchainImagesKHR"));
+    vk::DestroySwapchainKHR =
+            reinterpret_cast<PFN_vkDestroySwapchainKHR>(vk::GetDeviceProcAddr(device(), "vkDestroySwapchainKHR"));
+    vk::AcquireNextImageKHR=
+            reinterpret_cast<PFN_vkAcquireNextImageKHR>(vk::GetDeviceProcAddr(device(), "vkAcquireNextImageKHR"));
 
     return true;
 }
