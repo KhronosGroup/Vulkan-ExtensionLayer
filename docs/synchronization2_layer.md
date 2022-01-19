@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <p align="left"><img src="https://vulkan.lunarg.com/img/NewLunarGLogoBlack.png" alt="LunarG" width=263 height=113 /></p>
 
-Copyright &copy; 2015-2021 LunarG, Inc.
+Copyright &copy; 2015-2022 LunarG, Inc.
 
 [![Creative Commons][3]][4]
 
@@ -96,13 +96,6 @@ When done, disable the layer using:
 
 <br></br>
 
-
-## Synchronization2 Layer Options
-
-Setting  | Environment Variable | Settings File Value | Default | Description
--------- | -------------------- | ------------------- | ------- | -----------
-Force enable | `VK_SYNC2_FORCE_ENABLE` |`khronos_synchronization2.force_enable` | FALSE | If TRUE, the layer's implementation of the extension will be used even if the underlying driver also implements the extension.
-
 ### Settings Priority
 
 If you have a setting defined in both the Settings File as well as an Environment
@@ -138,3 +131,6 @@ Which you can set in the following way:
 
 <br></br>
 
+## Layer Options
+
+The options for this layer are specified in VkLayer_khronos_synchronization2.json. The option details are in [synchronization2_layer.html](https://vulkan.lunarg.com/doc/sdk/latest/windows/synchronization2_layer.html).
