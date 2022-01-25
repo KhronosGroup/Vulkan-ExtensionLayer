@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2021 Valve Corporation
-# Copyright (c) 2014-2021 LunarG, Inc.
+# Copyright (c) 2014-2022 Valve Corporation
+# Copyright (c) 2014-2022 LunarG, Inc.
 # Copyright (c) 2019      Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -129,7 +129,7 @@ string(REPLACE "\\"
                RELATIVE_PATH_PREFIX
                "${RELATIVE_PATH_PREFIX}")
 
-set(vk_full_version "1.2.${vk_header_version}")
+set(vk_full_version "1.3.${vk_header_version}")
 # Run each .json.in file through the generator We need to create the generator.cmake script so that the generator can be run at
 # compile time, instead of configure time Running at compile time lets us use cmake generator expressions (TARGET_FILE_NAME and
 # TARGET_FILE_DIR, specifically)
