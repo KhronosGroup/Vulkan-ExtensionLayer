@@ -1,25 +1,15 @@
-################################################################################
+# The settings in this file can be used to configure the behavior of
+# layers in this repository.
 #
-#  This file contains per-layer settings that configure layer behavior at
-#  execution time. Comments in this file are denoted with the "#" char.
-#  Settings lines are of the form:
-#      "<LayerIdentifier>.<SettingName> = <SettingValue>"
-#
-#  <LayerIdentifier> is typically the official layer name, minus the VK_LAYER
-#  prefix and all lower-camel-case -- i.e., for VK_LAYER_LUNARG_api_dump, the
-#  layer identifier is 'lunarg_api_dump'.
-#
-################################################################################
-################################################################################
-#  VK_LAYER_KHRONOS_synchronization2 Settings:
-#  ==================================
-#
-#    FORCE_ENABLE:
-#    =========
-#    <LayerIdentifer>.force_enable: If TRUE, the layers implementation will always
-#    be used. If FALSE (default), the layers implementation will only be used if the
-#    underlying driver does not implement the extension.
-#
+# Note that this file is not regulary updated, so not all possible layer
+# settings may be listed, and some layer settings may even be obsolete.
 
-#  VK_LAYER_KHRONOS_synchronization2 Settings
-khronos_synchronization2.force_enable = FALSE
+# VK_LAYER_KHRONOS_synchronization2
+
+# Force Enable
+# =====================
+# <LayerIdentifier>.force_enable
+# Force the layer to be active even if the underlying driver also implements the
+# synchonization2 extension.
+khronos_synchronization2.force_enable = false
+
