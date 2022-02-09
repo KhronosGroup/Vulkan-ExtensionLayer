@@ -12,17 +12,19 @@ Copyright &copy; 2015-2022 LunarG, Inc.
 # VK\_LAYER\_KHRONOS\_synchronization2
 The `VK_LAYER_KHRONOS_synchronization2` extension layer implements the `VK_KHR_synchronization2` extension.
 By default, it will disable itself if the underlying driver provides the extension.
-It has a force\_enable setting that can be adjusted by either environment variables
-or by using the `vk_layer_settings.txt` file.
 
 Even though the `VK_KHR_synchronization2` extension requires the `VK_KHR_get_physical_device_properties2` and `VK_KHR_create_renderpass2` extensions, this layer will work on devices that do not implement them. See the `Sync2CompatTest.Vulkan10` test case for an example of how to do this.
 
+## Configuring the Synchronization2 Layer
+
+For an overview of how to configure layers, refer to the [Layers Overview and Configuration](https://vulkan.lunarg.com/doc/sdk/latest/windows/layer_configuration.html) document.
+
+The Synchronization2 Layer settings are documented in detail in the [VK_LAYER_KHRONOS_synchronization2](https://vulkan.lunarg.com/doc/sdk/latest/windows/synchronzation2_layer.html#user-content-layer-details) document.
+
+The Synchronization2 Layer can also be enabled and configured using vkconfig. See the [vkconfig](https://vulkan.lunarg.com/doc/sdk/latest/windows/vkconfig.html) documentation for more information.
+
 
 ## Enabling the Layer
-
-### Vkconfig
-
-The synchronization2 layer can be enabled using vkconfig. See the [vkconfig](https://vulkan.lunarg.com/doc/sdk/latest/windows/vkconfig.html) documentation for more information.
 
 ### Desktop (Linux/Windows/MacOS)
 
@@ -133,4 +135,4 @@ Which you can set in the following way:
 
 ## Layer Options
 
-The options for this layer are specified in VkLayer_khronos_synchronization2.json. The option details are in [synchronization2_layer.html](https://vulkan.lunarg.com/doc/sdk/latest/windows/synchronization2_layer.html).
+The options for this layer are specified in VkLayer_khronos_synchronization2.json. The details of the layer options are documented in the [Synchronization2 layer documentation](https://vulkan.lunarg.com/doc/sdk/latest/windows/synchronization2_layer.html).
