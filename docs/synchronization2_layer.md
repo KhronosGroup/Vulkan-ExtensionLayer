@@ -19,7 +19,7 @@ Even though the `VK_KHR_synchronization2` extension requires the `VK_KHR_get_phy
 
 For an overview of how to configure layers, refer to the [Layers Overview and Configuration](https://vulkan.lunarg.com/doc/sdk/latest/windows/layer_configuration.html) document.
 
-The Synchronization2 Layer settings are documented in detail in the [VK_LAYER_KHRONOS_synchronization2](https://vulkan.lunarg.com/doc/sdk/latest/windows/synchronzation2_layer.html#user-content-layer-details) document.
+The Synchronization2 Layer settings are documented in the [Layer Details](https://vulkan.lunarg.com/doc/sdk/latest/windows/synchronization2_layer.html#user-content-layer-details) section below.
 
 The Synchronization2 Layer can also be enabled and configured using vkconfig. See the [vkconfig](https://vulkan.lunarg.com/doc/sdk/latest/windows/vkconfig.html) documentation for more information.
 
