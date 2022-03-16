@@ -6,7 +6,7 @@
       "sub_dir": "Vulkan-Headers",
       "build_dir": "Vulkan-Headers/build",
       "install_dir": "Vulkan-Headers/build/install",
-      "commit": "v1.3.204"
+      "commit": "v1.3.208"
     },
     {
       "name": "Vulkan-Tools",
@@ -14,7 +14,7 @@
       "sub_dir": "Vulkan-Tools",
       "build_dir": "Vulkan-Tools/build",
       "install_dir": "Vulkan-Tools/build/install",
-      "commit": "v1.3.204"
+      "commit": "v1.3.208"
     },
     {
       "name" : "glslang",
