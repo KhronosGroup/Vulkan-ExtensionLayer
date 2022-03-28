@@ -4519,6 +4519,7 @@ struct safe_VkVideoCapabilitiesKHR {
     VkExtent2D maxExtent;
     uint32_t maxReferencePicturesSlotsCount;
     uint32_t maxReferencePicturesActiveCount;
+    VkExtensionProperties stdHeaderVersion;
     safe_VkVideoCapabilitiesKHR(const VkVideoCapabilitiesKHR* in_struct);
     safe_VkVideoCapabilitiesKHR(const safe_VkVideoCapabilitiesKHR& copy_src);
     safe_VkVideoCapabilitiesKHR& operator=(const safe_VkVideoCapabilitiesKHR& copy_src);
@@ -4654,6 +4655,7 @@ struct safe_VkVideoSessionCreateInfoKHR {
     VkFormat referencePicturesFormat;
     uint32_t maxReferencePicturesSlotsCount;
     uint32_t maxReferencePicturesActiveCount;
+    const VkExtensionProperties* pStdHeaderVersion;
     safe_VkVideoSessionCreateInfoKHR(const VkVideoSessionCreateInfoKHR* in_struct);
     safe_VkVideoSessionCreateInfoKHR(const safe_VkVideoSessionCreateInfoKHR& copy_src);
     safe_VkVideoSessionCreateInfoKHR& operator=(const safe_VkVideoSessionCreateInfoKHR& copy_src);
@@ -6339,7 +6341,6 @@ struct safe_VkVideoEncodeH264CapabilitiesEXT {
     uint32_t maxBitsPerMbDenom;
     uint32_t log2MaxMvLengthHorizontal;
     uint32_t log2MaxMvLengthVertical;
-    VkExtensionProperties stdExtensionVersion;
     safe_VkVideoEncodeH264CapabilitiesEXT(const VkVideoEncodeH264CapabilitiesEXT* in_struct);
     safe_VkVideoEncodeH264CapabilitiesEXT(const safe_VkVideoEncodeH264CapabilitiesEXT& copy_src);
     safe_VkVideoEncodeH264CapabilitiesEXT& operator=(const safe_VkVideoEncodeH264CapabilitiesEXT& copy_src);
@@ -6349,25 +6350,6 @@ struct safe_VkVideoEncodeH264CapabilitiesEXT {
     void initialize(const safe_VkVideoEncodeH264CapabilitiesEXT* copy_src);
     VkVideoEncodeH264CapabilitiesEXT *ptr() { return reinterpret_cast<VkVideoEncodeH264CapabilitiesEXT *>(this); }
     VkVideoEncodeH264CapabilitiesEXT const *ptr() const { return reinterpret_cast<VkVideoEncodeH264CapabilitiesEXT const *>(this); }
-};
-#endif // VK_ENABLE_BETA_EXTENSIONS
-
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-struct safe_VkVideoEncodeH264SessionCreateInfoEXT {
-    VkStructureType sType;
-    const void* pNext;
-    VkVideoEncodeH264CreateFlagsEXT flags;
-    VkExtent2D maxPictureSizeInMbs;
-    const VkExtensionProperties* pStdExtensionVersion;
-    safe_VkVideoEncodeH264SessionCreateInfoEXT(const VkVideoEncodeH264SessionCreateInfoEXT* in_struct);
-    safe_VkVideoEncodeH264SessionCreateInfoEXT(const safe_VkVideoEncodeH264SessionCreateInfoEXT& copy_src);
-    safe_VkVideoEncodeH264SessionCreateInfoEXT& operator=(const safe_VkVideoEncodeH264SessionCreateInfoEXT& copy_src);
-    safe_VkVideoEncodeH264SessionCreateInfoEXT();
-    ~safe_VkVideoEncodeH264SessionCreateInfoEXT();
-    void initialize(const VkVideoEncodeH264SessionCreateInfoEXT* in_struct);
-    void initialize(const safe_VkVideoEncodeH264SessionCreateInfoEXT* copy_src);
-    VkVideoEncodeH264SessionCreateInfoEXT *ptr() { return reinterpret_cast<VkVideoEncodeH264SessionCreateInfoEXT *>(this); }
-    VkVideoEncodeH264SessionCreateInfoEXT const *ptr() const { return reinterpret_cast<VkVideoEncodeH264SessionCreateInfoEXT const *>(this); }
 };
 #endif // VK_ENABLE_BETA_EXTENSIONS
 
@@ -6595,7 +6577,6 @@ struct safe_VkVideoEncodeH265CapabilitiesEXT {
     uint8_t maxDiffCuQpDeltaDepth;
     uint8_t minMaxNumMergeCand;
     uint8_t maxMaxNumMergeCand;
-    VkExtensionProperties stdExtensionVersion;
     safe_VkVideoEncodeH265CapabilitiesEXT(const VkVideoEncodeH265CapabilitiesEXT* in_struct);
     safe_VkVideoEncodeH265CapabilitiesEXT(const safe_VkVideoEncodeH265CapabilitiesEXT& copy_src);
     safe_VkVideoEncodeH265CapabilitiesEXT& operator=(const safe_VkVideoEncodeH265CapabilitiesEXT& copy_src);
@@ -6605,24 +6586,6 @@ struct safe_VkVideoEncodeH265CapabilitiesEXT {
     void initialize(const safe_VkVideoEncodeH265CapabilitiesEXT* copy_src);
     VkVideoEncodeH265CapabilitiesEXT *ptr() { return reinterpret_cast<VkVideoEncodeH265CapabilitiesEXT *>(this); }
     VkVideoEncodeH265CapabilitiesEXT const *ptr() const { return reinterpret_cast<VkVideoEncodeH265CapabilitiesEXT const *>(this); }
-};
-#endif // VK_ENABLE_BETA_EXTENSIONS
-
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-struct safe_VkVideoEncodeH265SessionCreateInfoEXT {
-    VkStructureType sType;
-    const void* pNext;
-    VkVideoEncodeH265CreateFlagsEXT flags;
-    const VkExtensionProperties* pStdExtensionVersion;
-    safe_VkVideoEncodeH265SessionCreateInfoEXT(const VkVideoEncodeH265SessionCreateInfoEXT* in_struct);
-    safe_VkVideoEncodeH265SessionCreateInfoEXT(const safe_VkVideoEncodeH265SessionCreateInfoEXT& copy_src);
-    safe_VkVideoEncodeH265SessionCreateInfoEXT& operator=(const safe_VkVideoEncodeH265SessionCreateInfoEXT& copy_src);
-    safe_VkVideoEncodeH265SessionCreateInfoEXT();
-    ~safe_VkVideoEncodeH265SessionCreateInfoEXT();
-    void initialize(const VkVideoEncodeH265SessionCreateInfoEXT* in_struct);
-    void initialize(const safe_VkVideoEncodeH265SessionCreateInfoEXT* copy_src);
-    VkVideoEncodeH265SessionCreateInfoEXT *ptr() { return reinterpret_cast<VkVideoEncodeH265SessionCreateInfoEXT *>(this); }
-    VkVideoEncodeH265SessionCreateInfoEXT const *ptr() const { return reinterpret_cast<VkVideoEncodeH265SessionCreateInfoEXT const *>(this); }
 };
 #endif // VK_ENABLE_BETA_EXTENSIONS
 
@@ -6855,7 +6818,6 @@ struct safe_VkVideoDecodeH264CapabilitiesEXT {
     void* pNext;
     uint32_t maxLevel;
     VkOffset2D fieldOffsetGranularity;
-    VkExtensionProperties stdExtensionVersion;
     safe_VkVideoDecodeH264CapabilitiesEXT(const VkVideoDecodeH264CapabilitiesEXT* in_struct);
     safe_VkVideoDecodeH264CapabilitiesEXT(const safe_VkVideoDecodeH264CapabilitiesEXT& copy_src);
     safe_VkVideoDecodeH264CapabilitiesEXT& operator=(const safe_VkVideoDecodeH264CapabilitiesEXT& copy_src);
@@ -6865,24 +6827,6 @@ struct safe_VkVideoDecodeH264CapabilitiesEXT {
     void initialize(const safe_VkVideoDecodeH264CapabilitiesEXT* copy_src);
     VkVideoDecodeH264CapabilitiesEXT *ptr() { return reinterpret_cast<VkVideoDecodeH264CapabilitiesEXT *>(this); }
     VkVideoDecodeH264CapabilitiesEXT const *ptr() const { return reinterpret_cast<VkVideoDecodeH264CapabilitiesEXT const *>(this); }
-};
-#endif // VK_ENABLE_BETA_EXTENSIONS
-
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-struct safe_VkVideoDecodeH264SessionCreateInfoEXT {
-    VkStructureType sType;
-    const void* pNext;
-    VkVideoDecodeH264CreateFlagsEXT flags;
-    const VkExtensionProperties* pStdExtensionVersion;
-    safe_VkVideoDecodeH264SessionCreateInfoEXT(const VkVideoDecodeH264SessionCreateInfoEXT* in_struct);
-    safe_VkVideoDecodeH264SessionCreateInfoEXT(const safe_VkVideoDecodeH264SessionCreateInfoEXT& copy_src);
-    safe_VkVideoDecodeH264SessionCreateInfoEXT& operator=(const safe_VkVideoDecodeH264SessionCreateInfoEXT& copy_src);
-    safe_VkVideoDecodeH264SessionCreateInfoEXT();
-    ~safe_VkVideoDecodeH264SessionCreateInfoEXT();
-    void initialize(const VkVideoDecodeH264SessionCreateInfoEXT* in_struct);
-    void initialize(const safe_VkVideoDecodeH264SessionCreateInfoEXT* copy_src);
-    VkVideoDecodeH264SessionCreateInfoEXT *ptr() { return reinterpret_cast<VkVideoDecodeH264SessionCreateInfoEXT *>(this); }
-    VkVideoDecodeH264SessionCreateInfoEXT const *ptr() const { return reinterpret_cast<VkVideoDecodeH264SessionCreateInfoEXT const *>(this); }
 };
 #endif // VK_ENABLE_BETA_EXTENSIONS
 
@@ -8597,7 +8541,6 @@ struct safe_VkVideoDecodeH265CapabilitiesEXT {
     VkStructureType sType;
     void* pNext;
     uint32_t maxLevel;
-    VkExtensionProperties stdExtensionVersion;
     safe_VkVideoDecodeH265CapabilitiesEXT(const VkVideoDecodeH265CapabilitiesEXT* in_struct);
     safe_VkVideoDecodeH265CapabilitiesEXT(const safe_VkVideoDecodeH265CapabilitiesEXT& copy_src);
     safe_VkVideoDecodeH265CapabilitiesEXT& operator=(const safe_VkVideoDecodeH265CapabilitiesEXT& copy_src);
@@ -8611,27 +8554,11 @@ struct safe_VkVideoDecodeH265CapabilitiesEXT {
 #endif // VK_ENABLE_BETA_EXTENSIONS
 
 #ifdef VK_ENABLE_BETA_EXTENSIONS
-struct safe_VkVideoDecodeH265SessionCreateInfoEXT {
-    VkStructureType sType;
-    const void* pNext;
-    VkVideoDecodeH265CreateFlagsEXT flags;
-    const VkExtensionProperties* pStdExtensionVersion;
-    safe_VkVideoDecodeH265SessionCreateInfoEXT(const VkVideoDecodeH265SessionCreateInfoEXT* in_struct);
-    safe_VkVideoDecodeH265SessionCreateInfoEXT(const safe_VkVideoDecodeH265SessionCreateInfoEXT& copy_src);
-    safe_VkVideoDecodeH265SessionCreateInfoEXT& operator=(const safe_VkVideoDecodeH265SessionCreateInfoEXT& copy_src);
-    safe_VkVideoDecodeH265SessionCreateInfoEXT();
-    ~safe_VkVideoDecodeH265SessionCreateInfoEXT();
-    void initialize(const VkVideoDecodeH265SessionCreateInfoEXT* in_struct);
-    void initialize(const safe_VkVideoDecodeH265SessionCreateInfoEXT* copy_src);
-    VkVideoDecodeH265SessionCreateInfoEXT *ptr() { return reinterpret_cast<VkVideoDecodeH265SessionCreateInfoEXT *>(this); }
-    VkVideoDecodeH265SessionCreateInfoEXT const *ptr() const { return reinterpret_cast<VkVideoDecodeH265SessionCreateInfoEXT const *>(this); }
-};
-#endif // VK_ENABLE_BETA_EXTENSIONS
-
-#ifdef VK_ENABLE_BETA_EXTENSIONS
 struct safe_VkVideoDecodeH265SessionParametersAddInfoEXT {
     VkStructureType sType;
     const void* pNext;
+    uint32_t vpsStdCount;
+    const StdVideoH265VideoParameterSet* pVpsStd;
     uint32_t spsStdCount;
     const StdVideoH265SequenceParameterSet* pSpsStd;
     uint32_t ppsStdCount;
@@ -8652,6 +8579,7 @@ struct safe_VkVideoDecodeH265SessionParametersAddInfoEXT {
 struct safe_VkVideoDecodeH265SessionParametersCreateInfoEXT {
     VkStructureType sType;
     const void* pNext;
+    uint32_t maxVpsStdCount;
     uint32_t maxSpsStdCount;
     uint32_t maxPpsStdCount;
     safe_VkVideoDecodeH265SessionParametersAddInfoEXT* pParametersAddInfo;
