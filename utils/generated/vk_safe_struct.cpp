@@ -21561,8 +21561,6 @@ void safe_VkVideoDecodeCapabilitiesKHR::initialize(const safe_VkVideoDecodeCapab
 safe_VkVideoDecodeInfoKHR::safe_VkVideoDecodeInfoKHR(const VkVideoDecodeInfoKHR* in_struct) :
     sType(in_struct->sType),
     flags(in_struct->flags),
-    codedOffset(in_struct->codedOffset),
-    codedExtent(in_struct->codedExtent),
     srcBuffer(in_struct->srcBuffer),
     srcBufferOffset(in_struct->srcBufferOffset),
     srcBufferRange(in_struct->srcBufferRange),
@@ -21593,8 +21591,6 @@ safe_VkVideoDecodeInfoKHR::safe_VkVideoDecodeInfoKHR(const safe_VkVideoDecodeInf
 {
     sType = copy_src.sType;
     flags = copy_src.flags;
-    codedOffset = copy_src.codedOffset;
-    codedExtent = copy_src.codedExtent;
     srcBuffer = copy_src.srcBuffer;
     srcBufferOffset = copy_src.srcBufferOffset;
     srcBufferRange = copy_src.srcBufferRange;
@@ -21626,8 +21622,6 @@ safe_VkVideoDecodeInfoKHR& safe_VkVideoDecodeInfoKHR::operator=(const safe_VkVid
 
     sType = copy_src.sType;
     flags = copy_src.flags;
-    codedOffset = copy_src.codedOffset;
-    codedExtent = copy_src.codedExtent;
     srcBuffer = copy_src.srcBuffer;
     srcBufferOffset = copy_src.srcBufferOffset;
     srcBufferRange = copy_src.srcBufferRange;
@@ -21662,8 +21656,6 @@ void safe_VkVideoDecodeInfoKHR::initialize(const VkVideoDecodeInfoKHR* in_struct
 {
     sType = in_struct->sType;
     flags = in_struct->flags;
-    codedOffset = in_struct->codedOffset;
-    codedExtent = in_struct->codedExtent;
     srcBuffer = in_struct->srcBuffer;
     srcBufferOffset = in_struct->srcBufferOffset;
     srcBufferRange = in_struct->srcBufferRange;
@@ -21686,8 +21678,6 @@ void safe_VkVideoDecodeInfoKHR::initialize(const safe_VkVideoDecodeInfoKHR* copy
 {
     sType = copy_src->sType;
     flags = copy_src->flags;
-    codedOffset = copy_src->codedOffset;
-    codedExtent = copy_src->codedExtent;
     srcBuffer = copy_src->srcBuffer;
     srcBufferOffset = copy_src->srcBufferOffset;
     srcBufferRange = copy_src->srcBufferRange;
@@ -26242,7 +26232,6 @@ safe_VkVideoEncodeInfoKHR::safe_VkVideoEncodeInfoKHR(const VkVideoEncodeInfoKHR*
     sType(in_struct->sType),
     flags(in_struct->flags),
     qualityLevel(in_struct->qualityLevel),
-    codedExtent(in_struct->codedExtent),
     dstBitstreamBuffer(in_struct->dstBitstreamBuffer),
     dstBitstreamBufferOffset(in_struct->dstBitstreamBufferOffset),
     dstBitstreamBufferMaxRange(in_struct->dstBitstreamBufferMaxRange),
@@ -26275,7 +26264,6 @@ safe_VkVideoEncodeInfoKHR::safe_VkVideoEncodeInfoKHR(const safe_VkVideoEncodeInf
     sType = copy_src.sType;
     flags = copy_src.flags;
     qualityLevel = copy_src.qualityLevel;
-    codedExtent = copy_src.codedExtent;
     dstBitstreamBuffer = copy_src.dstBitstreamBuffer;
     dstBitstreamBufferOffset = copy_src.dstBitstreamBufferOffset;
     dstBitstreamBufferMaxRange = copy_src.dstBitstreamBufferMaxRange;
@@ -26309,7 +26297,6 @@ safe_VkVideoEncodeInfoKHR& safe_VkVideoEncodeInfoKHR::operator=(const safe_VkVid
     sType = copy_src.sType;
     flags = copy_src.flags;
     qualityLevel = copy_src.qualityLevel;
-    codedExtent = copy_src.codedExtent;
     dstBitstreamBuffer = copy_src.dstBitstreamBuffer;
     dstBitstreamBufferOffset = copy_src.dstBitstreamBufferOffset;
     dstBitstreamBufferMaxRange = copy_src.dstBitstreamBufferMaxRange;
@@ -26346,7 +26333,6 @@ void safe_VkVideoEncodeInfoKHR::initialize(const VkVideoEncodeInfoKHR* in_struct
     sType = in_struct->sType;
     flags = in_struct->flags;
     qualityLevel = in_struct->qualityLevel;
-    codedExtent = in_struct->codedExtent;
     dstBitstreamBuffer = in_struct->dstBitstreamBuffer;
     dstBitstreamBufferOffset = in_struct->dstBitstreamBufferOffset;
     dstBitstreamBufferMaxRange = in_struct->dstBitstreamBufferMaxRange;
@@ -26371,7 +26357,6 @@ void safe_VkVideoEncodeInfoKHR::initialize(const safe_VkVideoEncodeInfoKHR* copy
     sType = copy_src->sType;
     flags = copy_src->flags;
     qualityLevel = copy_src->qualityLevel;
-    codedExtent = copy_src->codedExtent;
     dstBitstreamBuffer = copy_src->dstBitstreamBuffer;
     dstBitstreamBufferOffset = copy_src->dstBitstreamBufferOffset;
     dstBitstreamBufferMaxRange = copy_src->dstBitstreamBufferMaxRange;
@@ -47487,6 +47472,64 @@ void safe_VkPhysicalDeviceMultiDrawPropertiesEXT::initialize(const safe_VkPhysic
     pNext = SafePnextCopy(copy_src->pNext);
 }
 
+safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT::safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT(const VkPhysicalDeviceImage2DViewOf3DFeaturesEXT* in_struct) :
+    sType(in_struct->sType),
+    image2DViewOf3D(in_struct->image2DViewOf3D),
+    sampler2DViewOf3D(in_struct->sampler2DViewOf3D)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT::safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT),
+    pNext(nullptr)
+{}
+
+safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT::safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT(const safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT& copy_src)
+{
+    sType = copy_src.sType;
+    image2DViewOf3D = copy_src.image2DViewOf3D;
+    sampler2DViewOf3D = copy_src.sampler2DViewOf3D;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT& safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT::operator=(const safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    image2DViewOf3D = copy_src.image2DViewOf3D;
+    sampler2DViewOf3D = copy_src.sampler2DViewOf3D;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT::~safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT::initialize(const VkPhysicalDeviceImage2DViewOf3DFeaturesEXT* in_struct)
+{
+    sType = in_struct->sType;
+    image2DViewOf3D = in_struct->image2DViewOf3D;
+    sampler2DViewOf3D = in_struct->sampler2DViewOf3D;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT::initialize(const safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT* copy_src)
+{
+    sType = copy_src->sType;
+    image2DViewOf3D = copy_src->image2DViewOf3D;
+    sampler2DViewOf3D = copy_src->sampler2DViewOf3D;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
 safe_VkPhysicalDeviceBorderColorSwizzleFeaturesEXT::safe_VkPhysicalDeviceBorderColorSwizzleFeaturesEXT(const VkPhysicalDeviceBorderColorSwizzleFeaturesEXT* in_struct) :
     sType(in_struct->sType),
     borderColorSwizzle(in_struct->borderColorSwizzle),
@@ -50767,6 +50810,9 @@ void *SafePnextCopy(const void *pNext) {
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_PROPERTIES_EXT:
             safe_pNext = new safe_VkPhysicalDeviceMultiDrawPropertiesEXT(reinterpret_cast<const VkPhysicalDeviceMultiDrawPropertiesEXT *>(pNext));
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT:
+            safe_pNext = new safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT(reinterpret_cast<const VkPhysicalDeviceImage2DViewOf3DFeaturesEXT *>(pNext));
+            break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT:
             safe_pNext = new safe_VkPhysicalDeviceBorderColorSwizzleFeaturesEXT(reinterpret_cast<const VkPhysicalDeviceBorderColorSwizzleFeaturesEXT *>(pNext));
             break;
@@ -51942,6 +51988,9 @@ void FreePnextChain(const void *pNext) {
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_PROPERTIES_EXT:
             delete reinterpret_cast<const safe_VkPhysicalDeviceMultiDrawPropertiesEXT *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT *>(header);
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT:
             delete reinterpret_cast<const safe_VkPhysicalDeviceBorderColorSwizzleFeaturesEXT *>(header);
