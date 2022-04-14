@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (c) 2015-2021 Google, Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2022 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -360,22 +360,6 @@ bool VkRenderFramework::InstanceExtensionSupported(const char *const extension_n
     return std::any_of(extensions.begin(), extensions.end(), IsTheQueriedExtension);
 }
 
-// Enable device profile as last layer on stack overriding devsim if there, or return if not available
-bool VkRenderFramework::EnableDeviceProfileLayer() {
-    if (InstanceLayerSupported("VK_LAYER_LUNARG_device_profile_api")) {
-        if (VkTestFramework::m_devsim_layer) {
-            assert(0 == strncmp(instance_layers_.back(), "VK_LAYER_LUNARG_device_simulation", VK_MAX_EXTENSION_NAME_SIZE));
-            instance_layers_.back() = "VK_LAYER_LUNARG_device_profile_api";
-        } else {
-            instance_layers_.push_back("VK_LAYER_LUNARG_device_profile_api");
-        }
-    } else {
-        printf("             Did not find VK_LAYER_LUNARG_device_profile_api layer; skipped.\n");
-        return false;
-    }
-    return true;
-}
-
 // Return true if instance exists and extension name is in the list
 bool VkRenderFramework::InstanceExtensionEnabled(const char *ext_name) {
     if (!instance_) return false;
@@ -422,9 +406,6 @@ bool VkRenderFramework::DeviceExtensionEnabled(const char *ext_name) {
     }
     return ext_found;
 }
-
-// Some tests may need to be skipped if the devsim layer is in use.
-bool VkRenderFramework::DeviceSimulation() { return m_devsim_layer; }
 
 VkInstanceCreateInfo VkRenderFramework::GetInstanceCreateInfo() const {
     return {
