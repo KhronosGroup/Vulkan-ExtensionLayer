@@ -52,6 +52,18 @@ LOCAL_LDFLAGS   += -Wl,--exclude-libs,ALL
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE := VkLayer_khronos_timeline_semaphore
+LOCAL_SRC_FILES += $(SRC_DIR)/layers/timeline_semaphore.c \
+                   $(SRC_DIR)/layers/hash_table.cpp
+LOCAL_C_INCLUDES += $(VULKAN_INCLUDE)
+LOCAL_CPPFLAGS += -std=c++11 -Wall -Werror -Wno-unused-function -Wno-unused-const-variable -Wno-cast-calling-convention -fexceptions
+LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -DVK_PROTOTYPES -fvisibility=hidden
+LOCAL_LDLIBS    := -llog -landroid
+LOCAL_LDFLAGS   += -Wl,-Bsymbolic
+LOCAL_LDFLAGS   += -Wl,--exclude-libs,ALL
+include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE := VkExtensionLayerTests
 LOCAL_SRC_FILES += $(SRC_DIR)/tests/extension_layer_tests.cpp \
                    $(SRC_DIR)/tests/vktestbinding.cpp \
