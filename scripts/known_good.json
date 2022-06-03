@@ -14,7 +14,7 @@
       "sub_dir" : "glslang",
       "build_dir" : "glslang/build",
       "install_dir" : "glslang/build/install",
-      "commit" : "9bb8cfffb0eed010e07132282c41d73064a7a609",
+      "commit" : "adbf0d3106b26daa237b10b9bf72b1af7c31092d",
       "prebuild" : [
         "python update_glslang_sources.py"
       ],
@@ -28,7 +28,7 @@
       "sub_dir": "SPIRV-Headers",
       "build_dir": "SPIRV-Headers/build",
       "install_dir": "SPIRV-Headers/build/install",
-      "commit": "4995a2f2723c401eb0ea3e10c81298906bf1422b"
+      "commit": "5a121866927a16ab9d49bed4788b532c7fcea766"
     }
   ],
   "install_names" : {
