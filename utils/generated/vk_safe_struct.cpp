@@ -45940,6 +45940,59 @@ void safe_VkImageCompressionPropertiesEXT::initialize(const safe_VkImageCompress
     pNext = SafePnextCopy(copy_src->pNext);
 }
 
+safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT::safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT(const VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT* in_struct) :
+    sType(in_struct->sType),
+    attachmentFeedbackLoopLayout(in_struct->attachmentFeedbackLoopLayout)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT::safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT),
+    pNext(nullptr)
+{}
+
+safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT::safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT(const safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT& copy_src)
+{
+    sType = copy_src.sType;
+    attachmentFeedbackLoopLayout = copy_src.attachmentFeedbackLoopLayout;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT& safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT::operator=(const safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    attachmentFeedbackLoopLayout = copy_src.attachmentFeedbackLoopLayout;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT::~safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT::initialize(const VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT* in_struct)
+{
+    sType = in_struct->sType;
+    attachmentFeedbackLoopLayout = in_struct->attachmentFeedbackLoopLayout;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT::initialize(const safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT* copy_src)
+{
+    sType = copy_src->sType;
+    attachmentFeedbackLoopLayout = copy_src->attachmentFeedbackLoopLayout;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
 safe_VkPhysicalDevice4444FormatsFeaturesEXT::safe_VkPhysicalDevice4444FormatsFeaturesEXT(const VkPhysicalDevice4444FormatsFeaturesEXT* in_struct) :
     sType(in_struct->sType),
     formatA4R4G4B4(in_struct->formatA4R4G4B4),
@@ -50717,6 +50770,117 @@ void safe_VkTilePropertiesQCOM::initialize(const safe_VkTilePropertiesQCOM* copy
     pNext = SafePnextCopy(copy_src->pNext);
 }
 
+safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC::safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC(const VkPhysicalDeviceAmigoProfilingFeaturesSEC* in_struct) :
+    sType(in_struct->sType),
+    amigoProfiling(in_struct->amigoProfiling)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC::safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_AMIGO_PROFILING_FEATURES_SEC),
+    pNext(nullptr)
+{}
+
+safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC::safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC(const safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC& copy_src)
+{
+    sType = copy_src.sType;
+    amigoProfiling = copy_src.amigoProfiling;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC& safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC::operator=(const safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    amigoProfiling = copy_src.amigoProfiling;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC::~safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC::initialize(const VkPhysicalDeviceAmigoProfilingFeaturesSEC* in_struct)
+{
+    sType = in_struct->sType;
+    amigoProfiling = in_struct->amigoProfiling;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC::initialize(const safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC* copy_src)
+{
+    sType = copy_src->sType;
+    amigoProfiling = copy_src->amigoProfiling;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
+safe_VkAmigoProfilingSubmitInfoSEC::safe_VkAmigoProfilingSubmitInfoSEC(const VkAmigoProfilingSubmitInfoSEC* in_struct) :
+    sType(in_struct->sType),
+    firstDrawTimestamp(in_struct->firstDrawTimestamp),
+    swapBufferTimestamp(in_struct->swapBufferTimestamp)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkAmigoProfilingSubmitInfoSEC::safe_VkAmigoProfilingSubmitInfoSEC() :
+    sType(VK_STRUCTURE_TYPE_AMIGO_PROFILING_SUBMIT_INFO_SEC),
+    pNext(nullptr)
+{}
+
+safe_VkAmigoProfilingSubmitInfoSEC::safe_VkAmigoProfilingSubmitInfoSEC(const safe_VkAmigoProfilingSubmitInfoSEC& copy_src)
+{
+    sType = copy_src.sType;
+    firstDrawTimestamp = copy_src.firstDrawTimestamp;
+    swapBufferTimestamp = copy_src.swapBufferTimestamp;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkAmigoProfilingSubmitInfoSEC& safe_VkAmigoProfilingSubmitInfoSEC::operator=(const safe_VkAmigoProfilingSubmitInfoSEC& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    firstDrawTimestamp = copy_src.firstDrawTimestamp;
+    swapBufferTimestamp = copy_src.swapBufferTimestamp;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkAmigoProfilingSubmitInfoSEC::~safe_VkAmigoProfilingSubmitInfoSEC()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkAmigoProfilingSubmitInfoSEC::initialize(const VkAmigoProfilingSubmitInfoSEC* in_struct)
+{
+    sType = in_struct->sType;
+    firstDrawTimestamp = in_struct->firstDrawTimestamp;
+    swapBufferTimestamp = in_struct->swapBufferTimestamp;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkAmigoProfilingSubmitInfoSEC::initialize(const safe_VkAmigoProfilingSubmitInfoSEC* copy_src)
+{
+    sType = copy_src->sType;
+    firstDrawTimestamp = copy_src->firstDrawTimestamp;
+    swapBufferTimestamp = copy_src->swapBufferTimestamp;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
 safe_VkDeviceOrHostAddressKHR::safe_VkDeviceOrHostAddressKHR(const VkDeviceOrHostAddressKHR* in_struct)
 {
     initialize(in_struct);
@@ -53375,6 +53539,9 @@ void *SafePnextCopy(const void *pNext) {
         case VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT:
             safe_pNext = new safe_VkImageCompressionPropertiesEXT(reinterpret_cast<const VkImageCompressionPropertiesEXT *>(pNext));
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT:
+            safe_pNext = new safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT(reinterpret_cast<const VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT *>(pNext));
+            break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT:
             safe_pNext = new safe_VkPhysicalDevice4444FormatsFeaturesEXT(reinterpret_cast<const VkPhysicalDevice4444FormatsFeaturesEXT *>(pNext));
             break;
@@ -53521,6 +53688,12 @@ void *SafePnextCopy(const void *pNext) {
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_PROPERTIES_FEATURES_QCOM:
             safe_pNext = new safe_VkPhysicalDeviceTilePropertiesFeaturesQCOM(reinterpret_cast<const VkPhysicalDeviceTilePropertiesFeaturesQCOM *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_AMIGO_PROFILING_FEATURES_SEC:
+            safe_pNext = new safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC(reinterpret_cast<const VkPhysicalDeviceAmigoProfilingFeaturesSEC *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_AMIGO_PROFILING_SUBMIT_INFO_SEC:
+            safe_pNext = new safe_VkAmigoProfilingSubmitInfoSEC(reinterpret_cast<const VkAmigoProfilingSubmitInfoSEC *>(pNext));
             break;
         case VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR:
             safe_pNext = new safe_VkWriteDescriptorSetAccelerationStructureKHR(reinterpret_cast<const VkWriteDescriptorSetAccelerationStructureKHR *>(pNext));
@@ -54667,6 +54840,9 @@ void FreePnextChain(const void *pNext) {
         case VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT:
             delete reinterpret_cast<const safe_VkImageCompressionPropertiesEXT *>(header);
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT *>(header);
+            break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT:
             delete reinterpret_cast<const safe_VkPhysicalDevice4444FormatsFeaturesEXT *>(header);
             break;
@@ -54813,6 +54989,12 @@ void FreePnextChain(const void *pNext) {
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_PROPERTIES_FEATURES_QCOM:
             delete reinterpret_cast<const safe_VkPhysicalDeviceTilePropertiesFeaturesQCOM *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_AMIGO_PROFILING_FEATURES_SEC:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceAmigoProfilingFeaturesSEC *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_AMIGO_PROFILING_SUBMIT_INFO_SEC:
+            delete reinterpret_cast<const safe_VkAmigoProfilingSubmitInfoSEC *>(header);
             break;
         case VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR:
             delete reinterpret_cast<const safe_VkWriteDescriptorSetAccelerationStructureKHR *>(header);
