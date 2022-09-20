@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (c) 2015-2021 Google, Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2022 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -196,6 +196,9 @@ bool CheckTimelineSemaphoreSupportAndInitState(VkRenderFramework *renderFramewor
 }
 
 bool VkExtensionLayerTest::CheckSynchronization2SupportAndInitState() {
+    if (DeviceExtensionSupported(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME, 0)) {
+        m_device_extension_names.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+    }
     if (DeviceExtensionSupported(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, 0)) {
         m_device_extension_names.push_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
     }
@@ -206,13 +209,14 @@ bool VkExtensionLayerTest::CheckSynchronization2SupportAndInitState() {
         m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
     }
 
-    auto sync2_features = lvl_init_struct<VkPhysicalDeviceSynchronization2FeaturesKHR>();
+    auto timeline_features = lvl_init_struct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
+    auto sync2_features = lvl_init_struct<VkPhysicalDeviceSynchronization2FeaturesKHR>(&timeline_features);
     auto features2 = lvl_init_struct<VkPhysicalDeviceFeatures2KHR>(&sync2_features);
     vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
     if (!sync2_features.synchronization2) {
         return false;
     }
-    InitState(nullptr, &features2);
+    InitState(nullptr, &features2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
     vk::GetSemaphoreCounterValueKHR =
         reinterpret_cast<PFN_vkGetSemaphoreCounterValueKHR>(vk::GetDeviceProcAddr(device(), "vkGetSemaphoreCounterValueKHR"));
     vk::WaitSemaphoresKHR = reinterpret_cast<PFN_vkWaitSemaphoresKHR>(vk::GetDeviceProcAddr(device(), "vkWaitSemaphoresKHR"));
