@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (c) 2015-2021 Google, Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2022 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,8 +49,7 @@ void Sync2Test::ValidOwnershipTransferOp(ErrorMonitor *monitor, VkCommandBufferO
                                          const VkImageMemoryBarrier2KHR *img_barrier) {
     monitor->ExpectSuccess();
     cb->begin();
-    VkDependencyInfoKHR info = {};
-    info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+    auto info = LvlInitStruct<VkDependencyInfoKHR>();
     info.bufferMemoryBarrierCount = buf_barrier ? 1 : 0;
     info.pBufferMemoryBarriers = buf_barrier;
     info.imageMemoryBarrierCount = img_barrier ? 1 : 0;
@@ -59,12 +58,10 @@ void Sync2Test::ValidOwnershipTransferOp(ErrorMonitor *monitor, VkCommandBufferO
     vk::CmdPipelineBarrier2KHR(cb->handle(), &info);
     cb->end();
 
-    VkCommandBufferSubmitInfoKHR cb_info = {};
-    cb_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
+    auto cb_info = LvlInitStruct<VkCommandBufferSubmitInfoKHR>();
     cb_info.commandBuffer = cb->handle();
 
-    VkSubmitInfo2KHR submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
+    auto submit_info = LvlInitStruct<VkSubmitInfo2KHR>();
     submit_info.commandBufferInfoCount = 1;
     submit_info.pCommandBufferInfos = &cb_info;
 
@@ -75,8 +72,34 @@ void Sync2Test::ValidOwnershipTransferOp(ErrorMonitor *monitor, VkCommandBufferO
 
 void Sync2Test::ValidOwnershipTransfer(ErrorMonitor *monitor, VkCommandBufferObj *cb_from, VkCommandBufferObj *cb_to,
                                        const VkBufferMemoryBarrier2KHR *buf_barrier, const VkImageMemoryBarrier2KHR *img_barrier) {
-    ValidOwnershipTransferOp(monitor, cb_from, buf_barrier, img_barrier);
-    ValidOwnershipTransferOp(monitor, cb_to, buf_barrier, img_barrier);
+    VkBufferMemoryBarrier2KHR fixup_buf_barrier;
+    VkImageMemoryBarrier2KHR fixup_img_barrier;
+    if (buf_barrier) {
+        fixup_buf_barrier = *buf_barrier;
+        fixup_buf_barrier.dstStageMask = VK_PIPELINE_STAGE_2_NONE_KHR;
+        fixup_buf_barrier.dstAccessMask = 0;
+    }
+    if (img_barrier) {
+        fixup_img_barrier = *img_barrier;
+        fixup_img_barrier.dstStageMask = VK_PIPELINE_STAGE_2_NONE_KHR;
+        fixup_img_barrier.dstAccessMask = 0;
+    }
+
+    ValidOwnershipTransferOp(monitor, cb_from, buf_barrier ? &fixup_buf_barrier : nullptr,
+                             img_barrier ? &fixup_img_barrier : nullptr);
+
+    if (buf_barrier) {
+        fixup_buf_barrier = *buf_barrier;
+        fixup_buf_barrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE_KHR;
+        fixup_buf_barrier.srcAccessMask = 0;
+    }
+    if (img_barrier) {
+        fixup_img_barrier = *img_barrier;
+        fixup_img_barrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE_KHR;
+        fixup_img_barrier.srcAccessMask = 0;
+    }
+    ValidOwnershipTransferOp(monitor, cb_to, buf_barrier ? &fixup_buf_barrier : nullptr,
+                             img_barrier ? &fixup_img_barrier : nullptr);
 }
 
 TEST_F(Sync2Test, OwnershipTranfersImage) {
@@ -97,8 +120,7 @@ TEST_F(Sync2Test, OwnershipTranfersImage) {
     image.Init(32, 32, 1, VK_FORMAT_B8G8R8A8_UNORM, image_use, VK_IMAGE_TILING_OPTIMAL, 0);
     ASSERT_TRUE(image.initialized());
 
-    VkImageMemoryBarrier2KHR image_barrier = {};
-    image_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2_KHR;
+    auto image_barrier = LvlInitStruct<VkImageMemoryBarrier2KHR>();
     image_barrier.srcAccessMask = 0;
     image_barrier.dstAccessMask = 0;
     image_barrier.srcStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
@@ -149,8 +171,7 @@ TEST_F(Sync2Test, OwnershipTranfersBuffer) {
     VkConstantBufferObj buffer(m_device, buffer_size, data, VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT);
     ASSERT_TRUE(buffer.initialized());
 
-    VkBufferMemoryBarrier2KHR buffer_barrier = {};
-    buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2_KHR;
+    auto buffer_barrier = LvlInitStruct<VkBufferMemoryBarrier2KHR>();
     buffer_barrier.buffer = buffer.handle();
     buffer_barrier.offset = 0;
     buffer_barrier.size = VK_WHOLE_SIZE;
@@ -192,9 +213,7 @@ TEST_F(Sync2Test, SecondaryCommandBufferBarrier) {
     m_errorMonitor->ExpectSuccess();
 
     // A renderpass with a single subpass that declared a self-dependency
-    VkAttachmentDescription2 attach = {};
-    attach.sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
-    attach.pNext = nullptr;
+    auto attach = LvlInitStruct<VkAttachmentDescription2>();
     attach.flags = 0;
     attach.format = VK_FORMAT_R8G8B8A8_UNORM;
     attach.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -205,16 +224,12 @@ TEST_F(Sync2Test, SecondaryCommandBufferBarrier) {
     attach.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attach.finalLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
 
-    VkAttachmentReference2 ref = {};
-    ref.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
-    ref.pNext = nullptr;
+    auto ref = LvlInitStruct<VkAttachmentReference2>();
     ref.attachment = 0;
     ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     ref.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-    VkSubpassDescription2 subpass = {};
-    subpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
-    subpass.pNext = nullptr;
+    auto subpass = LvlInitStruct<VkSubpassDescription2>();
     subpass.flags = 0;
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.viewMask = 0;
@@ -227,15 +242,13 @@ TEST_F(Sync2Test, SecondaryCommandBufferBarrier) {
     subpass.preserveAttachmentCount = 0;
     subpass.pPreserveAttachments = nullptr;
 
-    VkMemoryBarrier2KHR dep_barrier = {};
-    dep_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2_KHR;
+    auto dep_barrier = LvlInitStruct<VkMemoryBarrier2KHR>();
     dep_barrier.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     dep_barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
     dep_barrier.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     dep_barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 
-    VkSubpassDependency2 dep = {};
-    dep.sType = VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2;
+    auto dep = LvlInitStruct<VkSubpassDependency2>();
     dep.pNext = &dep_barrier;
     dep.srcStageMask = 0;
     dep.dstStageMask = 0;
@@ -244,9 +257,7 @@ TEST_F(Sync2Test, SecondaryCommandBufferBarrier) {
     dep.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
     dep.viewOffset = 0;
 
-    VkRenderPassCreateInfo2 rpci = {};
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2;
-    rpci.pNext = nullptr;
+    auto rpci = LvlInitStruct<VkRenderPassCreateInfo2>();
     rpci.flags = 0;
     rpci.attachmentCount = 1;
     rpci.pAttachments = &attach;
@@ -265,7 +276,14 @@ TEST_F(Sync2Test, SecondaryCommandBufferBarrier) {
     image.Init(32, 32, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
     VkImageView imageView = image.targetView(VK_FORMAT_R8G8B8A8_UNORM);
 
-    VkFramebufferCreateInfo fbci = {VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, rp, 1, &imageView, 32, 32, 1};
+    auto fbci = LvlInitStruct<VkFramebufferCreateInfo>();
+    fbci.renderPass = rp;
+    fbci.attachmentCount = 1;
+    fbci.pAttachments = &imageView;
+    fbci.width = 32;
+    fbci.height = 32;
+    fbci.layers = 1;
+
     VkFramebuffer fb;
     err = vk::CreateFramebuffer(m_device->device(), &fbci, nullptr, &fb);
     m_errorMonitor->VerifyNotFound();
@@ -273,48 +291,39 @@ TEST_F(Sync2Test, SecondaryCommandBufferBarrier) {
 
     m_commandBuffer->begin();
 
-    VkRenderPassBeginInfo rpbi = {};
-    rpbi.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    rpbi.pNext = nullptr;
+    auto rpbi = LvlInitStruct<VkRenderPassBeginInfo>();
     rpbi.renderPass = rp;
     rpbi.framebuffer = fb;
     rpbi.renderArea = {{0, 0}, {32, 32}};
-    rpbi.clearValueCount = 0;
-    rpbi.pClearValues = nullptr;
 
     vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
     VkCommandPoolObj pool(m_device, m_device->graphics_queue_node_index_, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
     VkCommandBufferObj secondary(m_device, &pool, VK_COMMAND_BUFFER_LEVEL_SECONDARY);
 
-    VkCommandBufferInheritanceInfo cbii = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO,
-                                           nullptr,
-                                           rp,
-                                           0,
-                                           VK_NULL_HANDLE,  // Set to NULL FB handle intentionally to flesh out any errors
-                                           VK_FALSE,
-                                           0,
-                                           0};
-    VkCommandBufferBeginInfo cbbi = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr,
-                                     VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT,
-                                     &cbii};
+    auto cbii = LvlInitStruct<VkCommandBufferInheritanceInfo>();
+    cbii.renderPass = rp;
+
+    auto cbbi = LvlInitStruct<VkCommandBufferBeginInfo>();
+    cbbi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+    cbbi.pInheritanceInfo = &cbii;
     secondary.begin(&cbbi);
-    VkMemoryBarrier2KHR mem_barrier = {};
-    mem_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2_KHR;
-    mem_barrier.pNext = NULL;
+
+    auto mem_barrier = LvlInitStruct<VkMemoryBarrier2KHR>();
     mem_barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
     mem_barrier.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     mem_barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
     mem_barrier.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 
-    VkImageMemoryBarrier2KHR img_barrier = {};
-    img_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2_KHR;
+    auto img_barrier = LvlInitStruct<VkImageMemoryBarrier2KHR>();
     img_barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
     img_barrier.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     img_barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
     img_barrier.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     img_barrier.oldLayout = image.Layout();
-    img_barrier.newLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
+    img_barrier.newLayout = image.Layout();
+    img_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    img_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     img_barrier.image = image.handle();
     img_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     img_barrier.subresourceRange.baseMipLevel = 0;
@@ -322,8 +331,7 @@ TEST_F(Sync2Test, SecondaryCommandBufferBarrier) {
     img_barrier.subresourceRange.baseArrayLayer = 0;
     img_barrier.subresourceRange.layerCount = 1;
 
-    VkDependencyInfoKHR info = {};
-    info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+    auto info = LvlInitStruct<VkDependencyInfoKHR>();
     info.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
     info.memoryBarrierCount = 1;
     info.pMemoryBarriers = &mem_barrier;
@@ -332,19 +340,19 @@ TEST_F(Sync2Test, SecondaryCommandBufferBarrier) {
 
     vk::CmdPipelineBarrier2KHR(secondary.handle(), &info);
 
-    VkImageMemoryBarrier2KHR sec_img_barrier = {};
-    sec_img_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2_KHR;
+    auto sec_img_barrier = LvlInitStruct<VkImageMemoryBarrier2KHR>();
     sec_img_barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
     sec_img_barrier.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     sec_img_barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
     sec_img_barrier.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     sec_img_barrier.oldLayout = image.Layout();
-    sec_img_barrier.newLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
+    sec_img_barrier.newLayout = image.Layout();
+    sec_img_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    sec_img_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     sec_img_barrier.image = image.handle();
     sec_img_barrier.subresourceRange = image.subresource_range(VK_IMAGE_ASPECT_COLOR_BIT);
 
-    VkDependencyInfoKHR sec_info = {};
-    sec_info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+    auto sec_info = LvlInitStruct<VkDependencyInfoKHR>();
     sec_info.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
     sec_info.memoryBarrierCount = 1;
     sec_info.pMemoryBarriers = &mem_barrier;
@@ -358,12 +366,10 @@ TEST_F(Sync2Test, SecondaryCommandBufferBarrier) {
     vk::CmdEndRenderPass(m_commandBuffer->handle());
     m_commandBuffer->end();
 
-    VkCommandBufferSubmitInfoKHR cb_info = {};
-    cb_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
+    auto cb_info = LvlInitStruct<VkCommandBufferSubmitInfoKHR>();
     cb_info.commandBuffer = m_commandBuffer->handle();
 
-    VkSubmitInfo2KHR submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    auto submit_info = LvlInitStruct<VkSubmitInfo2KHR>();
     submit_info.commandBufferInfoCount = 1;
     submit_info.pCommandBufferInfos = &cb_info;
     vk::QueueSubmit2KHR(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
@@ -384,8 +390,7 @@ TEST_F(Sync2Test, SecondaryCommandBufferImageLayoutTransitions) {
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
     m_errorMonitor->ExpectSuccess();
     // Allocate a secondary and primary cmd buffer
-    VkCommandBufferAllocateInfo command_buffer_allocate_info = {};
-    command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    auto command_buffer_allocate_info = LvlInitStruct<VkCommandBufferAllocateInfo>();
     command_buffer_allocate_info.commandPool = m_commandPool->handle();
     command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
     command_buffer_allocate_info.commandBufferCount = 1;
@@ -395,10 +400,10 @@ TEST_F(Sync2Test, SecondaryCommandBufferImageLayoutTransitions) {
     command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     VkCommandBuffer primary_command_buffer;
     ASSERT_VK_SUCCESS(vk::AllocateCommandBuffers(m_device->device(), &command_buffer_allocate_info, &primary_command_buffer));
-    VkCommandBufferBeginInfo command_buffer_begin_info = {};
-    VkCommandBufferInheritanceInfo command_buffer_inheritance_info = {};
-    command_buffer_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-    command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    auto command_buffer_inheritance_info = LvlInitStruct<VkCommandBufferInheritanceInfo>();
+
+    auto command_buffer_begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
     command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     command_buffer_begin_info.pInheritanceInfo = &command_buffer_inheritance_info;
 
@@ -408,13 +413,12 @@ TEST_F(Sync2Test, SecondaryCommandBufferImageLayoutTransitions) {
     image.Init(128, 128, 1, depth_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
     ASSERT_TRUE(image.initialized());
     {
-        VkImageMemoryBarrier2KHR img_barrier = {};
-        img_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2_KHR;
+        auto img_barrier = LvlInitStruct<VkImageMemoryBarrier2KHR>();
         img_barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
         img_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
         img_barrier.srcStageMask = VK_PIPELINE_STAGE_HOST_BIT;
         img_barrier.dstStageMask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
-        img_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        img_barrier.oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
         img_barrier.newLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
         img_barrier.image = image.handle();
         img_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -425,8 +429,7 @@ TEST_F(Sync2Test, SecondaryCommandBufferImageLayoutTransitions) {
         img_barrier.subresourceRange.layerCount = 1;
         img_barrier.subresourceRange.levelCount = 1;
 
-        VkDependencyInfoKHR info = {};
-        info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+        auto info = LvlInitStruct<VkDependencyInfoKHR>();
         info.imageMemoryBarrierCount = 1;
         info.pImageMemoryBarriers = &img_barrier;
 
@@ -442,14 +445,13 @@ TEST_F(Sync2Test, SecondaryCommandBufferImageLayoutTransitions) {
     vk::CmdExecuteCommands(primary_command_buffer, 1, &secondary_command_buffer);
 
     {
-        VkImageMemoryBarrier2KHR img_barrier2 = {};
-        img_barrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2_KHR;
+        auto img_barrier2 = LvlInitStruct<VkImageMemoryBarrier2KHR>();
         img_barrier2.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
         img_barrier2.srcStageMask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
         img_barrier2.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
         img_barrier2.dstStageMask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
         img_barrier2.oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
-        img_barrier2.newLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL_KHR;
+        img_barrier2.newLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
         img_barrier2.image = image.handle();
         img_barrier2.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         img_barrier2.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -459,8 +461,7 @@ TEST_F(Sync2Test, SecondaryCommandBufferImageLayoutTransitions) {
         img_barrier2.subresourceRange.layerCount = 1;
         img_barrier2.subresourceRange.levelCount = 1;
 
-        VkDependencyInfoKHR info2 = {};
-        info2.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+        auto info2 = LvlInitStruct<VkDependencyInfoKHR>();
         info2.imageMemoryBarrierCount = 1;
         info2.pImageMemoryBarriers = &img_barrier2;
 
@@ -469,12 +470,10 @@ TEST_F(Sync2Test, SecondaryCommandBufferImageLayoutTransitions) {
     err = vk::EndCommandBuffer(primary_command_buffer);
     ASSERT_VK_SUCCESS(err);
 
-    VkCommandBufferSubmitInfoKHR cb_info = {};
-    cb_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
+    auto cb_info = LvlInitStruct<VkCommandBufferSubmitInfoKHR>();
     cb_info.commandBuffer = primary_command_buffer;
 
-    VkSubmitInfo2KHR submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
+    auto submit_info = LvlInitStruct<VkSubmitInfo2KHR>();
     submit_info.commandBufferInfoCount = 1;
     submit_info.pCommandBufferInfos = &cb_info;
 
@@ -493,9 +492,7 @@ TEST_F(Sync2Test, QueueSubmitSemaphoresAndLayoutTracking) {
 
     m_errorMonitor->ExpectSuccess();
     VkCommandBuffer cmd_bufs[4];
-    VkCommandBufferAllocateInfo alloc_info;
-    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    alloc_info.pNext = NULL;
+    auto alloc_info = LvlInitStruct<VkCommandBufferAllocateInfo>();
     alloc_info.commandBufferCount = 4;
     alloc_info.commandPool = m_commandPool->handle();
     alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -505,16 +502,11 @@ TEST_F(Sync2Test, QueueSubmitSemaphoresAndLayoutTracking) {
                (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT),
                VK_IMAGE_TILING_OPTIMAL, 0);
     ASSERT_TRUE(image.initialized());
-    VkCommandBufferBeginInfo cb_binfo;
-    cb_binfo.pNext = NULL;
-    cb_binfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    cb_binfo.pInheritanceInfo = VK_NULL_HANDLE;
-    cb_binfo.flags = 0;
+    auto cb_binfo = LvlInitStruct<VkCommandBufferBeginInfo>();
+
     // Use 4 command buffers, each with an image layout transition, ColorAO->General->ColorAO->TransferSrc->TransferDst
     vk::BeginCommandBuffer(cmd_bufs[0], &cb_binfo);
-    VkImageMemoryBarrier2KHR img_barrier = {};
-    img_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2_KHR;
-    img_barrier.pNext = NULL;
+    auto img_barrier = LvlInitStruct<VkImageMemoryBarrier2KHR>();
     img_barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
     img_barrier.srcStageMask = VK_PIPELINE_STAGE_HOST_BIT;
     img_barrier.dstAccessMask = VK_ACCESS_HOST_WRITE_BIT;
@@ -530,8 +522,7 @@ TEST_F(Sync2Test, QueueSubmitSemaphoresAndLayoutTracking) {
     img_barrier.subresourceRange.layerCount = 1;
     img_barrier.subresourceRange.levelCount = 1;
 
-    VkDependencyInfoKHR info = {};
-    info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+    auto info = LvlInitStruct<VkDependencyInfoKHR>();
     info.imageMemoryBarrierCount = 1;
     info.pImageMemoryBarriers = &img_barrier;
 
@@ -557,38 +548,30 @@ TEST_F(Sync2Test, QueueSubmitSemaphoresAndLayoutTracking) {
 
     // Submit 4 command buffers in 3 submits, with submits 2 and 3 waiting for semaphores from submits 1 and 2
     VkSemaphore semaphore1, semaphore2;
-    VkSemaphoreCreateInfo semaphore_create_info{};
-    semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    auto semaphore_create_info = LvlInitStruct<VkSemaphoreCreateInfo>();
     vk::CreateSemaphore(m_device->device(), &semaphore_create_info, nullptr, &semaphore1);
     vk::CreateSemaphore(m_device->device(), &semaphore_create_info, nullptr, &semaphore2);
 
-    VkSubmitInfo2KHR submit_info[3] = {};
-    VkCommandBufferSubmitInfoKHR cb_info[4] = {};
-    VkSemaphoreSubmitInfoKHR sem_info[2] = {};
-    cb_info[0].sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
+    std::vector<VkSubmitInfo2KHR> submit_info(3, LvlInitStruct<VkSubmitInfo2KHR>());
+    std::vector<VkCommandBufferSubmitInfoKHR> cb_info(4, LvlInitStruct<VkCommandBufferSubmitInfoKHR>());
+    std::vector<VkSemaphoreSubmitInfoKHR> sem_info(2, LvlInitStruct<VkSemaphoreSubmitInfoKHR>());
+
     cb_info[0].commandBuffer = cmd_bufs[0];
 
-    sem_info[0].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
     sem_info[0].semaphore = semaphore1;
     sem_info[0].stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT_KHR;
 
-    submit_info[0].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
-    submit_info[0].pNext = nullptr;
     submit_info[0].commandBufferInfoCount = 1;
     submit_info[0].pCommandBufferInfos = &cb_info[0];
     submit_info[0].signalSemaphoreInfoCount = 1;
     submit_info[0].pSignalSemaphoreInfos = &sem_info[0];
     submit_info[0].waitSemaphoreInfoCount = 0;
 
-    cb_info[1].sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
     cb_info[1].commandBuffer = cmd_bufs[1];
 
-    sem_info[1].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
     sem_info[1].semaphore = semaphore2;
     sem_info[1].stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT_KHR;
 
-    submit_info[1].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
-    submit_info[1].pNext = nullptr;
     submit_info[1].commandBufferInfoCount = 1;
     submit_info[1].pCommandBufferInfos = &cb_info[1];
     submit_info[1].waitSemaphoreInfoCount = 1;
@@ -596,20 +579,16 @@ TEST_F(Sync2Test, QueueSubmitSemaphoresAndLayoutTracking) {
     submit_info[1].signalSemaphoreInfoCount = 1;
     submit_info[1].pSignalSemaphoreInfos = &sem_info[1];
 
-    cb_info[2].sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
     cb_info[2].commandBuffer = cmd_bufs[2];
-    cb_info[3].sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
     cb_info[3].commandBuffer = cmd_bufs[3];
 
-    submit_info[2].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
-    submit_info[2].pNext = nullptr;
     submit_info[2].commandBufferInfoCount = 2;
     submit_info[2].pCommandBufferInfos = &cb_info[2];
     submit_info[2].waitSemaphoreInfoCount = 1;
     submit_info[2].pWaitSemaphoreInfos = &sem_info[1];
     submit_info[2].signalSemaphoreInfoCount = 0;
     submit_info[2].pSignalSemaphoreInfos = nullptr;
-    vk::QueueSubmit2KHR(m_device->m_queue, 3, submit_info, VK_NULL_HANDLE);
+    vk::QueueSubmit2KHR(m_device->m_queue, submit_info.size(), submit_info.data(), VK_NULL_HANDLE);
     vk::QueueWaitIdle(m_device->m_queue);
 
     vk::DestroySemaphore(m_device->device(), semaphore1, NULL);
@@ -623,17 +602,18 @@ TEST_F(Sync2Test, CommandBufferSimultaneousUseSync) {
 
     // Record (empty!) command buffer that can be submitted multiple times
     // simultaneously.
-    VkCommandBufferBeginInfo cbbi = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr,
-                                     VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT, nullptr};
+    auto cbbi = LvlInitStruct<VkCommandBufferBeginInfo>();
+    cbbi.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+
     m_commandBuffer->begin(&cbbi);
     m_commandBuffer->end();
 
-    VkFenceCreateInfo fci = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, 0};
+    auto fci = LvlInitStruct<VkFenceCreateInfo>();
     VkFence fence;
     err = vk::CreateFence(m_device->device(), &fci, nullptr, &fence);
     ASSERT_VK_SUCCESS(err);
 
-    VkSemaphoreCreateInfo sci = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0};
+    auto sci = LvlInitStruct<VkSemaphoreCreateInfo>();
     VkSemaphore s1, s2;
     err = vk::CreateSemaphore(m_device->device(), &sci, nullptr, &s1);
     ASSERT_VK_SUCCESS(err);
@@ -641,16 +621,13 @@ TEST_F(Sync2Test, CommandBufferSimultaneousUseSync) {
     ASSERT_VK_SUCCESS(err);
 
     // Submit CB once signaling s1, with fence so we can roll forward to its retirement.
-    VkCommandBufferSubmitInfoKHR cb_info = {};
-    cb_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
+    auto cb_info = LvlInitStruct<VkCommandBufferSubmitInfoKHR>();
     cb_info.commandBuffer = m_commandBuffer->handle();
 
-    VkSemaphoreSubmitInfoKHR sem_info = {};
-    sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
+    auto sem_info = LvlInitStruct<VkSemaphoreSubmitInfoKHR>();
     sem_info.semaphore = s1;
 
-    VkSubmitInfo2KHR submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
+    auto submit_info = LvlInitStruct<VkSubmitInfo2KHR>();
     submit_info.commandBufferInfoCount = 1;
     submit_info.pCommandBufferInfos = &cb_info;
     submit_info.signalSemaphoreInfoCount = 1;
@@ -690,9 +667,7 @@ TEST_F(Sync2Test, BarrierLayoutToImageUsage) {
     }
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
-    VkImageMemoryBarrier2KHR img_barrier = {};
-    img_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2_KHR;
-    img_barrier.pNext = NULL;
+    auto img_barrier = LvlInitStruct<VkImageMemoryBarrier2KHR>();
     img_barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
     img_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
     img_barrier.oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
@@ -758,8 +733,7 @@ TEST_F(Sync2Test, BarrierLayoutToImageUsage) {
             img_barrier.subresourceRange.aspectMask = (usage == VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
                                                           ? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)
                                                           : VK_IMAGE_ASPECT_COLOR_BIT;
-            VkDependencyInfoKHR dep_info = {};
-            dep_info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+            auto dep_info = LvlInitStruct<VkDependencyInfoKHR>();
             dep_info.imageMemoryBarrierCount = 1;
             dep_info.pImageMemoryBarriers = &img_barrier;
 
@@ -789,20 +763,17 @@ TEST_F(Sync2Test, WaitEventThenSet) {
     m_errorMonitor->ExpectSuccess();
 
     VkEvent event;
-    VkEventCreateInfo event_create_info{};
-    event_create_info.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
+    auto event_create_info = LvlInitStruct<VkEventCreateInfo>();
     vk::CreateEvent(m_device->device(), &event_create_info, nullptr, &event);
 
     VkCommandPool command_pool;
-    VkCommandPoolCreateInfo pool_create_info{};
-    pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    auto pool_create_info = LvlInitStruct<VkCommandPoolCreateInfo>();
     pool_create_info.queueFamilyIndex = m_device->graphics_queue_node_index_;
     pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     vk::CreateCommandPool(m_device->device(), &pool_create_info, nullptr, &command_pool);
 
     VkCommandBuffer command_buffer;
-    VkCommandBufferAllocateInfo command_buffer_allocate_info{};
-    command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    auto command_buffer_allocate_info = LvlInitStruct<VkCommandBufferAllocateInfo>();
     command_buffer_allocate_info.commandPool = command_pool;
     command_buffer_allocate_info.commandBufferCount = 1;
     command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -812,19 +783,16 @@ TEST_F(Sync2Test, WaitEventThenSet) {
     vk::GetDeviceQueue(m_device->device(), m_device->graphics_queue_node_index_, 0, &queue);
 
     {
-        VkCommandBufferBeginInfo begin_info{};
-        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        auto begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
         vk::BeginCommandBuffer(command_buffer, &begin_info);
 
-        VkMemoryBarrier2KHR barrier = {};
-        barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2_KHR;
+        auto barrier = LvlInitStruct<VkMemoryBarrier2KHR>();
         barrier.srcStageMask = VK_PIPELINE_STAGE_2_HOST_BIT_KHR;
         barrier.srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR;
         barrier.dstStageMask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR;
         barrier.dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT_KHR;
 
-        VkDependencyInfoKHR dep_info = {};
-        dep_info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+        auto dep_info = LvlInitStruct<VkDependencyInfoKHR>();
         dep_info.memoryBarrierCount = 1;
         dep_info.pMemoryBarriers = &barrier;
 
@@ -834,12 +802,10 @@ TEST_F(Sync2Test, WaitEventThenSet) {
         vk::EndCommandBuffer(command_buffer);
     }
     {
-        VkCommandBufferSubmitInfoKHR cb_info = {};
-        cb_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
+        auto cb_info = LvlInitStruct<VkCommandBufferSubmitInfoKHR>();
         cb_info.commandBuffer = command_buffer;
 
-        VkSubmitInfo2KHR submit_info = {};
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
+        auto submit_info = LvlInitStruct<VkSubmitInfo2KHR>();
         submit_info.commandBufferInfoCount = 1;
         submit_info.pCommandBufferInfos = &cb_info;
 
@@ -868,25 +834,21 @@ TEST_F(Sync2Test, TwoQueueSubmitsSeparateQueuesWithSemaphoreAndOneFenceTwoWFF) {
     m_errorMonitor->ExpectSuccess();
 
     VkFence fence;
-    VkFenceCreateInfo fence_create_info{};
-    fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    auto fence_create_info = LvlInitStruct<VkFenceCreateInfo>();
     vk::CreateFence(m_device->device(), &fence_create_info, nullptr, &fence);
 
     VkSemaphore semaphore;
-    VkSemaphoreCreateInfo semaphore_create_info{};
-    semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    auto semaphore_create_info = LvlInitStruct<VkSemaphoreCreateInfo>();
     vk::CreateSemaphore(m_device->device(), &semaphore_create_info, nullptr, &semaphore);
 
     VkCommandPool command_pool;
-    VkCommandPoolCreateInfo pool_create_info{};
-    pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    auto pool_create_info = LvlInitStruct<VkCommandPoolCreateInfo>();
     pool_create_info.queueFamilyIndex = m_device->graphics_queue_node_index_;
     pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     vk::CreateCommandPool(m_device->device(), &pool_create_info, nullptr, &command_pool);
 
     VkCommandBuffer command_buffer[2];
-    VkCommandBufferAllocateInfo command_buffer_allocate_info{};
-    command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    auto command_buffer_allocate_info = LvlInitStruct<VkCommandBufferAllocateInfo>();
     command_buffer_allocate_info.commandPool = command_pool;
     command_buffer_allocate_info.commandBufferCount = 2;
     command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -895,20 +857,17 @@ TEST_F(Sync2Test, TwoQueueSubmitsSeparateQueuesWithSemaphoreAndOneFenceTwoWFF) {
     VkQueue queue = VK_NULL_HANDLE;
     vk::GetDeviceQueue(m_device->device(), m_device->graphics_queue_node_index_, 1, &queue);
 
+    auto begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
     {
-        VkCommandBufferBeginInfo begin_info{};
-        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         vk::BeginCommandBuffer(command_buffer[0], &begin_info);
 
-        VkMemoryBarrier2KHR barrier = {};
-        barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2_KHR;
+        auto barrier = LvlInitStruct<VkMemoryBarrier2KHR>();
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = 0;
         barrier.srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
         barrier.dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
-        VkDependencyInfoKHR info = {};
-        info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+        auto info = LvlInitStruct<VkDependencyInfoKHR>();
         info.memoryBarrierCount = 1;
         info.pMemoryBarriers = &barrier;
 
@@ -925,8 +884,6 @@ TEST_F(Sync2Test, TwoQueueSubmitsSeparateQueuesWithSemaphoreAndOneFenceTwoWFF) {
         vk::EndCommandBuffer(command_buffer[0]);
     }
     {
-        VkCommandBufferBeginInfo begin_info{};
-        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         vk::BeginCommandBuffer(command_buffer[1], &begin_info);
 
         VkViewport viewport{};
@@ -940,16 +897,13 @@ TEST_F(Sync2Test, TwoQueueSubmitsSeparateQueuesWithSemaphoreAndOneFenceTwoWFF) {
         vk::EndCommandBuffer(command_buffer[1]);
     }
     {
-        VkCommandBufferSubmitInfoKHR cb_info = {};
-        cb_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
+        auto cb_info = LvlInitStruct<VkCommandBufferSubmitInfoKHR>();
         cb_info.commandBuffer = command_buffer[0];
 
-        VkSemaphoreSubmitInfoKHR sem_info = {};
-        sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
+        auto sem_info = LvlInitStruct<VkSemaphoreSubmitInfoKHR>();
         sem_info.semaphore = semaphore;
 
-        VkSubmitInfo2KHR submit_info{};
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
+        auto submit_info = LvlInitStruct<VkSubmitInfo2KHR>();
         submit_info.commandBufferInfoCount = 1;
         submit_info.pCommandBufferInfos = &cb_info;
         submit_info.signalSemaphoreInfoCount = 1;
@@ -957,17 +911,14 @@ TEST_F(Sync2Test, TwoQueueSubmitsSeparateQueuesWithSemaphoreAndOneFenceTwoWFF) {
         vk::QueueSubmit2KHR(queue, 1, &submit_info, VK_NULL_HANDLE);
     }
     {
-        VkCommandBufferSubmitInfoKHR cb_info = {};
-        cb_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
+        auto cb_info = LvlInitStruct<VkCommandBufferSubmitInfoKHR>();
         cb_info.commandBuffer = command_buffer[1];
 
-        VkSemaphoreSubmitInfoKHR sem_info = {};
-        sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
+        auto sem_info = LvlInitStruct<VkSemaphoreSubmitInfoKHR>();
         sem_info.semaphore = semaphore;
         sem_info.stageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
-        VkSubmitInfo2KHR submit_info{};
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
+        auto submit_info = LvlInitStruct<VkSubmitInfo2KHR>();
         submit_info.commandBufferInfoCount = 1;
         submit_info.pCommandBufferInfos = &cb_info;
         submit_info.waitSemaphoreInfoCount = 1;
@@ -994,44 +945,37 @@ TEST_F(Sync2Test, TwoSubmitInfosWithSemaphoreOneQueueSubmitsOneFence) {
     m_errorMonitor->ExpectSuccess();
 
     VkFence fence = VK_NULL_HANDLE;
-    VkFenceCreateInfo fence_create_info{};
-    fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    auto fence_create_info = LvlInitStruct<VkFenceCreateInfo>();
     vk::CreateFence(m_device->device(), &fence_create_info, nullptr, &fence);
 
     VkSemaphore semaphore = VK_NULL_HANDLE;
-    VkSemaphoreCreateInfo semaphore_create_info{};
-    semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    auto semaphore_create_info = LvlInitStruct<VkSemaphoreCreateInfo>();
     vk::CreateSemaphore(m_device->device(), &semaphore_create_info, nullptr, &semaphore);
 
     VkCommandPool command_pool = VK_NULL_HANDLE;
-    VkCommandPoolCreateInfo pool_create_info{};
-    pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    auto pool_create_info = LvlInitStruct<VkCommandPoolCreateInfo>();
     pool_create_info.queueFamilyIndex = m_device->graphics_queue_node_index_;
     pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     vk::CreateCommandPool(m_device->device(), &pool_create_info, nullptr, &command_pool);
 
     VkCommandBuffer command_buffer[2] = {};
-    VkCommandBufferAllocateInfo command_buffer_allocate_info{};
-    command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    auto command_buffer_allocate_info = LvlInitStruct<VkCommandBufferAllocateInfo>();
     command_buffer_allocate_info.commandPool = command_pool;
     command_buffer_allocate_info.commandBufferCount = 2;
     command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     vk::AllocateCommandBuffers(m_device->device(), &command_buffer_allocate_info, command_buffer);
 
     {
-        VkCommandBufferBeginInfo begin_info{};
-        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        auto begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
         vk::BeginCommandBuffer(command_buffer[0], &begin_info);
 
-        VkMemoryBarrier2KHR mem_barrier = {};
-        mem_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2_KHR;
+        auto mem_barrier = LvlInitStruct<VkMemoryBarrier2KHR>();
         mem_barrier.srcAccessMask = 0;
         mem_barrier.srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
         mem_barrier.dstAccessMask = 0;
         mem_barrier.dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
-        VkDependencyInfoKHR info = {};
-        info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+        auto info = LvlInitStruct<VkDependencyInfoKHR>();
         info.dependencyFlags = 0;
         info.memoryBarrierCount = 1;
         info.pMemoryBarriers = &mem_barrier;
@@ -1048,8 +992,7 @@ TEST_F(Sync2Test, TwoSubmitInfosWithSemaphoreOneQueueSubmitsOneFence) {
         vk::EndCommandBuffer(command_buffer[0]);
     }
     {
-        VkCommandBufferBeginInfo begin_info{};
-        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        auto begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
         vk::BeginCommandBuffer(command_buffer[1], &begin_info);
 
         VkViewport viewport{};
@@ -1063,26 +1006,20 @@ TEST_F(Sync2Test, TwoSubmitInfosWithSemaphoreOneQueueSubmitsOneFence) {
         vk::EndCommandBuffer(command_buffer[1]);
     }
     {
-        VkSubmitInfo2KHR submit_info[2] = {};
-        VkCommandBufferSubmitInfoKHR cb_info[2] = {};
-        VkSemaphoreSubmitInfoKHR sem_info[2] = {};
+        std::vector<VkSubmitInfo2KHR> submit_info(2, LvlInitStruct<VkSubmitInfo2KHR>());
+        std::vector<VkCommandBufferSubmitInfoKHR> cb_info(2, LvlInitStruct<VkCommandBufferSubmitInfoKHR>());
+        std::vector<VkSemaphoreSubmitInfoKHR> sem_info(2, LvlInitStruct<VkSemaphoreSubmitInfoKHR>());
 
-        cb_info[0].sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
         cb_info[0].commandBuffer = command_buffer[0];
-        sem_info[0].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
         sem_info[0].semaphore = semaphore;
-        submit_info[0].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
         submit_info[0].commandBufferInfoCount = 1;
         submit_info[0].pCommandBufferInfos = &cb_info[0];
         submit_info[0].signalSemaphoreInfoCount = 1;
         submit_info[0].pSignalSemaphoreInfos = &sem_info[0];
 
-        cb_info[1].sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
         cb_info[1].commandBuffer = command_buffer[1];
-        sem_info[1].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
         sem_info[1].semaphore = semaphore;
         sem_info[1].stageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
-        submit_info[1].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
         submit_info[1].commandBufferInfoCount = 1;
         submit_info[1].pCommandBufferInfos = &cb_info[1];
         submit_info[1].waitSemaphoreInfoCount = 1;
@@ -1146,55 +1083,41 @@ TEST_F(Sync2Test, ClearDepthStencilWithValidRange) {
 TEST_F(Sync2Test, QueueSubmitTimelineSemaphore) {
     TEST_DESCRIPTION("Submit a queue with a timeline semaphore.");
 
-    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-    } else {
-        GTEST_SKIP() << kSkipPrefix << "  Extension " << VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
-                     << " is not supported." << std::endl;
-    }
-
-    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME)) {
-        m_device_extension_names.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
-    } else {
-        GTEST_SKIP() << kSkipPrefix << "  Extension " << VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME
-                     << " not supported by device; skipped." << std::endl;
+    auto timeline_features = lvl_init_struct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
+    auto features2 = lvl_init_struct<VkPhysicalDeviceFeatures2KHR>(&timeline_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (!timeline_features.timelineSemaphore) {
+        GTEST_SKIP() << "Timeline semaphores not supported.";
     }
 
     m_errorMonitor->ExpectSuccess();
 
-    VkSemaphoreTypeCreateInfoKHR semaphore_type_create_info{};
-    semaphore_type_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR;
+    auto semaphore_type_create_info = LvlInitStruct<VkSemaphoreTypeCreateInfo>();
     semaphore_type_create_info.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE_KHR;
 
-    VkSemaphoreCreateInfo semaphore_create_info{};
-    semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    semaphore_create_info.pNext = &semaphore_type_create_info;
+    auto semaphore_create_info = LvlInitStruct<VkSemaphoreCreateInfo>(&semaphore_type_create_info);
 
     VkSemaphore semaphore;
     ASSERT_VK_SUCCESS(vk::CreateSemaphore(m_device->device(), &semaphore_create_info, nullptr, &semaphore));
 
     VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    VkSemaphoreSubmitInfoKHR sem_info[2] = {};
-    VkSubmitInfo2KHR submit_info[2] = {};
+    std::vector<VkSemaphoreSubmitInfoKHR> sem_info(2, LvlInitStruct<VkSemaphoreSubmitInfoKHR>());
+    std::vector<VkSubmitInfo2KHR> submit_info(3, LvlInitStruct<VkSubmitInfo2KHR>());
 
-    sem_info[0].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
     sem_info[0].semaphore = semaphore;
     sem_info[0].value = 1;
     sem_info[0].stageMask = stageFlags;
-    submit_info[0].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
     submit_info[0].signalSemaphoreInfoCount = 1;
     submit_info[0].pSignalSemaphoreInfos = &sem_info[0];
 
-    sem_info[1].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
     sem_info[1].semaphore = semaphore;
     sem_info[1].value = 1;
     sem_info[1].stageMask = stageFlags;
-    submit_info[1].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
     submit_info[1].waitSemaphoreInfoCount = 1;
     submit_info[1].pWaitSemaphoreInfos = &sem_info[1];
 
-    vk::QueueSubmit2KHR(m_device->m_queue, 2, submit_info, VK_NULL_HANDLE);
-
+    vk::QueueSubmit2KHR(m_device->m_queue, submit_info.size(), submit_info.data(), VK_NULL_HANDLE);
+    vk::QueueWaitIdle(m_device->m_queue);
     vk::DestroySemaphore(m_device->device(), semaphore, nullptr);
 }
 
@@ -1267,9 +1190,11 @@ TEST_F(Sync2CompatTest, Vulkan10) {
 
     const float priority = 1.0f;
 
-    VkDeviceQueueCreateInfo queue_info = {
-        VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, NULL, 0, UINT32_MAX, 1, &priority,
-    };
+    auto queue_info = LvlInitStruct<VkDeviceQueueCreateInfo>();
+    queue_info.queueFamilyIndex = UINT32_MAX;
+    queue_info.queueCount = 1;
+    queue_info.pQueuePriorities = &priority;
+
     uint32_t queue_count = 0;
     VkQueueFamilyProperties *queue_props = NULL;
     vk::GetPhysicalDeviceQueueFamilyProperties(gpus[0], &queue_count, NULL);
@@ -1279,8 +1204,6 @@ TEST_F(Sync2CompatTest, Vulkan10) {
     vk::GetPhysicalDeviceQueueFamilyProperties(gpus[0], &queue_count, NULL);
     (void)queue_props;
 
-    queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queue_info.pNext = NULL;
     queue_info.flags = 0;
     queue_info.queueFamilyIndex = 0;
     queue_info.queueCount = 1;
@@ -1290,9 +1213,13 @@ TEST_F(Sync2CompatTest, Vulkan10) {
     VkPhysicalDeviceFeatures features{};
     vk::GetPhysicalDeviceFeatures(gpus[0], &features);
 
-    VkDeviceCreateInfo dev_info = {
-        VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, &sync2_features, 0, 1, &queue_info, 0, NULL, 1, &ext_name, &features,
-    };
+    auto dev_info = LvlInitStruct<VkDeviceCreateInfo>(&sync2_features);
+    dev_info.queueCreateInfoCount = 1;
+    dev_info.pQueueCreateInfos = &queue_info;
+    dev_info.enabledExtensionCount = 1;
+    dev_info.ppEnabledExtensionNames = &ext_name;
+    dev_info.pEnabledFeatures = &features;
+
     VkDevice device;
     ASSERT_VK_SUCCESS(vk::CreateDevice(gpus[0], &dev_info, NULL, &device));
 
@@ -1301,33 +1228,28 @@ TEST_F(Sync2CompatTest, Vulkan10) {
 
     vk::QueueSubmit2KHR = reinterpret_cast<PFN_vkQueueSubmit2KHR>(vk::GetDeviceProcAddr(device, "vkQueueSubmit2KHR"));
 
-    VkSemaphoreCreateInfo semaphore_create_info{};
-    semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    auto semaphore_create_info = LvlInitStruct<VkSemaphoreCreateInfo>();
 
     VkSemaphore semaphore;
     ASSERT_VK_SUCCESS(vk::CreateSemaphore(device, &semaphore_create_info, nullptr, &semaphore));
 
     VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     VkSemaphoreSubmitInfoKHR sem_info[2] = {};
-    VkSubmitInfo2KHR submit_info[2] = {};
+    std::vector<VkSubmitInfo2KHR> submit_info(2, LvlInitStruct<VkSubmitInfo2KHR>());
 
-    sem_info[0].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
     sem_info[0].semaphore = semaphore;
     sem_info[0].value = 1;
     sem_info[0].stageMask = stageFlags;
-    submit_info[0].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
     submit_info[0].signalSemaphoreInfoCount = 1;
     submit_info[0].pSignalSemaphoreInfos = &sem_info[0];
 
-    sem_info[1].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
     sem_info[1].semaphore = semaphore;
     sem_info[1].value = 1;
     sem_info[1].stageMask = stageFlags;
-    submit_info[1].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
     submit_info[1].waitSemaphoreInfoCount = 1;
     submit_info[1].pWaitSemaphoreInfos = &sem_info[1];
 
-    vk::QueueSubmit2KHR(queue, 2, submit_info, VK_NULL_HANDLE);
+    vk::QueueSubmit2KHR(queue, submit_info.size(), submit_info.data(), VK_NULL_HANDLE);
 
     ASSERT_VK_SUCCESS(vk::QueueWaitIdle(queue));
 
@@ -1347,11 +1269,13 @@ TEST_F(Sync2Test, SwapchainImage) {
     vk::GetSwapchainImagesKHR(m_device->handle(), m_swapchain, &image_count, NULL);
     std::vector<VkImage> swapchain_images(image_count);
     vk::GetSwapchainImagesKHR(m_device->handle(), m_swapchain, &image_count, swapchain_images.data());
-    VkFenceCreateInfo fenceci = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, 0};
-    VkFence fence;
-    VkResult ret = vk::CreateFence(m_device->device(), &fenceci, nullptr, &fence);
+
+    VkSemaphore semaphore;
+    auto semaphore_create_info = LvlInitStruct<VkSemaphoreCreateInfo>();
+    auto ret = vk::CreateSemaphore(m_device->device(), &semaphore_create_info, nullptr, &semaphore);
     ASSERT_VK_SUCCESS(ret);
-    ret = vk::AcquireNextImageKHR(m_device->handle(), m_swapchain, UINT64_MAX, VK_NULL_HANDLE, fence, &image_index);
+
+    ret = vk::AcquireNextImageKHR(m_device->handle(), m_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &image_index);
     ASSERT_VK_SUCCESS(ret);
     VkAttachmentDescription attach[] = {
         {0, VK_FORMAT_B8G8R8A8_UNORM, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
@@ -1361,44 +1285,60 @@ TEST_F(Sync2Test, SwapchainImage) {
     VkAttachmentReference att_ref = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
 
     VkSubpassDescription subpass = {0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, nullptr, 1, &att_ref, nullptr, nullptr, 0, nullptr};
-    VkRenderPassCreateInfo rpci = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, nullptr, 0, 1, attach, 1, &subpass, 0, nullptr};
+    auto rpci = LvlInitStruct<VkRenderPassCreateInfo>();
+    rpci.flags = 0;
+    rpci.attachmentCount = 1;
+    rpci.pAttachments = attach;
+    rpci.subpassCount = 1;
+    rpci.pSubpasses = &subpass;
+
     VkRenderPass rp1, rp2;
 
     ret = vk::CreateRenderPass(m_device->device(), &rpci, nullptr, &rp1);
     ASSERT_VK_SUCCESS(ret);
     attach[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     ret = vk::CreateRenderPass(m_device->device(), &rpci, nullptr, &rp2);
-    VkImageViewCreateInfo ivci = {
-        VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        nullptr,
-        0,
-        swapchain_images[image_index],
-        VK_IMAGE_VIEW_TYPE_2D,
-        VK_FORMAT_B8G8R8A8_UNORM,
-        {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-         VK_COMPONENT_SWIZZLE_IDENTITY},
-        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
-    };
+
+    auto ivci = LvlInitStruct<VkImageViewCreateInfo>();
+    ivci.image = swapchain_images[image_index];
+    ivci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    ivci.format = VK_FORMAT_B8G8R8A8_UNORM;
+    ivci.components = {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+                       VK_COMPONENT_SWIZZLE_IDENTITY};
+    ivci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+
     VkImageView view;
     ret = vk::CreateImageView(m_device->device(), &ivci, nullptr, &view);
     ASSERT_VK_SUCCESS(ret);
-    VkFramebufferCreateInfo fci = {VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, rp1, 1, &view, 32, 32, 1};
+    auto fci = LvlInitStruct<VkFramebufferCreateInfo>();
+    fci.renderPass = rp1;
+    fci.attachmentCount = 1;
+    fci.pAttachments = &view;
+    fci.width = 32;
+    fci.height = 32;
+    fci.layers = 1;
+
     VkFramebuffer fb1, fb2;
     ret = vk::CreateFramebuffer(m_device->device(), &fci, nullptr, &fb1);
     fci.renderPass = rp2;
     ret = vk::CreateFramebuffer(m_device->device(), &fci, nullptr, &fb2);
     ASSERT_VK_SUCCESS(ret);
-    VkRenderPassBeginInfo rpbi = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, rp1, fb1, {{0, 0}, {32, 32}}, 0, nullptr};
+
+    auto rpbi = LvlInitStruct<VkRenderPassBeginInfo>();
+    rpbi.renderPass = rp1;
+    rpbi.framebuffer = fb1;
+    rpbi.renderArea = {{0, 0}, {32, 32}};
+
     m_commandBuffer->begin();
     vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi, VK_SUBPASS_CONTENTS_INLINE);
     vk::CmdEndRenderPass(m_commandBuffer->handle());
+
     rpbi.framebuffer = fb2;
     rpbi.renderPass = rp2;
     vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi, VK_SUBPASS_CONTENTS_INLINE);
     vk::CmdEndRenderPass(m_commandBuffer->handle());
 
-    VkImageMemoryBarrier2KHR img_barrier = {};
-    img_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    auto img_barrier = LvlInitStruct<VkImageMemoryBarrier2KHR>();
     img_barrier.srcAccessMask = 0;
     img_barrier.dstAccessMask = 0;
     img_barrier.srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
@@ -1414,32 +1354,41 @@ TEST_F(Sync2Test, SwapchainImage) {
     img_barrier.subresourceRange.layerCount = 1;
     img_barrier.subresourceRange.levelCount = 1;
 
-    VkDependencyInfoKHR info = {};
-    info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+    auto info = LvlInitStruct<VkDependencyInfoKHR>();
     info.imageMemoryBarrierCount = 1;
     info.pImageMemoryBarriers = &img_barrier;
     vk::CmdPipelineBarrier2KHR(m_commandBuffer->handle(), &info);
     m_commandBuffer->end();
 
-    vk::QueueSubmit2KHR(m_commandBuffer->Queue()->handle(), 0, nullptr, fence);
+    {
+        auto sem_info = LvlInitStruct<VkSemaphoreSubmitInfoKHR>();
+        sem_info.semaphore = semaphore;
+        sem_info.stageMask = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT_KHR;
 
-    VkCommandBufferSubmitInfoKHR cb_info = {};
-    cb_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
-    cb_info.commandBuffer = m_commandBuffer->handle();
+        auto submit_info = LvlInitStruct<VkSubmitInfo2KHR>();
+        submit_info.waitSemaphoreInfoCount = 1;
+        submit_info.pWaitSemaphoreInfos = &sem_info;
 
-    VkSubmitInfo2KHR submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
-    submit_info.commandBufferInfoCount = 1;
-    submit_info.pCommandBufferInfos = &cb_info;
-    vk::QueueSubmit2KHR(m_commandBuffer->Queue()->handle(), 1, &submit_info, VK_NULL_HANDLE);
-    ASSERT_VK_SUCCESS(vk::QueueWaitIdle(m_commandBuffer->Queue()->handle()));
-    m_errorMonitor->ExpectSuccess();
+        vk::QueueSubmit2KHR(m_commandBuffer->Queue()->handle(), 1, &submit_info, VK_NULL_HANDLE);
+    }
+
+    {
+        auto cb_info = LvlInitStruct<VkCommandBufferSubmitInfoKHR>();
+        cb_info.commandBuffer = m_commandBuffer->handle();
+
+        auto submit_info = LvlInitStruct<VkSubmitInfo2KHR>();
+        submit_info.commandBufferInfoCount = 1;
+        submit_info.pCommandBufferInfos = &cb_info;
+        vk::QueueSubmit2KHR(m_commandBuffer->Queue()->handle(), 1, &submit_info, VK_NULL_HANDLE);
+        ASSERT_VK_SUCCESS(vk::QueueWaitIdle(m_commandBuffer->Queue()->handle()));
+        m_errorMonitor->ExpectSuccess();
+    }
 
     vk::DestroyFramebuffer(m_device->device(), fb1, NULL);
     vk::DestroyRenderPass(m_device->device(), rp1, NULL);
     vk::DestroyFramebuffer(m_device->device(), fb2, NULL);
     vk::DestroyRenderPass(m_device->device(), rp2, NULL);
-    vk::DestroyFence(m_device->device(), fence, NULL);
+    vk::DestroySemaphore(m_device->device(), semaphore, NULL);
     vk::DestroyImageView(m_device->device(), view, NULL);
     DestroySwapchain();
 }
