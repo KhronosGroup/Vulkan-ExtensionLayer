@@ -4511,14 +4511,14 @@ struct safe_VkVideoProfileListInfoKHR {
 struct safe_VkVideoCapabilitiesKHR {
     VkStructureType sType;
     void* pNext;
-    VkVideoCapabilityFlagsKHR capabilityFlags;
+    VkVideoCapabilityFlagsKHR flags;
     VkDeviceSize minBitstreamBufferOffsetAlignment;
     VkDeviceSize minBitstreamBufferSizeAlignment;
-    VkExtent2D videoPictureExtentGranularity;
-    VkExtent2D minExtent;
-    VkExtent2D maxExtent;
-    uint32_t maxReferencePicturesSlotsCount;
-    uint32_t maxReferencePicturesActiveCount;
+    VkExtent2D pictureAccessGranularity;
+    VkExtent2D minCodedExtent;
+    VkExtent2D maxCodedExtent;
+    uint32_t maxDpbSlots;
+    uint32_t maxActiveReferencePictures;
     VkExtensionProperties stdHeaderVersion;
     safe_VkVideoCapabilitiesKHR(const VkVideoCapabilitiesKHR* in_struct);
     safe_VkVideoCapabilitiesKHR(const safe_VkVideoCapabilitiesKHR& copy_src);
@@ -4656,9 +4656,9 @@ struct safe_VkVideoSessionCreateInfoKHR {
     safe_VkVideoProfileInfoKHR* pVideoProfile;
     VkFormat pictureFormat;
     VkExtent2D maxCodedExtent;
-    VkFormat referencePicturesFormat;
-    uint32_t maxReferencePicturesSlotsCount;
-    uint32_t maxReferencePicturesActiveCount;
+    VkFormat referencePictureFormat;
+    uint32_t maxDpbSlots;
+    uint32_t maxActiveReferencePictures;
     const VkExtensionProperties* pStdHeaderVersion;
     safe_VkVideoSessionCreateInfoKHR(const VkVideoSessionCreateInfoKHR* in_struct);
     safe_VkVideoSessionCreateInfoKHR(const safe_VkVideoSessionCreateInfoKHR& copy_src);
@@ -6440,10 +6440,10 @@ struct safe_VkVideoEncodeH264CapabilitiesEXT {
 struct safe_VkVideoEncodeH264SessionParametersAddInfoEXT {
     VkStructureType sType;
     const void* pNext;
-    uint32_t spsStdCount;
-    const StdVideoH264SequenceParameterSet* pSpsStd;
-    uint32_t ppsStdCount;
-    const StdVideoH264PictureParameterSet* pPpsStd;
+    uint32_t stdSPSCount;
+    const StdVideoH264SequenceParameterSet* pStdSPSs;
+    uint32_t stdPPSCount;
+    const StdVideoH264PictureParameterSet* pStdPPSs;
     safe_VkVideoEncodeH264SessionParametersAddInfoEXT(const VkVideoEncodeH264SessionParametersAddInfoEXT* in_struct);
     safe_VkVideoEncodeH264SessionParametersAddInfoEXT(const safe_VkVideoEncodeH264SessionParametersAddInfoEXT& copy_src);
     safe_VkVideoEncodeH264SessionParametersAddInfoEXT& operator=(const safe_VkVideoEncodeH264SessionParametersAddInfoEXT& copy_src);
@@ -6460,8 +6460,8 @@ struct safe_VkVideoEncodeH264SessionParametersAddInfoEXT {
 struct safe_VkVideoEncodeH264SessionParametersCreateInfoEXT {
     VkStructureType sType;
     const void* pNext;
-    uint32_t maxSpsStdCount;
-    uint32_t maxPpsStdCount;
+    uint32_t maxStdSPSCount;
+    uint32_t maxStdPPSCount;
     safe_VkVideoEncodeH264SessionParametersAddInfoEXT* pParametersAddInfo;
     safe_VkVideoEncodeH264SessionParametersCreateInfoEXT(const VkVideoEncodeH264SessionParametersCreateInfoEXT* in_struct);
     safe_VkVideoEncodeH264SessionParametersCreateInfoEXT(const safe_VkVideoEncodeH264SessionParametersCreateInfoEXT& copy_src);
@@ -6676,12 +6676,12 @@ struct safe_VkVideoEncodeH265CapabilitiesEXT {
 struct safe_VkVideoEncodeH265SessionParametersAddInfoEXT {
     VkStructureType sType;
     const void* pNext;
-    uint32_t vpsStdCount;
-    const StdVideoH265VideoParameterSet* pVpsStd;
-    uint32_t spsStdCount;
-    const StdVideoH265SequenceParameterSet* pSpsStd;
-    uint32_t ppsStdCount;
-    const StdVideoH265PictureParameterSet* pPpsStd;
+    uint32_t stdVPSCount;
+    const StdVideoH265VideoParameterSet* pStdVPSs;
+    uint32_t stdSPSCount;
+    const StdVideoH265SequenceParameterSet* pStdSPSs;
+    uint32_t stdPPSCount;
+    const StdVideoH265PictureParameterSet* pStdPPSs;
     safe_VkVideoEncodeH265SessionParametersAddInfoEXT(const VkVideoEncodeH265SessionParametersAddInfoEXT* in_struct);
     safe_VkVideoEncodeH265SessionParametersAddInfoEXT(const safe_VkVideoEncodeH265SessionParametersAddInfoEXT& copy_src);
     safe_VkVideoEncodeH265SessionParametersAddInfoEXT& operator=(const safe_VkVideoEncodeH265SessionParametersAddInfoEXT& copy_src);
@@ -6698,9 +6698,9 @@ struct safe_VkVideoEncodeH265SessionParametersAddInfoEXT {
 struct safe_VkVideoEncodeH265SessionParametersCreateInfoEXT {
     VkStructureType sType;
     const void* pNext;
-    uint32_t maxVpsStdCount;
-    uint32_t maxSpsStdCount;
-    uint32_t maxPpsStdCount;
+    uint32_t maxStdVPSCount;
+    uint32_t maxStdSPSCount;
+    uint32_t maxStdPPSCount;
     safe_VkVideoEncodeH265SessionParametersAddInfoEXT* pParametersAddInfo;
     safe_VkVideoEncodeH265SessionParametersCreateInfoEXT(const VkVideoEncodeH265SessionParametersCreateInfoEXT* in_struct);
     safe_VkVideoEncodeH265SessionParametersCreateInfoEXT(const safe_VkVideoEncodeH265SessionParametersCreateInfoEXT& copy_src);
@@ -6882,7 +6882,7 @@ struct safe_VkVideoDecodeH264ProfileInfoEXT {
     VkStructureType sType;
     const void* pNext;
     StdVideoH264ProfileIdc stdProfileIdc;
-    VkVideoDecodeH264PictureLayoutFlagsEXT pictureLayout;
+    VkVideoDecodeH264PictureLayoutFlagBitsEXT pictureLayout;
     safe_VkVideoDecodeH264ProfileInfoEXT(const VkVideoDecodeH264ProfileInfoEXT* in_struct);
     safe_VkVideoDecodeH264ProfileInfoEXT(const safe_VkVideoDecodeH264ProfileInfoEXT& copy_src);
     safe_VkVideoDecodeH264ProfileInfoEXT& operator=(const safe_VkVideoDecodeH264ProfileInfoEXT& copy_src);
@@ -6899,7 +6899,7 @@ struct safe_VkVideoDecodeH264ProfileInfoEXT {
 struct safe_VkVideoDecodeH264CapabilitiesEXT {
     VkStructureType sType;
     void* pNext;
-    StdVideoH264Level maxLevel;
+    StdVideoH264LevelIdc maxLevelIdc;
     VkOffset2D fieldOffsetGranularity;
     safe_VkVideoDecodeH264CapabilitiesEXT(const VkVideoDecodeH264CapabilitiesEXT* in_struct);
     safe_VkVideoDecodeH264CapabilitiesEXT(const safe_VkVideoDecodeH264CapabilitiesEXT& copy_src);
@@ -6917,10 +6917,10 @@ struct safe_VkVideoDecodeH264CapabilitiesEXT {
 struct safe_VkVideoDecodeH264SessionParametersAddInfoEXT {
     VkStructureType sType;
     const void* pNext;
-    uint32_t spsStdCount;
-    const StdVideoH264SequenceParameterSet* pSpsStd;
-    uint32_t ppsStdCount;
-    const StdVideoH264PictureParameterSet* pPpsStd;
+    uint32_t stdSPSCount;
+    const StdVideoH264SequenceParameterSet* pStdSPSs;
+    uint32_t stdPPSCount;
+    const StdVideoH264PictureParameterSet* pStdPPSs;
     safe_VkVideoDecodeH264SessionParametersAddInfoEXT(const VkVideoDecodeH264SessionParametersAddInfoEXT* in_struct);
     safe_VkVideoDecodeH264SessionParametersAddInfoEXT(const safe_VkVideoDecodeH264SessionParametersAddInfoEXT& copy_src);
     safe_VkVideoDecodeH264SessionParametersAddInfoEXT& operator=(const safe_VkVideoDecodeH264SessionParametersAddInfoEXT& copy_src);
@@ -6937,8 +6937,8 @@ struct safe_VkVideoDecodeH264SessionParametersAddInfoEXT {
 struct safe_VkVideoDecodeH264SessionParametersCreateInfoEXT {
     VkStructureType sType;
     const void* pNext;
-    uint32_t maxSpsStdCount;
-    uint32_t maxPpsStdCount;
+    uint32_t maxStdSPSCount;
+    uint32_t maxStdPPSCount;
     safe_VkVideoDecodeH264SessionParametersAddInfoEXT* pParametersAddInfo;
     safe_VkVideoDecodeH264SessionParametersCreateInfoEXT(const VkVideoDecodeH264SessionParametersCreateInfoEXT* in_struct);
     safe_VkVideoDecodeH264SessionParametersCreateInfoEXT(const safe_VkVideoDecodeH264SessionParametersCreateInfoEXT& copy_src);
@@ -6957,8 +6957,8 @@ struct safe_VkVideoDecodeH264PictureInfoEXT {
     VkStructureType sType;
     const void* pNext;
     const StdVideoDecodeH264PictureInfo* pStdPictureInfo;
-    uint32_t slicesCount;
-    const uint32_t* pSlicesDataOffsets;
+    uint32_t sliceCount;
+    const uint32_t* pSliceOffsets;
     safe_VkVideoDecodeH264PictureInfoEXT(const VkVideoDecodeH264PictureInfoEXT* in_struct);
     safe_VkVideoDecodeH264PictureInfoEXT(const safe_VkVideoDecodeH264PictureInfoEXT& copy_src);
     safe_VkVideoDecodeH264PictureInfoEXT& operator=(const safe_VkVideoDecodeH264PictureInfoEXT& copy_src);
@@ -6968,23 +6968,6 @@ struct safe_VkVideoDecodeH264PictureInfoEXT {
     void initialize(const safe_VkVideoDecodeH264PictureInfoEXT* copy_src);
     VkVideoDecodeH264PictureInfoEXT *ptr() { return reinterpret_cast<VkVideoDecodeH264PictureInfoEXT *>(this); }
     VkVideoDecodeH264PictureInfoEXT const *ptr() const { return reinterpret_cast<VkVideoDecodeH264PictureInfoEXT const *>(this); }
-};
-#endif // VK_ENABLE_BETA_EXTENSIONS
-
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-struct safe_VkVideoDecodeH264MvcInfoEXT {
-    VkStructureType sType;
-    const void* pNext;
-    const StdVideoDecodeH264Mvc* pStdMvc;
-    safe_VkVideoDecodeH264MvcInfoEXT(const VkVideoDecodeH264MvcInfoEXT* in_struct);
-    safe_VkVideoDecodeH264MvcInfoEXT(const safe_VkVideoDecodeH264MvcInfoEXT& copy_src);
-    safe_VkVideoDecodeH264MvcInfoEXT& operator=(const safe_VkVideoDecodeH264MvcInfoEXT& copy_src);
-    safe_VkVideoDecodeH264MvcInfoEXT();
-    ~safe_VkVideoDecodeH264MvcInfoEXT();
-    void initialize(const VkVideoDecodeH264MvcInfoEXT* in_struct);
-    void initialize(const safe_VkVideoDecodeH264MvcInfoEXT* copy_src);
-    VkVideoDecodeH264MvcInfoEXT *ptr() { return reinterpret_cast<VkVideoDecodeH264MvcInfoEXT *>(this); }
-    VkVideoDecodeH264MvcInfoEXT const *ptr() const { return reinterpret_cast<VkVideoDecodeH264MvcInfoEXT const *>(this); }
 };
 #endif // VK_ENABLE_BETA_EXTENSIONS
 
@@ -8674,7 +8657,7 @@ struct safe_VkVideoDecodeH265ProfileInfoEXT {
 struct safe_VkVideoDecodeH265CapabilitiesEXT {
     VkStructureType sType;
     void* pNext;
-    StdVideoH265Level maxLevel;
+    StdVideoH265LevelIdc maxLevelIdc;
     safe_VkVideoDecodeH265CapabilitiesEXT(const VkVideoDecodeH265CapabilitiesEXT* in_struct);
     safe_VkVideoDecodeH265CapabilitiesEXT(const safe_VkVideoDecodeH265CapabilitiesEXT& copy_src);
     safe_VkVideoDecodeH265CapabilitiesEXT& operator=(const safe_VkVideoDecodeH265CapabilitiesEXT& copy_src);
@@ -8691,12 +8674,12 @@ struct safe_VkVideoDecodeH265CapabilitiesEXT {
 struct safe_VkVideoDecodeH265SessionParametersAddInfoEXT {
     VkStructureType sType;
     const void* pNext;
-    uint32_t vpsStdCount;
-    const StdVideoH265VideoParameterSet* pVpsStd;
-    uint32_t spsStdCount;
-    const StdVideoH265SequenceParameterSet* pSpsStd;
-    uint32_t ppsStdCount;
-    const StdVideoH265PictureParameterSet* pPpsStd;
+    uint32_t stdVPSCount;
+    const StdVideoH265VideoParameterSet* pStdVPSs;
+    uint32_t stdSPSCount;
+    const StdVideoH265SequenceParameterSet* pStdSPSs;
+    uint32_t stdPPSCount;
+    const StdVideoH265PictureParameterSet* pStdPPSs;
     safe_VkVideoDecodeH265SessionParametersAddInfoEXT(const VkVideoDecodeH265SessionParametersAddInfoEXT* in_struct);
     safe_VkVideoDecodeH265SessionParametersAddInfoEXT(const safe_VkVideoDecodeH265SessionParametersAddInfoEXT& copy_src);
     safe_VkVideoDecodeH265SessionParametersAddInfoEXT& operator=(const safe_VkVideoDecodeH265SessionParametersAddInfoEXT& copy_src);
@@ -8713,9 +8696,9 @@ struct safe_VkVideoDecodeH265SessionParametersAddInfoEXT {
 struct safe_VkVideoDecodeH265SessionParametersCreateInfoEXT {
     VkStructureType sType;
     const void* pNext;
-    uint32_t maxVpsStdCount;
-    uint32_t maxSpsStdCount;
-    uint32_t maxPpsStdCount;
+    uint32_t maxStdVPSCount;
+    uint32_t maxStdSPSCount;
+    uint32_t maxStdPPSCount;
     safe_VkVideoDecodeH265SessionParametersAddInfoEXT* pParametersAddInfo;
     safe_VkVideoDecodeH265SessionParametersCreateInfoEXT(const VkVideoDecodeH265SessionParametersCreateInfoEXT* in_struct);
     safe_VkVideoDecodeH265SessionParametersCreateInfoEXT(const safe_VkVideoDecodeH265SessionParametersCreateInfoEXT& copy_src);
@@ -8734,8 +8717,8 @@ struct safe_VkVideoDecodeH265PictureInfoEXT {
     VkStructureType sType;
     const void* pNext;
     StdVideoDecodeH265PictureInfo* pStdPictureInfo;
-    uint32_t slicesCount;
-    const uint32_t* pSlicesDataOffsets;
+    uint32_t sliceCount;
+    const uint32_t* pSliceOffsets;
     safe_VkVideoDecodeH265PictureInfoEXT(const VkVideoDecodeH265PictureInfoEXT* in_struct);
     safe_VkVideoDecodeH265PictureInfoEXT(const safe_VkVideoDecodeH265PictureInfoEXT& copy_src);
     safe_VkVideoDecodeH265PictureInfoEXT& operator=(const safe_VkVideoDecodeH265PictureInfoEXT& copy_src);
