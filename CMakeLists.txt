@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2021 Valve Corporation
-# Copyright (c) 2014-2021 LunarG, Inc.
+# Copyright (c) 2014-2022 Valve Corporation
+# Copyright (c) 2014-2022 LunarG, Inc.
 # Copyright (c) 2019      Intel Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -96,6 +96,15 @@ else()
     message("* NOTE: Not adding target to run update_deps.py automatically.                 *")
     message("********************************************************************************")
     find_package(PythonInterp 3 QUIET)
+endif()
+if (SPIRV_HEADERS_INSTALL_DIR)
+    list(APPEND CMAKE_PREFIX_PATH ${SPIRV_HEADERS_INSTALL_DIR})
+endif()
+if (SPIRV_TOOLS_INSTALL_DIR)
+    list(APPEND CMAKE_PREFIX_PATH ${SPIRV_TOOLS_INSTALL_DIR})
+endif()
+if (GOOGLETEST_INSTALL_DIR)
+    list(APPEND CMAKE_PREFIX_PATH ${GOOGLETEST_INSTALL_DIR})
 endif()
 
 if (TARGET Vulkan::Headers)
@@ -207,12 +216,7 @@ if(MAKE_C_COMPILER_ID MATCHES "Clang")
 
 endif()
 
-if(TARGET gtest OR IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/googletest)
-    option(BUILD_TESTS "Build tests" ON)
-else()
-    option(BUILD_TESTS "Build tests" OFF)
-endif()
-
+option(BUILD_TESTS "Build tests" ON)
 option(INSTALL_TESTS "Install tests" OFF)
 option(BUILD_LAYERS "Build layers" ON)
 option(BUILD_LAYER_SUPPORT_FILES "Generate layer files" OFF) # For generating files when not building layers
@@ -390,6 +394,7 @@ endif()
 add_subdirectory(layers)
 add_subdirectory(utils)
 if(BUILD_TESTS)
-    add_subdirectory(external)
+    # Attempt to enable googletest if available.
+    find_package(GTest REQUIRED CONFIG)
     add_subdirectory(tests)
 endif()
