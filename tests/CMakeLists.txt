@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2021 Valve Corporation
-# Copyright (c) 2014-2021 LunarG, Inc.
+# Copyright (c) 2014-2022 Valve Corporation
+# Copyright (c) 2014-2022 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -88,9 +88,6 @@ add_executable(vk_extension_layer_tests
                ${COMMON_CPP})
 add_test(NAME vk_extension_layer_tests COMMAND vk_extension_layer_tests)
 add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_synchronization2-json)
-if(NOT GTEST_IS_STATIC_LIB)
-    set_target_properties(vk_extension_layer_tests PROPERTIES COMPILE_DEFINITIONS "GTEST_LINKED_AS_SHARED_LIBRARY=1")
-endif()
 # Note that there is no need to add GTEST directories here due to googletest exporting them via the gtest target.
 target_include_directories(vk_extension_layer_tests
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
@@ -106,48 +103,23 @@ target_include_directories(vk_extension_layer_tests
                                   ${PROJECT_BINARY_DIR}/layers)
 add_dependencies(vk_extension_layer_tests
 	         VkExtLayer_utils)
+target_link_libraries(vk_extension_layer_tests
+                      PRIVATE VkExtLayer_utils
+                              GTest::gtest
+                              GTest::gtest_main
+                              ${GLSLANG_LIBRARIES})
 
 # Specify target_link_libraries
-if(WIN32)
-    set_target_properties(gtest PROPERTIES FOLDER ${LAYERS_HELPER_FOLDER})
-    set_target_properties(gtest_main PROPERTIES FOLDER ${LAYERS_HELPER_FOLDER})
-
-    target_link_libraries(vk_extension_layer_tests
-                          PRIVATE VkExtLayer_utils
-                                  gtest
-                                  gtest_main
-                                  ${GLSLANG_LIBRARIES})
-else()
+if(NOT WIN32)
     target_compile_options(vk_extension_layer_tests PRIVATE "-Wno-sign-compare")
+    target_link_libraries(vk_extension_layer_tests PRIVATE dl)
     if(BUILD_WSI_XCB_SUPPORT OR BUILD_WSI_XLIB_SUPPORT)
         target_link_libraries(vk_extension_layer_tests
                               PRIVATE VkExtLayer_utils
                                       ${XCB_LIBRARIES}
-                                      ${X11_LIBRARIES}
-                                      VkExtLayer_utils
-                                      gtest
-                                      gtest_main
-                                      dl
-                                      ${GLSLANG_LIBRARIES})
-    else()
-        target_link_libraries(vk_extension_layer_tests
-                              PRIVATE VkExtLayer_utils
-                                      gtest
-                                      gtest_main
-                                      dl
-                                      ${GLSLANG_LIBRARIES})
+                                      ${X11_LIBRARIES})
     endif()
 endif()
-
-#if(WIN32)
-#    # For Windows, copy necessary gtest DLLs to the right spot for the vk_layer_tests...
-#    if(NOT GTEST_IS_STATIC_LIB)
-#        file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/external/googletest/googletest/$<CONFIG>/*.dll SRC_GTEST_DLLS)
-#        file(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> DST_GTEST_DLLS)
-#        add_custom_command(TARGET vk_extension_layer_tests POST_BUILD
-#                           COMMAND xcopy /Y /I ${SRC_GTEST_DLLS} ${DST_GTEST_DLLS})
-#    endif()
-#endif()
 
 if(INSTALL_TESTS)
     install(TARGETS vk_extension_layer_tests DESTINATION ${CMAKE_INSTALL_BINDIR})
