@@ -16,7 +16,7 @@
       "install_dir" : "glslang/build/install",
       "commit" : "5755de46b07e4374c05fb1081f65f7ae1f8cca81",
       "prebuild" : [
-        "python update_glslang_sources.py"
+        "{python} update_glslang_sources.py"
       ],
       "cmake_options" : [
         "-DUSE_CCACHE=ON"
