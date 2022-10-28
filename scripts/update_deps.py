@@ -176,6 +176,11 @@ googletest.
 The commands listed in "prebuild" are executed first, and then the
 commands for the specific platform are executed.
 
+Note that an execution of Python should be encoded as "{python}"
+in the command string.  This will be replaced with Python's
+sys.executable, to ensure that the same version of Python runs
+the prebuild command as is running the current script.
+
 - custom_build (optional)
 
 A list of commands to execute as a custom build instead of using
@@ -244,12 +249,12 @@ import argparse
 import json
 import os.path
 import subprocess
-import sys
 import platform
 import multiprocessing
 import shlex
 import shutil
 import stat
+import sys
 import time
 
 KNOWN_GOOD_FILE_NAME = 'known_good.json'
@@ -302,6 +307,27 @@ def command_output(cmd, directory, fail_ok=False):
 
 def escape(path):
     return path.replace('\\', '/')
+
+def split_command(command, **kwargs):
+    """Given a command string, format any recognized "{reference}" fields, and
+    use shlex.split() to split the command into separate words.  Return the list
+    of command words.
+
+    References can be:
+        "{python}" - expands to Python's sys.executable, to ensure that the same
+            version of Python is used as is being used by the running script
+        kwargs - any var=value passed in to this function as a keyword argument
+            can also be used for the expansion
+    """
+
+    # Substitute each command word separately, to ensure that an expansion
+    # with spaces (e.g. "C:\Program Files\Python37\python.exe") doesn't split
+    # incorrectly because of the extra spaces.
+    command_list = shlex.split(command)
+
+    # Create a new list by substituting expansions in each word, and
+    # return it to the caller.
+    return [x.format(python=sys.executable, **kwargs) for x in command_list]
 
 class GoodRepo(object):
     """Represents a repository at a known-good commit."""
@@ -413,19 +439,19 @@ class GoodRepo(object):
     def PreBuild(self):
         """Execute any prebuild steps from the repo root"""
         for p in self.prebuild:
-            command_output(shlex.split(p), self.repo_dir)
+            command_output(split_command(p), self.repo_dir)
         if platform.system() == 'Linux' or platform.system() == 'Darwin':
             for p in self.prebuild_linux:
-                command_output(shlex.split(p), self.repo_dir)
+                command_output(split_command(p), self.repo_dir)
         if platform.system() == 'Windows':
             for p in self.prebuild_windows:
-                command_output(shlex.split(p), self.repo_dir)
+                command_output(split_command(p), self.repo_dir)
 
     def CustomBuild(self, repo_dict):
         """Execute any custom_build steps from the repo root"""
         for p in self.custom_build:
             cmd = self.CustomPreProcess(p, repo_dict)
-            command_output(shlex.split(cmd), self.repo_dir)
+            command_output(split_command(cmd), self.repo_dir)
 
     def CMakeConfig(self, repos):
         """Build CMake command for the configuration phase and execute it"""
@@ -759,4 +785,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
