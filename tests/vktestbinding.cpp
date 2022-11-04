@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ namespace {
     } while (0)
 
 #define NON_DISPATCHABLE_HANDLE_DTOR(cls, destroy_func)            \
-    cls::~cls() NOEXCEPT {                                         \
+    cls::~cls() noexcept {                                         \
         if (initialized()) destroy_func(device(), handle(), NULL); \
     }
 
@@ -234,7 +234,7 @@ QueueCreateInfoArray::QueueCreateInfoArray(const std::vector<VkQueueFamilyProper
     }
 }
 
-Device::~Device() NOEXCEPT {
+Device::~Device() noexcept {
     if (!initialized()) return;
 
     vk::DestroyDevice(handle(), NULL);
@@ -422,7 +422,7 @@ VkResult Queue::wait() {
     return result;
 }
 
-DeviceMemory::~DeviceMemory() NOEXCEPT {
+DeviceMemory::~DeviceMemory() noexcept {
     if (initialized()) vk::FreeMemory(device(), handle(), NULL);
 }
 
@@ -837,7 +837,7 @@ DescriptorSet *DescriptorPool::alloc_sets(const Device &dev, const DescriptorSet
     return (set.empty()) ? NULL : set[0];
 }
 
-DescriptorSet::~DescriptorSet() NOEXCEPT {
+DescriptorSet::~DescriptorSet() noexcept {
     if (initialized()) {
         // Only call vk::Free* on sets allocated from pool with usage *_DYNAMIC
         if (containing_pool_->getDynamicUsage()) {
@@ -853,7 +853,7 @@ void CommandPool::init(const Device &dev, const VkCommandPoolCreateInfo &info) {
     NON_DISPATCHABLE_HANDLE_INIT(vk::CreateCommandPool, dev, &info);
 }
 
-CommandBuffer::~CommandBuffer() NOEXCEPT {
+CommandBuffer::~CommandBuffer() noexcept {
     if (initialized()) {
         VkCommandBuffer cmds[] = {handle()};
         vk::FreeCommandBuffers(dev_handle_, cmd_pool_, 1, cmds);

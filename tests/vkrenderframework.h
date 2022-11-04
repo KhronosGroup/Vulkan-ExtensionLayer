@@ -104,7 +104,7 @@ class ErrorMonitor {
   public:
     ErrorMonitor();
 
-    ~ErrorMonitor() NOEXCEPT;
+    ~ErrorMonitor() noexcept;
 
     // Set monitor to pristine state
     void Reset();
@@ -164,8 +164,8 @@ class ErrorMonitor {
 };
 
 struct DebugReporter {
-    void Create(VkInstance instance) NOEXCEPT;
-    void Destroy(VkInstance instance) NOEXCEPT;
+    void Create(VkInstance instance) noexcept;
+    void Destroy(VkInstance instance) noexcept;
 
     ErrorMonitor error_monitor_;
 
@@ -414,7 +414,7 @@ class VkRenderpassObj {
   public:
     VkRenderpassObj(VkDeviceObj *device, VkFormat format = VK_FORMAT_B8G8R8A8_UNORM);
     VkRenderpassObj(VkDeviceObj *device, VkFormat format, bool depthStencil);
-    ~VkRenderpassObj() NOEXCEPT;
+    ~VkRenderpassObj() noexcept;
     VkRenderPass handle() { return m_renderpass; }
 
   protected:
@@ -551,8 +551,8 @@ class VkDescriptorSetLayoutObj : public vk_testing::DescriptorSetLayout {
                              VkDescriptorSetLayoutCreateFlags flags = 0, void *pNext = NULL);
 
     // Move constructor and move assignment operator for Visual Studio 2013
-    VkDescriptorSetLayoutObj(VkDescriptorSetLayoutObj &&src) NOEXCEPT : DescriptorSetLayout(std::move(src)){};
-    VkDescriptorSetLayoutObj &operator=(VkDescriptorSetLayoutObj &&src) NOEXCEPT {
+    VkDescriptorSetLayoutObj(VkDescriptorSetLayoutObj &&src) noexcept : DescriptorSetLayout(std::move(src)){};
+    VkDescriptorSetLayoutObj &operator=(VkDescriptorSetLayoutObj &&src) noexcept {
         DescriptorSetLayout::operator=(std::move(src));
         return *this;
     }
@@ -561,7 +561,7 @@ class VkDescriptorSetLayoutObj : public vk_testing::DescriptorSetLayout {
 class VkDescriptorSetObj : public vk_testing::DescriptorPool {
   public:
     VkDescriptorSetObj(VkDeviceObj *device);
-    ~VkDescriptorSetObj() NOEXCEPT;
+    ~VkDescriptorSetObj() noexcept;
 
     int AppendDummy();
     int AppendBuffer(VkDescriptorType type, VkConstantBufferObj &constantBuffer);
@@ -607,8 +607,8 @@ class VkPipelineLayoutObj : public vk_testing::PipelineLayout {
                         const std::vector<VkPushConstantRange> &push_constant_ranges = {});
 
     // Move constructor and move assignment operator for Visual Studio 2013
-    VkPipelineLayoutObj(VkPipelineLayoutObj &&src) NOEXCEPT : PipelineLayout(std::move(src)) {}
-    VkPipelineLayoutObj &operator=(VkPipelineLayoutObj &&src) NOEXCEPT {
+    VkPipelineLayoutObj(VkPipelineLayoutObj &&src) noexcept : PipelineLayout(std::move(src)) {}
+    VkPipelineLayoutObj &operator=(VkPipelineLayoutObj &&src) noexcept {
         PipelineLayout::operator=(std::move(src));
         return *this;
     }
