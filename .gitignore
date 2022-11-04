@@ -33,5 +33,5 @@ build-android/third_party
 *.files
 *.includes
 .vscode/
+.vs/
 .DS_Store
-
