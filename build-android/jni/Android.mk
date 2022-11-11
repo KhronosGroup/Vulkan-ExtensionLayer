@@ -74,8 +74,7 @@ LOCAL_SRC_FILES += $(SRC_DIR)/tests/extension_layer_tests.cpp \
 LOCAL_C_INCLUDES += $(VULKAN_INCLUDE) \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils/generated \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils \
-                    $(LOCAL_PATH)/$(SRC_DIR)/libs \
-                    $(LOCAL_PATH)/$(THIRD_PARTY)/Vulkan-Tools/common
+                    $(LOCAL_PATH)/$(SRC_DIR)/libs
 
 LOCAL_STATIC_LIBRARIES := googletest_main extlayer_utils shaderc
 LOCAL_CPPFLAGS += -std=c++11 -DVK_PROTOTYPES -Wall -Werror -Wno-unused-function -Wno-unused-const-variable
@@ -97,8 +96,7 @@ LOCAL_SRC_FILES += $(SRC_DIR)/tests/extension_layer_tests.cpp \
 LOCAL_C_INCLUDES += $(VULKAN_INCLUDE) \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils/generated \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils \
-                    $(LOCAL_PATH)/$(SRC_DIR)/libs \
-                    $(LOCAL_PATH)/$(THIRD_PARTY)/Vulkan-Tools/common
+                    $(LOCAL_PATH)/$(SRC_DIR)/libs
 
 LOCAL_STATIC_LIBRARIES := googletest_main extlayer_utils shaderc
 LOCAL_CPPFLAGS += -std=c++11 -DVK_PROTOTYPES -Wall -Werror -Wno-unused-function -Wno-unused-const-variable
