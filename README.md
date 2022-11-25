@@ -3,10 +3,12 @@
 Layers providing Vulkan features when native support is unavailable
 
 ## CI Build Status
-
-| Platform | Build Status |
-|:--------:|:------------:|
-| Linux/MacOS | [![Build Status](https://travis-ci.org/KhronosGroup/Vulkan-ExtensionLayer.svg?branch=master)](https://travis-ci.org/KhronosGroup/Vulkan-ExtensionLayer) |
+| Build Status |
+|:------------|
+| [![Build Status](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions/workflows/build_windows.yml/badge.svg?branch=master)](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions) |
+| [![Build Status](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions/workflows/build_linux.yml/badge.svg?branch=master)](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions) |
+| [![Build Status](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions/workflows/build_macos.yml/badge.svg?branch=master)](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions) |
+| [![Build Status](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions/workflows/build_android.yml/badge.svg?branch=master)](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions) |
 
 ## Introduction
 
