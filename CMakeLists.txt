@@ -23,15 +23,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 enable_testing()
 
-# User-interface declarations ----------------------------------------------------------------------------------------------------
-# This section contains variables that affect development GUIs (e.g. CMake GUI and IDEs), such as option(), folders, and variables
-# with the CACHE property.
-
-option(VEL_CPP_STANDARD "Set the C++ standard to build against. The value will be passed to cmake's CXX_STANDARD property. Default = 11" 11)
-if (NOT VEL_CPP_STANDARD)
-    set(VEL_CPP_STANDARD 11)
-endif()
-
 # Enable beta Vulkan extensions
 add_definitions(-DVK_ENABLE_BETA_EXTENSIONS)
 
@@ -116,6 +107,9 @@ if(USE_CCACHE)
     endif()
 endif()
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include(GNUInstallDirs)

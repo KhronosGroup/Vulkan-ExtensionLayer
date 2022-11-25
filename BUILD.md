@@ -253,9 +253,6 @@ specific requirements for configuring and building these components.
   execution.
 - Please use `update_deps.py --help` to list additional options and read the
   internal documentation in `update_deps.py` for further information.
-- You can build against different C++ standards by setting the
-  `VEL_CPP_STANDARD` option at cmake generation time. Current code is writtent
-  to compile under C++11.
 
 ### Generated source code
 
