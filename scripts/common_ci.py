@@ -1,8 +1,8 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2015-2017, 2019-2021 The Khronos Group Inc.
-# Copyright (c) 2015-2017, 2019-2021 Valve Corporation
-# Copyright (c) 2015-2017, 2019-2021 LunarG, Inc.
+# Copyright (c) 2015-2017, 2019-2022 The Khronos Group Inc.
+# Copyright (c) 2015-2017, 2019-2022 Valve Corporation
+# Copyright (c) 2015-2017, 2019-2022 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -89,6 +89,8 @@ def BuildVEL(args):
     utils.make_dirs(VEL_BUILD_DIR)
     print("Run CMake for Extension Layer")
     cmake_cmd = f'cmake -DUPDATE_DEPS=ON -DCMAKE_BUILD_TYPE={args.configuration.capitalize()} {args.cmake} ..'
+    # By default BUILD_WERROR is OFF, CI should always enable it.
+    cmake_cmd = cmake_cmd + ' -DBUILD_WERROR=ON'
     if IsWindows(): cmake_cmd = cmake_cmd + f' -A {args.arch}'
     RunShellCmd(cmake_cmd, VEL_BUILD_DIR)
 

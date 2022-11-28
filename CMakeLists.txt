@@ -91,7 +91,7 @@ endif()
 
 find_package(VulkanHeaders CONFIG REQUIRED QUIET)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -108,8 +108,14 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # "Helper" targets that don't have interesting source code should set their FOLDER property to this
 set(LAYERS_HELPER_FOLDER "Helper Targets")
 
+# NOTE: The idiom for open source projects is to not enable warnings as errors.
+# This reduces problems for users who simply want to build the repository.
+option(BUILD_WERROR "Treat compiler warnings as errors" OFF)
+if (BUILD_WERROR)
+    add_compile_options("$<IF:$<CXX_COMPILER_ID:MSVC>,/WX,-Werror>")
+endif()
+
 # Platform-specific compiler switches
-option(BUILD_WERROR "Treat compiler warnings as errors" ON)
 if(MAKE_C_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wconversion
 
@@ -131,14 +137,6 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
                         -fno-builtin-memcmp
                         -fvisibility=hidden)
 
-    # Treat warnings as errors for versions of GCC and c++11-compliant Clang versions that are shipped on Ubuntu 18.04 or older.
-    if(BUILD_WERROR)
-        if ((CMAKE_COMPILER_IS_GNUCXX AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.3.0)) OR
-           (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 6.0.0)))
-            add_compile_options(-Werror)
-        endif()
-    endif()
-
     set(CMAKE_C_STANDARD 99)
 
     # For GCC version 7.1 or greater, we need to disable the implicit fallthrough warning since there's no consistent way to satisfy
@@ -147,10 +145,6 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         add_compile_options(-Wimplicit-fallthrough=0)
     endif()
 elseif(MSVC)
-    if(BUILD_WERROR)
-        # Treat warnings as errors
-        add_compile_options("/WX")
-    endif()
     # Warn about nested declarations
     add_compile_options("/w34456")
     # Warn about potentially uninitialized variables
