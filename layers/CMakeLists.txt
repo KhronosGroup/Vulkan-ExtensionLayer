@@ -63,7 +63,7 @@ endif()
 macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
     add_library(VkLayer_${target} SHARED ${ARGN} VkLayer_${target}.def)
     target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
-    target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
+    target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils Vulkan::Headers)
     if(WIN32)
         file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/VkLayer_${target}.def DEF_FILE)
         add_custom_target(copy-${target}-def-file ALL
@@ -85,8 +85,7 @@ endmacro()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${PROJECT_SOURCE_DIR}/utils
-                    ${PROJECT_SOURCE_DIR}/utils/generated
-                    ${VulkanHeaders_INCLUDE_DIRS})
+                    ${PROJECT_SOURCE_DIR}/utils/generated)
 
 if(MSVC)
     # Applies to all configurations
@@ -123,12 +122,9 @@ AddVkLayer(khronos_synchronization2 ""
 # The output file needs Unix "/" separators or Windows "\" separators On top of that, Windows separators actually need to be doubled
 # because the json format uses backslash escapes
 file(TO_NATIVE_PATH "./" RELATIVE_PATH_PREFIX)
-string(REPLACE "\\"
-               "\\\\"
-               RELATIVE_PATH_PREFIX
-               "${RELATIVE_PATH_PREFIX}")
+string(REPLACE "\\" "\\\\" RELATIVE_PATH_PREFIX "${RELATIVE_PATH_PREFIX}")
 
-set(vk_full_version "1.3.${vk_header_version}")
+set(vk_full_version "${VulkanHeaders_VERSION}")
 # Run each .json.in file through the generator We need to create the generator.cmake script so that the generator can be run at
 # compile time, instead of configure time Running at compile time lets us use cmake generator expressions (TARGET_FILE_NAME and
 # TARGET_FILE_DIR, specifically)
