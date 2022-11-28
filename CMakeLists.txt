@@ -85,19 +85,11 @@ endif()
 if (GOOGLETEST_INSTALL_DIR)
     list(APPEND CMAKE_PREFIX_PATH ${GOOGLETEST_INSTALL_DIR})
 endif()
-
-if (TARGET Vulkan::Headers)
-    message(STATUS "Using Vulkan headers from Vulkan::Headers target")
-    get_target_property(VulkanHeaders_INCLUDE_DIRS Vulkan::Headers INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(VulkanRegistry_DIR Vulkan::Registry INTERFACE_INCLUDE_DIRECTORIES)
-else()
-    find_package(VulkanHeaders REQUIRED)
-
-    # xxxnsubtil: this should eventually be replaced by exported targets
-    add_library(Vulkan-Headers INTERFACE)
-    target_include_directories(Vulkan-Headers INTERFACE ${VulkanHeaders_INCLUDE_DIRS})
-    add_library(Vulkan::Headers ALIAS Vulkan-Headers)
+if (VULKAN_HEADERS_INSTALL_DIR)
+    list(APPEND CMAKE_PREFIX_PATH ${VULKAN_HEADERS_INSTALL_DIR})
 endif()
+
+find_package(VulkanHeaders CONFIG REQUIRED QUIET)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -321,10 +313,6 @@ if(BUILD_TESTS)
     set(GLSLANG_LIBRARIES ${GLSLANG_LIBRARIES} ${SPIRV_TOOLS_LIBRARIES})
 endif()
 
-# Generate dependent helper files ------------------------------------------------------------------------------------------------
-
-set(SCRIPTS_DIR "${PROJECT_SOURCE_DIR}/scripts")
-
 # uninstall target ---------------------------------------------------------------------------------------------------------------
 if(NOT TARGET uninstall)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
@@ -335,27 +323,21 @@ if(NOT TARGET uninstall)
     set_target_properties(uninstall PROPERTIES FOLDER ${LAYERS_HELPER_FOLDER})
 endif()
 
-# Fetch header version from vulkan_core.h ----------------------------------------------------------------------------------------
-file(STRINGS "${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_core.h" lines REGEX "^#define VK_HEADER_VERSION [0-9]+")
-list(LENGTH lines len)
-if(${len} EQUAL 1)
-    string(REGEX MATCHALL
-                 "[0-9]+"
-                 vk_header_version
-                 ${lines})
-else()
-    message(FATAL_ERROR "Unable to fetch version from vulkan_core.h")
-endif()
-
 # Optional codegen target --------------------------------------------------------------------------------------------------------
 if(PYTHONINTERP_FOUND)
-  add_custom_target(VulkanEL_generated_source
-                      COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
-                              ${VulkanRegistry_DIR} --incremental
-                      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/utils/generated
-                      )
+    # Vulkan::Registry is treated as a header only library,
+    # in order to grab the registry directory we grab the include directory.
+    get_target_property(VulkanRegistry_DIR Vulkan::Registry INTERFACE_INCLUDE_DIRECTORIES)
+    if (NOT EXISTS "${VulkanRegistry_DIR}/vk.xml")
+        message(FATAL_ERROR "Unable to find vk.xml")
+    endif()
+
+    add_custom_target(VulkanEL_generated_source
+        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py ${VulkanRegistry_DIR} --incremental
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/utils/generated
+    )
 else()
-  message("${PROJECT_NAME}: WARNING: VulkanEL_generated_source target requires python 3")
+    message("${PROJECT_NAME}: WARNING: VulkanEL_generated_source target requires python 3")
 endif()
 
 # Add subprojects ----------------------------------------------------------------------------------------------------------------

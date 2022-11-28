@@ -96,15 +96,16 @@ target_include_directories(vk_extension_layer_tests
                                   ${CMAKE_CURRENT_BINARY_DIR}
                                   ${CMAKE_BINARY_DIR}
                                   ${PROJECT_BINARY_DIR}
-                                  ${VulkanHeaders_INCLUDE_DIR}
                                   ${PROJECT_BINARY_DIR}/layers)
 add_dependencies(vk_extension_layer_tests
 	         VkExtLayer_utils)
-target_link_libraries(vk_extension_layer_tests
-                      PRIVATE VkExtLayer_utils
-                              GTest::gtest
-                              GTest::gtest_main
-                              ${GLSLANG_LIBRARIES})
+target_link_libraries(vk_extension_layer_tests PRIVATE
+    VkExtLayer_utils
+    Vulkan::Headers
+    GTest::gtest
+    GTest::gtest_main
+    ${GLSLANG_LIBRARIES}
+)
 
 # Specify target_link_libraries
 if(NOT WIN32)

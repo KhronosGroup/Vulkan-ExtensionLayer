@@ -83,6 +83,4 @@ endif()
 install(TARGETS VkExtLayer_utils DESTINATION ${CMAKE_INSTALL_LIBDIR})
 set_target_properties(VkExtLayer_utils PROPERTIES LINKER_LANGUAGE CXX)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${CMAKE_CURRENT_SOURCE_DIR}/generated
-                    ${VulkanHeaders_INCLUDE_DIRS})
-
+                    ${CMAKE_CURRENT_SOURCE_DIR}/generated)
