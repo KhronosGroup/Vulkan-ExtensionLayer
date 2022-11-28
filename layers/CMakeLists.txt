@@ -62,7 +62,6 @@ endif()
 # System-specific macros to create a library target.
 macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
     add_library(VkLayer_${target} SHARED ${ARGN} VkLayer_${target}.def)
-    set_target_properties(VkLayer_${target} PROPERTIES CXX_STANDARD ${VEL_CPP_STANDARD})
     target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
     target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils)
     if(WIN32)

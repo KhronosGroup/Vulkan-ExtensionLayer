@@ -1,0 +1,45 @@
+# Copyright (c) 2022 Valve Corporation
+# Copyright (c) 2022 LunarG, Inc.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: macOS (build)
+
+on:
+    push:
+    pull_request:
+        branches:
+            - master
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Configure/Generate
+        run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=${{matrix.config}} -DBUILD_TESTS=ON -DBUILD_WERROR=ON -DUPDATE_DEPS=ON -DUPDATE_DEPS_SKIP_EXISTING_INSTALL=ON
+        env:
+          # Specify the minimum version of macOS on which the target binaries are to be deployed.
+          # https://cmake.org/cmake/help/latest/envvar/MACOSX_DEPLOYMENT_TARGET.html
+          MACOSX_DEPLOYMENT_TARGET: 10.12
+      - name: Build
+        run: cmake --build build --parallel $(sysctl -n hw.logicalcpu) --config ${{matrix.config}}
+      - name: Install
+        run: cmake --install build --prefix build/install --config ${{matrix.config}}

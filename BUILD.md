@@ -253,9 +253,6 @@ specific requirements for configuring and building these components.
   execution.
 - Please use `update_deps.py --help` to list additional options and read the
   internal documentation in `update_deps.py` for further information.
-- You can build against different C++ standards by setting the
-  `VEL_CPP_STANDARD` option at cmake generation time. Current code is writtent
-  to compile under C++11.
 
 ### Generated source code
 
@@ -291,7 +288,6 @@ on/off options currently supported by this repository:
 | BUILD_WSI_XCB_SUPPORT | Linux | `ON` | Build the components with XCB support. |
 | BUILD_WSI_XLIB_SUPPORT | Linux | `ON` | Build the components with Xlib support. |
 | BUILD_WSI_WAYLAND_SUPPORT | Linux | `ON` | Build the components with Wayland support. |
-| USE_CCACHE | Linux | `OFF` | Enable caching with the CCache program. |
 
 The following is a table of all string options currently supported by this repository:
 
@@ -576,8 +572,6 @@ to specify the number of cores to use for the build. For example:
 You can also use
 
     cmake --build .
-
-If your build system supports ccache, you can enable that via CMake option `-DUSE_CCACHE=On`
 
 ### Linux Notes
 

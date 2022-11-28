@@ -15,29 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ~~~
-
-# CMake project initialization ---------------------------------------------------------------------------------------------------
-# This section contains pre-project() initialization, and ends with the project() command.
-
 cmake_minimum_required(VERSION 3.10.2)
-
-# Apple: Must be set before enable_language() or project() as it may influence configuration of the toolchain and flags.
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.12" CACHE STRING "Minimum OS X deployment version")
 
 project(Vulkan-ExtensionLayer)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 enable_testing()
-
-# User-interface declarations ----------------------------------------------------------------------------------------------------
-# This section contains variables that affect development GUIs (e.g. CMake GUI and IDEs), such as option(), folders, and variables
-# with the CACHE property.
-
-option(VEL_CPP_STANDARD "Set the C++ standard to build against. The value will be passed to cmake's CXX_STANDARD property. Default = 11" 11)
-if (NOT VEL_CPP_STANDARD)
-    set(VEL_CPP_STANDARD 11)
-endif()
 
 # Enable beta Vulkan extensions
 add_definitions(-DVK_ENABLE_BETA_EXTENSIONS)
@@ -115,14 +99,9 @@ else()
     add_library(Vulkan::Headers ALIAS Vulkan-Headers)
 endif()
 
-option(USE_CCACHE "Use ccache" OFF)
-if(USE_CCACHE)
-    find_program(CCACHE_FOUND ccache)
-    if(CCACHE_FOUND)
-        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-    endif()
-endif()
-
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include(GNUInstallDirs)
@@ -130,11 +109,6 @@ include(GNUInstallDirs)
 if(WIN32 AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     # Windows: if install locations not set by user, set install prefix to "<build_dir>\install".
     set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "default install path" FORCE)
-endif()
-
-if(APPLE)
-    # CMake versions 3 or later need CMAKE_MACOSX_RPATH defined. This avoids the CMP0042 policy message.
-    set(CMAKE_MACOSX_RPATH 1)
 endif()
 
 # Enable IDE GUI folders
