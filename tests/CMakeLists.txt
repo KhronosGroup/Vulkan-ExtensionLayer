@@ -34,20 +34,6 @@ elseif(ANDROID)
     add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR)
 elseif(APPLE)
     add_definitions(-DVK_USE_PLATFORM_MACOS_MVK)
-elseif(UNIX AND NOT APPLE) # i.e. Linux
-    if(BUILD_WSI_XCB_SUPPORT)
-        add_definitions(-DVK_USE_PLATFORM_XCB_KHR)
-    endif()
-
-    if(BUILD_WSI_XLIB_SUPPORT)
-        add_definitions(-DVK_USE_PLATFORM_XLIB_KHR)
-    endif()
-
-    if(BUILD_WSI_WAYLAND_SUPPORT)
-        add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
-    endif()
-else()
-    message(FATAL_ERROR "Unsupported Platform!")
 endif()
 
 if(WIN32)
@@ -110,16 +96,20 @@ target_link_libraries(vk_extension_layer_tests PRIVATE
 # Specify target_link_libraries
 if(NOT WIN32)
     target_compile_options(vk_extension_layer_tests PRIVATE "-Wno-sign-compare")
-    target_link_libraries(vk_extension_layer_tests PRIVATE dl)
-    if(BUILD_WSI_XCB_SUPPORT OR BUILD_WSI_XLIB_SUPPORT)
-        target_link_libraries(vk_extension_layer_tests
-                              PRIVATE VkExtLayer_utils
-                                      ${XCB_LIBRARIES}
-                                      ${X11_LIBRARIES})
+    target_link_libraries(vk_extension_layer_tests PRIVATE ${CMAKE_DL_LIBS} VkExtLayer_utils)
+    if(BUILD_WSI_XCB_SUPPORT)
+        target_link_libraries(vk_extension_layer_tests PRIVATE PkgConfig::XCB)
+    endif()
+
+    if (BUILD_WSI_XLIB_SUPPORT)
+        target_link_libraries(vk_extension_layer_tests PRIVATE PkgConfig::X11)
+    endif()
+
+    if(BUILD_WSI_WAYLAND_SUPPORT)
+        target_link_libraries(vk_extension_layer_tests PRIVATE PkgConfig::WAYLAND)
     endif()
 endif()
 
 if(INSTALL_TESTS)
     install(TARGETS vk_extension_layer_tests DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
-
