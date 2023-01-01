@@ -179,6 +179,7 @@ option(BUILD_TESTS "Build tests" ON)
 option(INSTALL_TESTS "Install tests" OFF)
 option(BUILD_LAYERS "Build layers" ON)
 option(BUILD_LAYER_SUPPORT_FILES "Generate layer files" OFF) # For generating files when not building layers
+option(GENERATE_CODE "Update generatd source code" ON)
 
 if(BUILD_TESTS)
     # Options for Linux only
@@ -323,20 +324,22 @@ if(NOT TARGET uninstall)
 endif()
 
 # Optional codegen target --------------------------------------------------------------------------------------------------------
-if(PYTHONINTERP_FOUND)
-    # Vulkan::Registry is treated as a header only library,
-    # in order to grab the registry directory we grab the include directory.
-    get_target_property(VulkanRegistry_DIR Vulkan::Registry INTERFACE_INCLUDE_DIRECTORIES)
-    if (NOT EXISTS "${VulkanRegistry_DIR}/vk.xml")
-        message(FATAL_ERROR "Unable to find vk.xml")
-    endif()
+if(GENERATED_CODE)
+    if(PYTHONINTERP_FOUND)
+        # Vulkan::Registry is treated as a header only library,
+        # in order to grab the registry directory we grab the include directory.
+        get_target_property(VulkanRegistry_DIR Vulkan::Registry INTERFACE_INCLUDE_DIRECTORIES)
+        if (NOT EXISTS "${VulkanRegistry_DIR}/vk.xml")
+            message(FATAL_ERROR "Unable to find vk.xml")
+        endif()
 
-    add_custom_target(VulkanEL_generated_source
-        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py ${VulkanRegistry_DIR} --incremental
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/utils/generated
-    )
-else()
-    message("${PROJECT_NAME}: WARNING: VulkanEL_generated_source target requires python 3")
+        add_custom_target(VulkanEL_generated_source
+            COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py ${VulkanRegistry_DIR} --incremental
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/utils/generated
+        )
+    else()
+        message("${PROJECT_NAME}: WARNING: VulkanEL_generated_source target requires python 3")
+    endif()
 endif()
 
 # Add subprojects ----------------------------------------------------------------------------------------------------------------
