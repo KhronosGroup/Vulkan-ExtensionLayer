@@ -91,7 +91,9 @@ if (VULKAN_HEADERS_INSTALL_DIR)
     list(APPEND CMAKE_PREFIX_PATH ${VULKAN_HEADERS_INSTALL_DIR})
 endif()
 
-find_package(VulkanHeaders CONFIG REQUIRED QUIET)
+if (NOT TARGET Vulkan::Headers)
+    find_package(VulkanHeaders CONFIG REQUIRED QUIET)
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
