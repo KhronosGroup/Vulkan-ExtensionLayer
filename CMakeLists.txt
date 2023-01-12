@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2022 Valve Corporation
-# Copyright (c) 2014-2022 LunarG, Inc.
+# Copyright (c) 2014-2023 Valve Corporation
+# Copyright (c) 2014-2023 LunarG, Inc.
 # Copyright (c) 2019      Intel Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -322,15 +322,8 @@ endif()
 
 # Optional codegen target --------------------------------------------------------------------------------------------------------
 if(PYTHONINTERP_FOUND)
-    # Vulkan::Registry is treated as a header only library,
-    # in order to grab the registry directory we grab the include directory.
-    get_target_property(VulkanRegistry_DIR Vulkan::Registry INTERFACE_INCLUDE_DIRECTORIES)
-    if (NOT EXISTS "${VulkanRegistry_DIR}/vk.xml")
-        message(FATAL_ERROR "Unable to find vk.xml")
-    endif()
-
     add_custom_target(VulkanEL_generated_source
-        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py ${VulkanRegistry_DIR} --incremental
+        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py ${VULKAN_HEADERS_REGISTRY_DIRECTORY} --incremental
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/utils/generated
     )
 else()
