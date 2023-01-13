@@ -1,5 +1,5 @@
-# Copyright (c) 2022 Valve Corporation
-# Copyright (c) 2022 LunarG, Inc.
+# Copyright (c) 2022-2023 Valve Corporation
+# Copyright (c) 2022-2023 LunarG, Inc.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,12 +29,14 @@ jobs:
       matrix:
         config: [Debug, Release]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.7'
+      - name: Install Ninja
+        run: brew install ninja
       - name: Configure/Generate
-        run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=${{matrix.config}} -DBUILD_TESTS=ON -DBUILD_WERROR=ON -DUPDATE_DEPS=ON -DUPDATE_DEPS_SKIP_EXISTING_INSTALL=ON
+        run: cmake -S. -B build  -G "Ninja" -DCMAKE_BUILD_TYPE=${{matrix.config}} -DBUILD_TESTS=ON -DBUILD_WERROR=ON -DUPDATE_DEPS=ON -DUPDATE_DEPS_SKIP_EXISTING_INSTALL=ON
         env:
           # Specify the minimum version of macOS on which the target binaries are to be deployed.
           # https://cmake.org/cmake/help/latest/envvar/MACOSX_DEPLOYMENT_TARGET.html
