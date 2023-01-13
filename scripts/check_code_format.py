@@ -188,11 +188,9 @@ def VerifyCommitMessageFormat(commit, target_files):
         CPrint('HELP_MSG', "---------")
         CPrint('HELP_MSG', "     build: Fix Vulkan header/registry detection for SDK")
         CPrint('HELP_MSG', "     tests: Fix QueryPerformanceIncompletePasses stride usage")
-        CPrint('HELP_MSG', "     corechecks: Fix validation of VU 03227")
         CPrint('HELP_MSG', "     state_tracker: Remove 'using std::*' statements")
         CPrint('HELP_MSG', "     stateless: Account for DynStateWithCount for multiViewport\n")
         CPrint('HELP_MSG', "Refer to this document for additional detail:")
-        CPrint('HELP_MSG', "https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/CONTRIBUTING.md#coding-conventions-and-formatting")
     return retval
 
 #
@@ -258,7 +256,7 @@ def main():
 
     if args.fetch_main:
         print('Fetching master branch...')
-        subprocess.check_call(['git', 'fetch', 'https://github.com/KhronosGroup/Vulkan-ValidationLayers.git', 'master'])
+        subprocess.check_call(['git', 'fetch', 'https://github.com/KhronosGroup/Vulkan-ExtensionLayer.git', 'master'])
 
     # Check if this is a merge commit
     commit_parents = check_output(['git', 'rev-list', '--parents', '-n', '1', 'HEAD'])
