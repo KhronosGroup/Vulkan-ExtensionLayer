@@ -122,7 +122,7 @@ The extension layer tests depend on the
 [SPIRV-Headers repository](https://github.com/KhronosGroup/SPIRV-Headers).
 You must clone the SPIRV-Headers repository
 and build its `install` target. Follow the build instructions in the SPIRV-Headers
-[README.md](https://github.com/KhronosGroup/SPIRV-Headers/blob/master/README.md)
+[README.md](https://github.com/KhronosGroup/SPIRV-Headers/blob/main/README.md)
 file. You must also take note of the SPIRV-headers install directory
 and pass it on the CMake command line for building this repository, as
 described below.
@@ -133,7 +133,7 @@ The extension layer tests depend on the
 [SPIRV-Tools repository](https://github.com/KhronosGroup/SPIRV-Tools).
 You must clone the SPIRV-Tools repository
 and build its `install` target. Follow the build instructions in the SPIRV-Tools
-[README.md](https://github.com/KhronosGroup/SPIRV-Tools/blob/master/README.md)
+[README.md](https://github.com/KhronosGroup/SPIRV-Tools/blob/main/README.md)
 file. You must also take note of the SPIRV-Tools install directory
 and pass it on the CMake command line for building this repository, as
 described below.
@@ -144,7 +144,7 @@ The extension layer tests depend on the
 [glslang repository](https://github.com/KhronosGroup/glslang).
 You must clone the glslang repository
 and build its `install` target. Follow the build instructions in the glslang
-[README.md](https://github.com/KhronosGroup/glslang/blob/master/README.md)
+[README.md](https://github.com/KhronosGroup/glslang/blob/main/README.md)
 file. You must also take note of the glslang install directory
 and pass it on the CMake command line for building this repository, as
 described below.
@@ -737,10 +737,6 @@ Tested on OSX version 10.13.3
 
 Setup Homebrew and components
 
-- Follow instructions on [brew.sh](http://brew.sh) to get Homebrew installed.
-
-      /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-
 - Ensure Homebrew is at the beginning of your PATH:
 
       export PATH=/usr/local/bin:$PATH
@@ -824,10 +820,6 @@ Tested on OSX version 10.12.6
 [CMake 3.10.2](https://cmake.org/files/v3.10/cmake-3.10.2-Darwin-x86_64.tar.gz) is recommended.
 
 Setup Homebrew and components
-
-- Follow instructions on [brew.sh](http://brew.sh) to get Homebrew installed.
-
-      /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
 - Ensure Homebrew is at the beginning of your PATH:
 
