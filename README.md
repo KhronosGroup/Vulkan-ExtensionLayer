@@ -2,13 +2,24 @@
 
 Layers providing Vulkan features when native support is unavailable
 
+## Default branch changed to 'main' 2023-01-16
+
+As discussed in #158, the default branch of this repository is now 'main'. This change should be largely transparent to repository users, since github rewrites many references to the old 'master' branch to 'main'. However, if you have a checked-out local clone, you may wish to take the following steps as recommended by github:
+
+```sh
+git branch -m master main
+git fetch origin
+git branch -u origin/main main
+git remote set-head origin -a
+```
+
 ## CI Build Status
 | Build Status |
 |:------------|
-| [![Build Status](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions/workflows/build_windows.yml/badge.svg?branch=master)](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions) |
-| [![Build Status](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions/workflows/build_linux.yml/badge.svg?branch=master)](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions) |
-| [![Build Status](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions/workflows/build_macos.yml/badge.svg?branch=master)](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions) |
-| [![Build Status](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions/workflows/build_android.yml/badge.svg?branch=master)](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions) |
+| [![Build Status](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions/workflows/build_windows.yml/badge.svg?branch=main)](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions) |
+| [![Build Status](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions/workflows/build_linux.yml/badge.svg?branch=main)](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions) |
+| [![Build Status](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions/workflows/build_macos.yml/badge.svg?branch=main)](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions) |
+| [![Build Status](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions/workflows/build_android.yml/badge.svg?branch=main)](https://github.com/KhronosGroup/Vulkan-ExtensionLayer/actions) |
 
 ## Introduction
 

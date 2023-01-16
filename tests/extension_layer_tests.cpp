@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015-2022 The Khronos Group Inc.
  * Copyright (c) 2015-2022 Valve Corporation
- * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2023 LunarG, Inc.
  * Copyright (c) 2015-2022 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -428,7 +428,6 @@ void addFullTestCommentIfPresent(const ::testing::TestInfo &test_info, std::stri
     }
 }
 
-// Inspired by https://github.com/google/googletest/blob/master/googletest/docs/AdvancedGuide.md
 class LogcatPrinter : public ::testing::EmptyTestEventListener {
     // Called before a test starts.
     virtual void OnTestStart(const ::testing::TestInfo &test_info) {
