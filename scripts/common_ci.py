@@ -1,8 +1,8 @@
 #!/usr/bin/python3 -i
 #
 # Copyright (c) 2015-2017, 2019-2022 The Khronos Group Inc.
-# Copyright (c) 2015-2017, 2019-2022 Valve Corporation
-# Copyright (c) 2015-2017, 2019-2022 LunarG, Inc.
+# Copyright (c) 2015-2017, 2019-2023 Valve Corporation
+# Copyright (c) 2015-2017, 2019-2023 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ import subprocess
 import platform
 import shutil
 import argparse
-
-import utils.utils as utils
 
 if sys.version_info[0] != 3:
     print("This script requires Python 3. Run script with [-h] option for more details.")
@@ -69,7 +67,12 @@ def CheckVELCodegenConsistency():
     gen_check_cmd = 'python3 scripts/generate_source.py --verify %s/Vulkan-Headers/registry' % EXTERNAL_DIR
     RunShellCmd(gen_check_cmd)
 
-#
+# Utility for creating a directory if it does not exist. Behaves similarly to 'mkdir -p'
+def make_dirs(path, clean=False):
+    if clean and os.path.isdir(path):
+        shutil.rmtree(path)
+    os.makedirs(path, exist_ok=True)
+
 def BuildVEL(args):
 
     print("Log CMake version")
@@ -86,7 +89,7 @@ def BuildVEL(args):
         gtest_checkout_cmd = 'git checkout tags/release-1.10.0'
         RunShellCmd(gtest_checkout_cmd, GTEST_DIR)
 
-    utils.make_dirs(VEL_BUILD_DIR)
+    make_dirs(VEL_BUILD_DIR)
     print("Run CMake for Extension Layer")
     cmake_cmd = f'cmake -DUPDATE_DEPS=ON -DCMAKE_BUILD_TYPE={args.configuration.capitalize()} {args.cmake} ..'
     # By default BUILD_WERROR is OFF, CI should always enable it.
