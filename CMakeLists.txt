@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ~~~
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.17.2)
 
 project(Vulkan-ExtensionLayer)
 
@@ -149,6 +149,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         add_compile_options(-Wimplicit-fallthrough=0)
     endif()
 elseif(MSVC)
+    add_compile_options("/W3")
     # Warn about nested declarations
     add_compile_options("/w34456")
     # Warn about potentially uninitialized variables
