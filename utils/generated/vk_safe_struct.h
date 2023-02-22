@@ -12312,6 +12312,54 @@ struct safe_VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT {
     VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT const *ptr() const { return reinterpret_cast<VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT const *>(this); }
 };
 
+struct safe_VkPhysicalDeviceShaderCorePropertiesARM {
+    VkStructureType sType;
+    void* pNext{};
+    uint32_t pixelRate;
+    uint32_t texelRate;
+    uint32_t fmaRate;
+    safe_VkPhysicalDeviceShaderCorePropertiesARM(const VkPhysicalDeviceShaderCorePropertiesARM* in_struct);
+    safe_VkPhysicalDeviceShaderCorePropertiesARM(const safe_VkPhysicalDeviceShaderCorePropertiesARM& copy_src);
+    safe_VkPhysicalDeviceShaderCorePropertiesARM& operator=(const safe_VkPhysicalDeviceShaderCorePropertiesARM& copy_src);
+    safe_VkPhysicalDeviceShaderCorePropertiesARM();
+    ~safe_VkPhysicalDeviceShaderCorePropertiesARM();
+    void initialize(const VkPhysicalDeviceShaderCorePropertiesARM* in_struct);
+    void initialize(const safe_VkPhysicalDeviceShaderCorePropertiesARM* copy_src);
+    VkPhysicalDeviceShaderCorePropertiesARM *ptr() { return reinterpret_cast<VkPhysicalDeviceShaderCorePropertiesARM *>(this); }
+    VkPhysicalDeviceShaderCorePropertiesARM const *ptr() const { return reinterpret_cast<VkPhysicalDeviceShaderCorePropertiesARM const *>(this); }
+};
+
+struct safe_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT {
+    VkStructureType sType;
+    void* pNext{};
+    VkBool32 imageSlicedViewOf3D;
+    safe_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT(const VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT* in_struct);
+    safe_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT(const safe_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT& copy_src);
+    safe_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT& operator=(const safe_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT& copy_src);
+    safe_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT();
+    ~safe_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT();
+    void initialize(const VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT* in_struct);
+    void initialize(const safe_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT* copy_src);
+    VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT *ptr() { return reinterpret_cast<VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT *>(this); }
+    VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT const *ptr() const { return reinterpret_cast<VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT const *>(this); }
+};
+
+struct safe_VkImageViewSlicedCreateInfoEXT {
+    VkStructureType sType;
+    const void* pNext{};
+    uint32_t sliceOffset;
+    uint32_t sliceCount;
+    safe_VkImageViewSlicedCreateInfoEXT(const VkImageViewSlicedCreateInfoEXT* in_struct);
+    safe_VkImageViewSlicedCreateInfoEXT(const safe_VkImageViewSlicedCreateInfoEXT& copy_src);
+    safe_VkImageViewSlicedCreateInfoEXT& operator=(const safe_VkImageViewSlicedCreateInfoEXT& copy_src);
+    safe_VkImageViewSlicedCreateInfoEXT();
+    ~safe_VkImageViewSlicedCreateInfoEXT();
+    void initialize(const VkImageViewSlicedCreateInfoEXT* in_struct);
+    void initialize(const safe_VkImageViewSlicedCreateInfoEXT* copy_src);
+    VkImageViewSlicedCreateInfoEXT *ptr() { return reinterpret_cast<VkImageViewSlicedCreateInfoEXT *>(this); }
+    VkImageViewSlicedCreateInfoEXT const *ptr() const { return reinterpret_cast<VkImageViewSlicedCreateInfoEXT const *>(this); }
+};
+
 struct safe_VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE {
     VkStructureType sType;
     void* pNext{};
@@ -13088,6 +13136,52 @@ struct safe_VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM {
     void initialize(const safe_VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM* copy_src);
     VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM *ptr() { return reinterpret_cast<VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM *>(this); }
     VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM const *ptr() const { return reinterpret_cast<VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM const *>(this); }
+};
+
+struct safe_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT {
+    VkStructureType sType;
+    void* pNext{};
+    VkBool32 pipelineLibraryGroupHandles;
+    safe_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT(const VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT* in_struct);
+    safe_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT(const safe_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT& copy_src);
+    safe_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT& operator=(const safe_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT& copy_src);
+    safe_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT();
+    ~safe_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT();
+    void initialize(const VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT* in_struct);
+    void initialize(const safe_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT* copy_src);
+    VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT *ptr() { return reinterpret_cast<VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT *>(this); }
+    VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT const *ptr() const { return reinterpret_cast<VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT const *>(this); }
+};
+
+struct safe_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM {
+    VkStructureType sType;
+    void* pNext{};
+    VkBool32 multiviewPerViewRenderAreas;
+    safe_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM(const VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM* in_struct);
+    safe_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM(const safe_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM& copy_src);
+    safe_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM& operator=(const safe_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM& copy_src);
+    safe_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM();
+    ~safe_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM();
+    void initialize(const VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM* in_struct);
+    void initialize(const safe_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM* copy_src);
+    VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM *ptr() { return reinterpret_cast<VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM *>(this); }
+    VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM const *ptr() const { return reinterpret_cast<VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM const *>(this); }
+};
+
+struct safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM {
+    VkStructureType sType;
+    const void* pNext{};
+    uint32_t perViewRenderAreaCount;
+    const VkRect2D* pPerViewRenderAreas{};
+    safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM(const VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM* in_struct);
+    safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM(const safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM& copy_src);
+    safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM& operator=(const safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM& copy_src);
+    safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM();
+    ~safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM();
+    void initialize(const VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM* in_struct);
+    void initialize(const safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM* copy_src);
+    VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM *ptr() { return reinterpret_cast<VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM *>(this); }
+    VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM const *ptr() const { return reinterpret_cast<VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM const *>(this); }
 };
 
 struct safe_VkAccelerationStructureGeometryTrianglesDataKHR {
