@@ -1,8 +1,8 @@
 /**************************************************************************
  *
- * Copyright 2014-2020, 2022 Valve Software
- * Copyright 2015-2020, 2022 Google Inc.
- * Copyright 2019-2020, 2022 LunarG, Inc.
+ * Copyright 2014-2020, 2022-2023 Valve Software
+ * Copyright 2015-2020, 2022-2023 Google Inc.
+ * Copyright 2019-2020, 2022-2023 LunarG, Inc.
  * All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -103,17 +103,17 @@ string GetEnvironment(const char *variable) {
 #endif
 }
 
-VK_LAYER_EXPORT const char *getLayerOption(const char *option) { return layer_config.GetOption(option); }
-VK_LAYER_EXPORT const char *GetLayerEnvVar(const char *option) {
+const char *getLayerOption(const char *option) { return layer_config.GetOption(option); }
+const char *GetLayerEnvVar(const char *option) {
     layer_config.vk_layer_disables_env_var = GetEnvironment(option);
     return layer_config.vk_layer_disables_env_var.c_str();
 }
 
-VK_LAYER_EXPORT const SettingsFileInfo *GetLayerSettingsFileInfo() { return &layer_config.settings_info; }
+const SettingsFileInfo *GetLayerSettingsFileInfo() { return &layer_config.settings_info; }
 
 // If option is NULL or stdout, return stdout, otherwise try to open option
 // as a filename. If successful, return file handle, otherwise stdout
-VK_LAYER_EXPORT FILE *getLayerLogOutput(const char *option, const char *layer_name) {
+FILE *getLayerLogOutput(const char *option, const char *layer_name) {
     FILE *log_output = NULL;
     if (!option || !strcmp("stdout", option)) {
         log_output = stdout;
@@ -133,8 +133,7 @@ VK_LAYER_EXPORT FILE *getLayerLogOutput(const char *option, const char *layer_na
 }
 
 // Map option strings to flag enum values
-VK_LAYER_EXPORT VkFlags GetLayerOptionFlags(string option, std::unordered_map<string, VkFlags> const &enum_data,
-                                            uint32_t option_default) {
+VkFlags GetLayerOptionFlags(string option, std::unordered_map<string, VkFlags> const &enum_data, uint32_t option_default) {
     VkDebugReportFlagsEXT flags = option_default;
     string option_list = layer_config.GetOption(option.c_str());
 
@@ -169,7 +168,7 @@ VK_LAYER_EXPORT VkFlags GetLayerOptionFlags(string option, std::unordered_map<st
     return flags;
 }
 
-VK_LAYER_EXPORT void setLayerOption(const char *option, const char *value) { layer_config.SetOption(option, value); }
+void setLayerOption(const char *option, const char *value) { layer_config.SetOption(option, value); }
 
 // Constructor for ConfigFile. Initialize layers to log error messages to stdout by default. If a vk_layer_settings file is present,
 // its settings will override the defaults.
@@ -331,7 +330,7 @@ void ConfigFile::ParseFile(const char *filename) {
     }
 }
 
-VK_LAYER_EXPORT void PrintMessageFlags(VkFlags vk_flags, char *msg_flags) {
+void PrintMessageFlags(VkFlags vk_flags, char *msg_flags) {
     bool separator = false;
 
     msg_flags[0] = 0;
@@ -360,7 +359,7 @@ VK_LAYER_EXPORT void PrintMessageFlags(VkFlags vk_flags, char *msg_flags) {
     }
 }
 
-VK_LAYER_EXPORT void PrintMessageSeverity(VkFlags vk_flags, char *msg_flags) {
+void PrintMessageSeverity(VkFlags vk_flags, char *msg_flags) {
     bool separator = false;
 
     msg_flags[0] = 0;
@@ -384,7 +383,7 @@ VK_LAYER_EXPORT void PrintMessageSeverity(VkFlags vk_flags, char *msg_flags) {
     }
 }
 
-VK_LAYER_EXPORT void PrintMessageType(VkFlags vk_flags, char *msg_flags) {
+void PrintMessageType(VkFlags vk_flags, char *msg_flags) {
     bool separator = false;
 
     msg_flags[0] = 0;
@@ -402,4 +401,3 @@ VK_LAYER_EXPORT void PrintMessageType(VkFlags vk_flags, char *msg_flags) {
         strcat(msg_flags, "PERF");
     }
 }
-
