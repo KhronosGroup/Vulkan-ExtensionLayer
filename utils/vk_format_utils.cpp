@@ -1,6 +1,6 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
+/* Copyright (c) 2015-2021,2023 The Khronos Group Inc.
+ * Copyright (c) 2015-2021,2023 Valve Corporation
+ * Copyright (c) 2015-2021,2023 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -296,7 +296,7 @@ const std::map<VkFormat, VULKAN_FORMAT_INFO> kVkFormatTable = {
 // clang-format on
 
 // Return true if format is an ETC2 or EAC compressed texture format
-VK_LAYER_EXPORT bool FormatIsCompressed_ETC2_EAC(VkFormat format) {
+bool FormatIsCompressed_ETC2_EAC(VkFormat format) {
     bool found = false;
 
     switch (format) {
@@ -319,12 +319,12 @@ VK_LAYER_EXPORT bool FormatIsCompressed_ETC2_EAC(VkFormat format) {
 }
 
 // Return true if format is either a LDR or HDR ASTC compressed textyre format
-VK_LAYER_EXPORT bool FormatIsCompressed_ASTC(VkFormat format) {
+bool FormatIsCompressed_ASTC(VkFormat format) {
     return (FormatIsCompressed_ASTC_LDR(format) || FormatIsCompressed_ASTC_HDR(format));
 }
 
 // Return true if format is an LDR ASTC compressed texture format
-VK_LAYER_EXPORT bool FormatIsCompressed_ASTC_LDR(VkFormat format) {
+bool FormatIsCompressed_ASTC_LDR(VkFormat format) {
     bool found = false;
 
     switch (format) {
@@ -365,7 +365,7 @@ VK_LAYER_EXPORT bool FormatIsCompressed_ASTC_LDR(VkFormat format) {
 }
 
 // Return true if format is an HDR ASTC compressed texture format
-VK_LAYER_EXPORT bool FormatIsCompressed_ASTC_HDR(VkFormat format) {
+bool FormatIsCompressed_ASTC_HDR(VkFormat format) {
     bool found = false;
 
     switch (format) {
@@ -392,7 +392,7 @@ VK_LAYER_EXPORT bool FormatIsCompressed_ASTC_HDR(VkFormat format) {
 }
 
 // Return true if format is a BC compressed texture format
-VK_LAYER_EXPORT bool FormatIsCompressed_BC(VkFormat format) {
+bool FormatIsCompressed_BC(VkFormat format) {
     bool found = false;
 
     switch (format) {
@@ -421,7 +421,7 @@ VK_LAYER_EXPORT bool FormatIsCompressed_BC(VkFormat format) {
 }
 
 // Return true if format is a PVRTC compressed texture format
-VK_LAYER_EXPORT bool FormatIsCompressed_PVRTC(VkFormat format) {
+bool FormatIsCompressed_PVRTC(VkFormat format) {
     bool found = false;
 
     switch (format) {
@@ -442,7 +442,7 @@ VK_LAYER_EXPORT bool FormatIsCompressed_PVRTC(VkFormat format) {
 }
 
 // Single-plane "_422" formats are treated as 2x1 compressed (for copies)
-VK_LAYER_EXPORT bool FormatIsSinglePlane_422(VkFormat format) {
+bool FormatIsSinglePlane_422(VkFormat format) {
     bool found = false;
 
     switch (format) {
@@ -463,12 +463,12 @@ VK_LAYER_EXPORT bool FormatIsSinglePlane_422(VkFormat format) {
 }
 
 // Return true if format is compressed
-VK_LAYER_EXPORT bool FormatIsCompressed(VkFormat format) {
+bool FormatIsCompressed(VkFormat format) {
     return (FormatIsCompressed_ASTC(format) || FormatIsCompressed_BC(format) || FormatIsCompressed_ETC2_EAC(format) ||
             FormatIsCompressed_PVRTC(format));
 }
 // Return true if format is packed
-VK_LAYER_EXPORT bool FormatIsPacked(VkFormat format) {
+bool FormatIsPacked(VkFormat format) {
     bool found = false;
 
     switch (format) {
@@ -533,7 +533,7 @@ VK_LAYER_EXPORT bool FormatIsPacked(VkFormat format) {
 }
 
 // Return true if format is 'normal', with one texel per format element
-VK_LAYER_EXPORT bool FormatElementIsTexel(VkFormat format) {
+bool FormatElementIsTexel(VkFormat format) {
     if (FormatIsPacked(format) || FormatIsCompressed(format) || FormatIsSinglePlane_422(format) || FormatIsMultiplane(format)) {
         return false;
     } else {
@@ -542,12 +542,12 @@ VK_LAYER_EXPORT bool FormatElementIsTexel(VkFormat format) {
 }
 
 // Return true if format is a depth or stencil format
-VK_LAYER_EXPORT bool FormatIsDepthOrStencil(VkFormat format) {
+bool FormatIsDepthOrStencil(VkFormat format) {
     return (FormatIsDepthAndStencil(format) || FormatIsDepthOnly(format) || FormatIsStencilOnly(format));
 }
 
 // Return true if format contains depth and stencil information
-VK_LAYER_EXPORT bool FormatIsDepthAndStencil(VkFormat format) {
+bool FormatIsDepthAndStencil(VkFormat format) {
     bool is_ds = false;
 
     switch (format) {
@@ -563,10 +563,10 @@ VK_LAYER_EXPORT bool FormatIsDepthAndStencil(VkFormat format) {
 }
 
 // Return true if format is a stencil-only format
-VK_LAYER_EXPORT bool FormatIsStencilOnly(VkFormat format) { return (format == VK_FORMAT_S8_UINT); }
+bool FormatIsStencilOnly(VkFormat format) { return (format == VK_FORMAT_S8_UINT); }
 
 // Return true if format is a depth-only format
-VK_LAYER_EXPORT bool FormatIsDepthOnly(VkFormat format) {
+bool FormatIsDepthOnly(VkFormat format) {
     bool is_depth = false;
 
     switch (format) {
@@ -583,10 +583,10 @@ VK_LAYER_EXPORT bool FormatIsDepthOnly(VkFormat format) {
 }
 
 // Return true if format is of type NORM
-VK_LAYER_EXPORT bool FormatIsNorm(VkFormat format) { return (FormatIsUNorm(format) || FormatIsSNorm(format)); }
+bool FormatIsNorm(VkFormat format) { return (FormatIsUNorm(format) || FormatIsSNorm(format)); }
 
 // Return true if format is of type UNORM
-VK_LAYER_EXPORT bool FormatIsUNorm(VkFormat format) {
+bool FormatIsUNorm(VkFormat format) {
     bool is_unorm = false;
 
     switch (format) {
@@ -687,7 +687,7 @@ VK_LAYER_EXPORT bool FormatIsUNorm(VkFormat format) {
 }
 
 // Return true if format is of type SNORM
-VK_LAYER_EXPORT bool FormatIsSNorm(VkFormat format) {
+bool FormatIsSNorm(VkFormat format) {
     bool is_snorm = false;
 
     switch (format) {
@@ -718,10 +718,10 @@ VK_LAYER_EXPORT bool FormatIsSNorm(VkFormat format) {
 }
 
 // Return true if format is an integer format
-VK_LAYER_EXPORT bool FormatIsInt(VkFormat format) { return (FormatIsSInt(format) || FormatIsUInt(format)); }
+bool FormatIsInt(VkFormat format) { return (FormatIsSInt(format) || FormatIsUInt(format)); }
 
 // Return true if format is an unsigned integer format
-VK_LAYER_EXPORT bool FormatIsUInt(VkFormat format) {
+bool FormatIsUInt(VkFormat format) {
     bool is_uint = false;
 
     switch (format) {
@@ -757,7 +757,7 @@ VK_LAYER_EXPORT bool FormatIsUInt(VkFormat format) {
 }
 
 // Return true if format is a signed integer format
-VK_LAYER_EXPORT bool FormatIsSInt(VkFormat format) {
+bool FormatIsSInt(VkFormat format) {
     bool is_sint = false;
 
     switch (format) {
@@ -792,7 +792,7 @@ VK_LAYER_EXPORT bool FormatIsSInt(VkFormat format) {
 }
 
 // Return true if format is a floating-point format
-VK_LAYER_EXPORT bool FormatIsFloat(VkFormat format) {
+bool FormatIsFloat(VkFormat format) {
     bool is_float = false;
 
     switch (format) {
@@ -822,7 +822,7 @@ VK_LAYER_EXPORT bool FormatIsFloat(VkFormat format) {
 }
 
 // Return true if format is in the SRGB colorspace
-VK_LAYER_EXPORT bool FormatIsSRGB(VkFormat format) {
+bool FormatIsSRGB(VkFormat format) {
     bool is_srgb = false;
 
     switch (format) {
@@ -864,7 +864,7 @@ VK_LAYER_EXPORT bool FormatIsSRGB(VkFormat format) {
 }
 
 // Return true if format is a USCALED format
-VK_LAYER_EXPORT bool FormatIsUScaled(VkFormat format) {
+bool FormatIsUScaled(VkFormat format) {
     bool is_uscaled = false;
 
     switch (format) {
@@ -891,7 +891,7 @@ VK_LAYER_EXPORT bool FormatIsUScaled(VkFormat format) {
 }
 
 // Return true if format is a SSCALED format
-VK_LAYER_EXPORT bool FormatIsSScaled(VkFormat format) {
+bool FormatIsSScaled(VkFormat format) {
     bool is_sscaled = false;
 
     switch (format) {
@@ -918,8 +918,8 @@ VK_LAYER_EXPORT bool FormatIsSScaled(VkFormat format) {
 }
 
 // Types from "Interpretation of Numeric Format" table
-VK_LAYER_EXPORT bool FormatIsSampledInt(VkFormat format) { return FormatIsInt(format); }
-VK_LAYER_EXPORT bool FormatIsSampledFloat(VkFormat format) {
+bool FormatIsSampledInt(VkFormat format) { return FormatIsInt(format); }
+bool FormatIsSampledFloat(VkFormat format) {
     return (FormatIsUNorm(format) || FormatIsSNorm(format) || FormatIsUScaled(format) || FormatIsSScaled(format) ||
             FormatIsFloat(format) || FormatIsSRGB(format));
 }
@@ -928,7 +928,7 @@ VK_LAYER_EXPORT bool FormatIsSampledFloat(VkFormat format) {
 // Uncompressed formats return {1, 1, 1}
 // Compressed formats return the compression block extents
 // Multiplane formats return the 'shared' extent of their low-res channel(s)
-VK_LAYER_EXPORT VkExtent3D FormatTexelBlockExtent(VkFormat format) {
+VkExtent3D FormatTexelBlockExtent(VkFormat format) {
     VkExtent3D block_size = {1, 1, 1};
     switch (format) {
         case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
@@ -1083,7 +1083,7 @@ VK_LAYER_EXPORT VkExtent3D FormatTexelBlockExtent(VkFormat format) {
     return block_size;
 }
 
-VK_LAYER_EXPORT uint32_t FormatDepthSize(VkFormat format) {
+uint32_t FormatDepthSize(VkFormat format) {
     uint32_t depth_size = 0;
     switch (format) {
         case VK_FORMAT_D16_UNORM:
@@ -1105,7 +1105,7 @@ VK_LAYER_EXPORT uint32_t FormatDepthSize(VkFormat format) {
     return depth_size;
 }
 
-VK_LAYER_EXPORT VkFormatNumericalType FormatDepthNumericalType(VkFormat format) {
+VkFormatNumericalType FormatDepthNumericalType(VkFormat format) {
     VkFormatNumericalType numerical_type = VK_FORMAT_NUMERICAL_TYPE_NONE;
     switch (format) {
         case VK_FORMAT_D16_UNORM:
@@ -1125,7 +1125,7 @@ VK_LAYER_EXPORT VkFormatNumericalType FormatDepthNumericalType(VkFormat format) 
     return numerical_type;
 }
 
-VK_LAYER_EXPORT uint32_t FormatStencilSize(VkFormat format) {
+uint32_t FormatStencilSize(VkFormat format) {
     uint32_t stencil_size = 0;
     switch (format) {
         case VK_FORMAT_S8_UINT:
@@ -1141,7 +1141,7 @@ VK_LAYER_EXPORT uint32_t FormatStencilSize(VkFormat format) {
     return stencil_size;
 }
 
-VK_LAYER_EXPORT VkFormatNumericalType FormatStencilNumericalType(VkFormat format) {
+VkFormatNumericalType FormatStencilNumericalType(VkFormat format) {
     VkFormatNumericalType numerical_type = VK_FORMAT_NUMERICAL_TYPE_NONE;
     switch (format) {
         case VK_FORMAT_S8_UINT:
@@ -1157,7 +1157,7 @@ VK_LAYER_EXPORT VkFormatNumericalType FormatStencilNumericalType(VkFormat format
     return numerical_type;
 }
 
-VK_LAYER_EXPORT uint32_t FormatPlaneCount(VkFormat format) {
+uint32_t FormatPlaneCount(VkFormat format) {
     switch (format) {
         case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
         case VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM:
@@ -1190,7 +1190,7 @@ VK_LAYER_EXPORT uint32_t FormatPlaneCount(VkFormat format) {
 }
 
 // Return format class of the specified format
-VK_LAYER_EXPORT VkFormatCompatibilityClass FormatCompatibilityClass(VkFormat format) {
+VkFormatCompatibilityClass FormatCompatibilityClass(VkFormat format) {
     auto item = kVkFormatTable.find(format);
     if (item != kVkFormatTable.end()) {
         return item->second.format_class;
@@ -1200,7 +1200,7 @@ VK_LAYER_EXPORT VkFormatCompatibilityClass FormatCompatibilityClass(VkFormat for
 
 // Return size, in bytes, of one element of the specified format
 // For uncompressed this is one texel, for compressed it is one block
-VK_LAYER_EXPORT uint32_t FormatElementSize(VkFormat format, VkImageAspectFlags aspectMask) {
+uint32_t FormatElementSize(VkFormat format, VkImageAspectFlags aspectMask) {
     // Handle special buffer packing rules for specific depth/stencil formats
     if (aspectMask & VK_IMAGE_ASPECT_STENCIL_BIT) {
         format = VK_FORMAT_S8_UINT;
@@ -1231,7 +1231,7 @@ VK_LAYER_EXPORT uint32_t FormatElementSize(VkFormat format, VkImageAspectFlags a
 
 // Return the size in bytes of one texel of given foramt
 // For compressed or multi-plane, this may be a fractional number
-VK_LAYER_EXPORT double FormatTexelSize(VkFormat format, VkImageAspectFlags aspectMask) {
+double FormatTexelSize(VkFormat format, VkImageAspectFlags aspectMask) {
     double texel_size = static_cast<double>(FormatElementSize(format, aspectMask));
     VkExtent3D block_extent = FormatTexelBlockExtent(format);
     uint32_t texels_per_block = block_extent.width * block_extent.height * block_extent.depth;
@@ -1251,7 +1251,7 @@ uint32_t FormatChannelCount(VkFormat format) {
 }
 
 // Perform a zero-tolerant modulo operation
-VK_LAYER_EXPORT VkDeviceSize SafeModulo(VkDeviceSize dividend, VkDeviceSize divisor) {
+VkDeviceSize SafeModulo(VkDeviceSize dividend, VkDeviceSize divisor) {
     VkDeviceSize result = 0;
     if (divisor != 0) {
         result = dividend % divisor;
@@ -1259,7 +1259,7 @@ VK_LAYER_EXPORT VkDeviceSize SafeModulo(VkDeviceSize dividend, VkDeviceSize divi
     return result;
 }
 
-VK_LAYER_EXPORT VkDeviceSize SafeDivision(VkDeviceSize dividend, VkDeviceSize divisor) {
+VkDeviceSize SafeDivision(VkDeviceSize dividend, VkDeviceSize divisor) {
     VkDeviceSize result = 0;
     if (divisor != 0) {
         result = dividend / divisor;
@@ -1362,7 +1362,7 @@ uint32_t GetPlaneIndex(VkImageAspectFlags aspect) {
     }
 }
 
-VK_LAYER_EXPORT VkFormat FindMultiplaneCompatibleFormat(VkFormat mp_fmt, VkImageAspectFlags plane_aspect) {
+VkFormat FindMultiplaneCompatibleFormat(VkFormat mp_fmt, VkImageAspectFlags plane_aspect) {
     uint32_t plane_idx = GetPlaneIndex(plane_aspect);
     auto it = kVkMultiplaneCompatibilityMap.find(mp_fmt);
     if ((it == kVkMultiplaneCompatibilityMap.end()) || (plane_idx >= VK_MULTIPLANE_FORMAT_MAX_PLANES)) {
@@ -1372,7 +1372,7 @@ VK_LAYER_EXPORT VkFormat FindMultiplaneCompatibleFormat(VkFormat mp_fmt, VkImage
     return it->second.per_plane[plane_idx].compatible_format;
 }
 
-VK_LAYER_EXPORT VkExtent2D FindMultiplaneExtentDivisors(VkFormat mp_fmt, VkImageAspectFlags plane_aspect) {
+VkExtent2D FindMultiplaneExtentDivisors(VkFormat mp_fmt, VkImageAspectFlags plane_aspect) {
     VkExtent2D divisors = {1, 1};
     uint32_t plane_idx = GetPlaneIndex(plane_aspect);
     auto it = kVkMultiplaneCompatibilityMap.find(mp_fmt);
@@ -1385,8 +1385,7 @@ VK_LAYER_EXPORT VkExtent2D FindMultiplaneExtentDivisors(VkFormat mp_fmt, VkImage
     return divisors;
 }
 
-VK_LAYER_EXPORT bool FormatSizesAreEqual(VkFormat srcFormat, VkFormat dstFormat, uint32_t region_count,
-                                         const VkImageCopy *regions) {
+bool FormatSizesAreEqual(VkFormat srcFormat, VkFormat dstFormat, uint32_t region_count, const VkImageCopy *regions) {
     size_t src_size = 0, dst_size = 0;
 
     if (FormatIsMultiplane(srcFormat) || FormatIsMultiplane(dstFormat)) {
@@ -1445,12 +1444,12 @@ const std::set<VkFormat> kVkFormatsRequiringYcbcrConversion{VK_FORMAT_G8B8G8R8_4
                                                             VK_FORMAT_G16_B16R16_2PLANE_422_UNORM,
                                                             VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM};
 
-VK_LAYER_EXPORT bool FormatRequiresYcbcrConversion(VkFormat format) {
+bool FormatRequiresYcbcrConversion(VkFormat format) {
     auto it = kVkFormatsRequiringYcbcrConversion.find(format);
     return (it != kVkFormatsRequiringYcbcrConversion.end());
 }
 
-VK_LAYER_EXPORT bool FormatIsXChromaSubsampled(VkFormat format) {
+bool FormatIsXChromaSubsampled(VkFormat format) {
     bool is_x_chroma_subsampled = false;
 
     switch (format) {
@@ -1487,7 +1486,7 @@ VK_LAYER_EXPORT bool FormatIsXChromaSubsampled(VkFormat format) {
     return is_x_chroma_subsampled;
 }
 
-VK_LAYER_EXPORT bool FormatIsYChromaSubsampled(VkFormat format) {
+bool FormatIsYChromaSubsampled(VkFormat format) {
     bool is_y_chroma_subsampled = false;
 
     switch (format) {
@@ -1509,7 +1508,7 @@ VK_LAYER_EXPORT bool FormatIsYChromaSubsampled(VkFormat format) {
     return is_y_chroma_subsampled;
 }
 
-VK_LAYER_EXPORT VkDeviceSize GetIndexAlignment(VkIndexType indexType) {
+VkDeviceSize GetIndexAlignment(VkIndexType indexType) {
     switch (indexType) {
         case VK_INDEX_TYPE_UINT16:
             return 2;

@@ -2516,10 +2516,13 @@ static void *find_ptr(const char *name, bool isInstance)
     return NULL;
 }
 
+#if defined(__GNUC__) && __GNUC__ >= 4
+#define VEL_EXPORT __attribute__((visibility("default")))
+#else
+#define VEL_EXPORT
+#endif
 
-VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice _device,
-                                                                             const char *funcName)
-{
+VEL_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice _device, const char *funcName) {
     void *ptr = find_ptr(funcName, false);
     if (ptr)
         return ptr;
@@ -2532,9 +2535,7 @@ VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkD
     return device->vtable.GetDeviceProcAddr(_device, funcName);
 }
 
-VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance _instance,
-                                                                               const char *funcName)
-{
+VEL_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance _instance, const char *funcName) {
     void *ptr = find_ptr(funcName, true);
 
     if (!ptr)
@@ -2551,14 +2552,13 @@ VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(V
     return instance->vtable.GetInstanceProcAddr(_instance, funcName);
 }
 
-VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionProperties(const char *pLayerName,
-                                                                                      uint32_t *pPropertyCount,
-                                                                                      VkExtensionProperties *pProperties) {
+VEL_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionProperties(const char *pLayerName, uint32_t *pPropertyCount,
+                                                                                 VkExtensionProperties *pProperties) {
     return timeline_EnumerateInstanceExtensionProperties(pLayerName, pPropertyCount, pProperties);
 }
 
-VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(uint32_t *pPropertyCount,
-                                                                                  VkLayerProperties *pProperties) {
+VEL_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(uint32_t *pPropertyCount,
+                                                                             VkLayerProperties *pProperties) {
     if (pProperties == NULL) {
         *pPropertyCount = 1;
         return VK_SUCCESS;
@@ -2574,15 +2574,14 @@ VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerPropertie
     return VK_SUCCESS;
 }
 
-VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice,
-                                                                                    const char *pLayerName,
-                                                                                    uint32_t *pPropertyCount,
-                                                                                    VkExtensionProperties *pProperties) {
+VEL_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice,
+                                                                               const char *pLayerName, uint32_t *pPropertyCount,
+                                                                               VkExtensionProperties *pProperties) {
     return timeline_EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
 }
 
-VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceLayerProperties(VkPhysicalDevice physicalDevice,
-                                                                                uint32_t *pPropertyCount,
-                                                                                VkLayerProperties *pProperties) {
+VEL_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceLayerProperties(VkPhysicalDevice physicalDevice,
+                                                                           uint32_t *pPropertyCount,
+                                                                           VkLayerProperties *pProperties) {
     return vkEnumerateInstanceLayerProperties(pPropertyCount, pProperties);
 }
