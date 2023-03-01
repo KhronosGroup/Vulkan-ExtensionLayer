@@ -102,6 +102,10 @@ def BuildVEL(args):
     if not IsWindows(): build_cmd = build_cmd + f' -- -j{os.cpu_count()}'
     RunShellCmd(build_cmd, VEL_BUILD_DIR)
 
+    print("Install Extension Layers")
+    install_cmd = f'cmake --install . --prefix ./install/ --config {args.configuration}'
+    RunShellCmd(install_cmd, VEL_BUILD_DIR)
+
 def GetArgParser():
     parser = argparse.ArgumentParser()
     parser.add_argument(

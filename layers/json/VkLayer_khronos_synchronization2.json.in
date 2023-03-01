@@ -3,8 +3,8 @@
     "layer": {
         "name": "VK_LAYER_KHRONOS_synchronization2",
         "type": "GLOBAL",
-        "library_path": "@RELATIVE_LAYER_BINARY@",
-        "api_version": "@VK_VERSION@",
+        "library_path": "@JSON_LIBRARY_PATH@",
+        "api_version": "@JSON_VERSION@",
         "implementation_version": "1",
         "description": "Khronos Synchronization2 layer",
         "introduction": "The VK_LAYER_KHRONOS_synchronization2 extension layer implements the VK_KHR_synchronization2 extension.",
