@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2022 Valve Corporation
-# Copyright (c) 2014-2022 LunarG, Inc.
+# Copyright (c) 2014-2023 Valve Corporation
+# Copyright (c) 2014-2023 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,10 +37,6 @@ elseif(APPLE)
 endif()
 
 if(WIN32)
-    file(COPY vk_extension_layer_tests.vcxproj.user DESTINATION ${CMAKE_BINARY_DIR}/tests)
-endif()
-
-if(WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES")
 
     # If MSVC, disable some signed/unsigned mismatch warnings.
@@ -70,7 +66,12 @@ add_executable(vk_extension_layer_tests
                synchronization2_tests.cpp
                ${COMMON_CPP})
 add_test(NAME vk_extension_layer_tests COMMAND vk_extension_layer_tests)
-add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_synchronization2-json)
+
+if(MSVC_IDE)
+    set_target_properties(vk_extension_layer_tests PROPERTIES VS_DEBUGGER_ENVIRONMENT "VK_LAYER_PATH=$<TARGET_FILE_DIR:VkLayer_khronos_synchronization2>")
+endif()
+
+add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2)
 # Note that there is no need to add GTEST directories here due to googletest exporting them via the gtest target.
 target_include_directories(vk_extension_layer_tests
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
@@ -83,8 +84,7 @@ target_include_directories(vk_extension_layer_tests
                                   ${CMAKE_BINARY_DIR}
                                   ${PROJECT_BINARY_DIR}
                                   ${PROJECT_BINARY_DIR}/layers)
-add_dependencies(vk_extension_layer_tests
-	         VkExtLayer_utils)
+add_dependencies(vk_extension_layer_tests VkExtLayer_utils)
 target_link_libraries(vk_extension_layer_tests PRIVATE
     VkExtLayer_utils
     Vulkan::Headers
