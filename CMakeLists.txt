@@ -26,8 +26,6 @@ enable_testing()
 # Enable beta Vulkan extensions
 add_definitions(-DVK_ENABLE_BETA_EXTENSIONS)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 if (UPDATE_DEPS)
     find_package(PythonInterp 3 REQUIRED)
 
@@ -101,11 +99,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include(GNUInstallDirs)
-
-if(WIN32 AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    # Windows: if install locations not set by user, set install prefix to "<build_dir>\install".
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "default install path" FORCE)
-endif()
 
 # Enable IDE GUI folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -311,16 +304,6 @@ if(BUILD_TESTS)
     endif()
 
     set(GLSLANG_LIBRARIES ${GLSLANG_LIBRARIES} ${SPIRV_TOOLS_LIBRARIES})
-endif()
-
-# uninstall target ---------------------------------------------------------------------------------------------------------------
-if(NOT TARGET uninstall)
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
-                   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-                   IMMEDIATE
-                   @ONLY)
-    add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
-    set_target_properties(uninstall PROPERTIES FOLDER ${LAYERS_HELPER_FOLDER})
 endif()
 
 # Optional codegen target --------------------------------------------------------------------------------------------------------
