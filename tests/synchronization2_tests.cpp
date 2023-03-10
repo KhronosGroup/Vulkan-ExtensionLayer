@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2022 The Khronos Group Inc.
- * Copyright (c) 2015-2022 Valve Corporation
- * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2023 The Khronos Group Inc.
+ * Copyright (c) 2015-2023 Valve Corporation
+ * Copyright (c) 2015-2023 LunarG, Inc.
  * Copyright (c) 2015-2022 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1181,12 +1181,10 @@ TEST_F(Sync2CompatTest, Vulkan10) {
     ASSERT_VK_SUCCESS(vk::CreateInstance(&inst_info, NULL, &instance));
 
     uint32_t gpu_count = 0;
-    VkPhysicalDevice *gpus = NULL;
-
     ASSERT_VK_SUCCESS(vk::EnumeratePhysicalDevices(instance, &gpu_count, NULL));
 
-    gpus = new VkPhysicalDevice[gpu_count];
-    ASSERT_VK_SUCCESS(vk::EnumeratePhysicalDevices(instance, &gpu_count, gpus));
+    std::vector<VkPhysicalDevice> gpus{gpu_count};
+    ASSERT_VK_SUCCESS(vk::EnumeratePhysicalDevices(instance, &gpu_count, gpus.data()));
 
     const float priority = 1.0f;
 
@@ -1196,13 +1194,10 @@ TEST_F(Sync2CompatTest, Vulkan10) {
     queue_info.pQueuePriorities = &priority;
 
     uint32_t queue_count = 0;
-    VkQueueFamilyProperties *queue_props = NULL;
     vk::GetPhysicalDeviceQueueFamilyProperties(gpus[0], &queue_count, NULL);
+    std::vector<VkQueueFamilyProperties> queue_props{queue_count};
     ASSERT_NE(queue_count, 0);
-
-    queue_props = new VkQueueFamilyProperties[queue_count];
-    vk::GetPhysicalDeviceQueueFamilyProperties(gpus[0], &queue_count, NULL);
-    (void)queue_props;
+    vk::GetPhysicalDeviceQueueFamilyProperties(gpus[0], &queue_count, queue_props.data());
 
     queue_info.flags = 0;
     queue_info.queueFamilyIndex = 0;
@@ -1342,7 +1337,7 @@ TEST_F(Sync2Test, SwapchainImage) {
     img_barrier.srcAccessMask = 0;
     img_barrier.dstAccessMask = 0;
     img_barrier.srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    img_barrier.dstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;;
+    img_barrier.dstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     img_barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     img_barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     img_barrier.image = swapchain_images[image_index];
