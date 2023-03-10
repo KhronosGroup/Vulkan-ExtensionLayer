@@ -435,7 +435,7 @@ DeviceFeatures::DeviceFeatures(uint32_t api_version, const VkDeviceCreateInfo* c
             case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV: {
                 auto mesh_shader = reinterpret_cast<const VkPhysicalDeviceMeshShaderFeaturesNV*>(chain);
                 meshShader = 0 != mesh_shader->meshShader;
-                taskShader = 0 != mesh_shader->taskShader;;
+                taskShader = 0 != mesh_shader->taskShader;
             } break;
             case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV: {
                 auto shading_rate = reinterpret_cast<const VkPhysicalDeviceShadingRateImageFeaturesNV*>(chain);
@@ -472,13 +472,13 @@ static void RemoveExtensionString(char** string_array, uint32_t* size, const cha
 }
 
 // this code depends on the allocation behavior of SafePnextCopy() in vk_safe_struct.cpp
-static void RemoveDeviceFeature(safe_VkDeviceCreateInfo* create_info, uint32_t s_type) {
+static void RemoveSynchronization2FeaturesKHR(safe_VkDeviceCreateInfo* create_info) {
     auto cur = reinterpret_cast<const VkBaseInStructure*>(create_info->pNext);
     auto prev_ptr = const_cast<VkBaseInStructure**>(reinterpret_cast<const VkBaseInStructure**>(&create_info->pNext));
     while (cur != nullptr) {
-        if (cur->sType == s_type) {
+        if (cur->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES_KHR) {
             *prev_ptr = const_cast<VkBaseInStructure*>(cur->pNext);
-            delete cur;
+            delete reinterpret_cast<const VkPhysicalDeviceSynchronization2FeaturesKHR*>(cur);
             break;
         }
         prev_ptr = const_cast<VkBaseInStructure**>(&cur->pNext);
@@ -520,7 +520,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
             RemoveExtensionString(const_cast<char**>(create_info.ppEnabledExtensionNames), &create_info.enabledExtensionCount,
                                   VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
 
-            RemoveDeviceFeature(&create_info, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES_KHR);
+            RemoveSynchronization2FeaturesKHR(&create_info);
 
             result = create_device(physicalDevice, create_info.ptr(), pAllocator, pDevice);
         } else {
