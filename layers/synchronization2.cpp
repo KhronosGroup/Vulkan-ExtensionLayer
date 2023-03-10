@@ -322,7 +322,7 @@ VKAPI_ATTR VkResult VKAPI_CALL EnumeratePhysicalDevices(VkInstance instance, uin
     auto instance_data = GetInstanceData(instance);
     VkResult result =
         instance_data->vtable.EnumeratePhysicalDevices(instance_data->instance, pPhysicalDeviceCount, pPhysicalDevices);
-    if (result == VK_SUCCESS && pPhysicalDevices != nullptr) {
+    if ((result == VK_SUCCESS || result == VK_INCOMPLETE) && pPhysicalDevices != nullptr) {
         for (uint32_t i = 0; i < *pPhysicalDeviceCount; i++) {
             VkPhysicalDeviceProperties properties{};
             auto physical_device = pPhysicalDevices[i];
