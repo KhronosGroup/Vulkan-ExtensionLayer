@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# Copyright (c) 2013-2019 The Khronos Group Inc.
+# Copyright (c) 2013-2023 The Khronos Group Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -411,6 +411,9 @@ if __name__ == '__main__':
     startTimer(args.time)
     tree = etree.parse(args.registry)
     endTimer(args.time, '* Time to make ElementTree =')
+
+    # Filter out non-Vulkan extensions
+    [exts.remove(e) for exts in tree.findall('extensions') for e in exts.findall('extension') if (sup := e.get('supported')) is not None and options.apiname not in sup.split(',')]
 
     # Load the XML tree into the registry object
     startTimer(args.time)

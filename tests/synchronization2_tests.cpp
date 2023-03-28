@@ -1083,8 +1083,8 @@ TEST_F(Sync2Test, ClearDepthStencilWithValidRange) {
 TEST_F(Sync2Test, QueueSubmitTimelineSemaphore) {
     TEST_DESCRIPTION("Submit a queue with a timeline semaphore.");
 
-    auto timeline_features = lvl_init_struct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
-    auto features2 = lvl_init_struct<VkPhysicalDeviceFeatures2KHR>(&timeline_features);
+    auto timeline_features = LvlInitStruct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&timeline_features);
     vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
     if (!timeline_features.timelineSemaphore) {
         GTEST_SKIP() << "Timeline semaphores not supported.";
@@ -1203,7 +1203,7 @@ TEST_F(Sync2CompatTest, Vulkan10) {
     queue_info.queueFamilyIndex = 0;
     queue_info.queueCount = 1;
 
-    auto sync2_features = lvl_init_struct<VkPhysicalDeviceSynchronization2FeaturesKHR>();
+    auto sync2_features = LvlInitStruct<VkPhysicalDeviceSynchronization2FeaturesKHR>();
     sync2_features.synchronization2 = true;
     VkPhysicalDeviceFeatures features{};
     vk::GetPhysicalDeviceFeatures(gpus[0], &features);

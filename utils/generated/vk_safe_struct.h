@@ -20,14 +20,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Author: Mark Lobodzinski <mark@lunarg.com>
- * Author: Courtney Goeltzenleuchter <courtneygo@google.com>
- * Author: Tobin Ehlis <tobine@google.com>
- * Author: Chris Forbes <chrisforbes@google.com>
- * Author: John Zulauf<jzulauf@lunarg.com>
- * Author: Tony Barbour <tony@lunarg.com>
- *
  ****************************************************************************/
 
 
@@ -488,9 +480,7 @@ struct safe_VkShaderModuleCreateInfo {
     // Primarily intended for use by GPUAV when replacing shader module code with instrumented code
     template<typename Container>
     void SetCode(const Container &code) {
-        if (pCode) {
-            delete[] pCode;
-        }
+        delete[] pCode;
         codeSize = static_cast<uint32_t>(code.size() * sizeof(uint32_t));
         pCode = new uint32_t[code.size()];
         std::copy(&code.front(), &code.back() + 1, const_cast<uint32_t*>(pCode));
@@ -12208,6 +12198,72 @@ struct safe_VkAccelerationStructureTrianglesOpacityMicromapEXT {
     VkAccelerationStructureTrianglesOpacityMicromapEXT *ptr() { return reinterpret_cast<VkAccelerationStructureTrianglesOpacityMicromapEXT *>(this); }
     VkAccelerationStructureTrianglesOpacityMicromapEXT const *ptr() const { return reinterpret_cast<VkAccelerationStructureTrianglesOpacityMicromapEXT const *>(this); }
 };
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+struct safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV {
+    VkStructureType sType;
+    void* pNext{};
+    VkBool32 displacementMicromap;
+    safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV(const VkPhysicalDeviceDisplacementMicromapFeaturesNV* in_struct);
+    safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV(const safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV& copy_src);
+    safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV& operator=(const safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV& copy_src);
+    safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV();
+    ~safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV();
+    void initialize(const VkPhysicalDeviceDisplacementMicromapFeaturesNV* in_struct);
+    void initialize(const safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV* copy_src);
+    VkPhysicalDeviceDisplacementMicromapFeaturesNV *ptr() { return reinterpret_cast<VkPhysicalDeviceDisplacementMicromapFeaturesNV *>(this); }
+    VkPhysicalDeviceDisplacementMicromapFeaturesNV const *ptr() const { return reinterpret_cast<VkPhysicalDeviceDisplacementMicromapFeaturesNV const *>(this); }
+};
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+struct safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV {
+    VkStructureType sType;
+    void* pNext{};
+    uint32_t maxDisplacementMicromapSubdivisionLevel;
+    safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV(const VkPhysicalDeviceDisplacementMicromapPropertiesNV* in_struct);
+    safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV(const safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV& copy_src);
+    safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV& operator=(const safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV& copy_src);
+    safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV();
+    ~safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV();
+    void initialize(const VkPhysicalDeviceDisplacementMicromapPropertiesNV* in_struct);
+    void initialize(const safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV* copy_src);
+    VkPhysicalDeviceDisplacementMicromapPropertiesNV *ptr() { return reinterpret_cast<VkPhysicalDeviceDisplacementMicromapPropertiesNV *>(this); }
+    VkPhysicalDeviceDisplacementMicromapPropertiesNV const *ptr() const { return reinterpret_cast<VkPhysicalDeviceDisplacementMicromapPropertiesNV const *>(this); }
+};
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+struct safe_VkAccelerationStructureTrianglesDisplacementMicromapNV {
+    VkStructureType sType;
+    void* pNext{};
+    VkFormat displacementBiasAndScaleFormat;
+    VkFormat displacementVectorFormat;
+    safe_VkDeviceOrHostAddressConstKHR displacementBiasAndScaleBuffer;
+    VkDeviceSize displacementBiasAndScaleStride;
+    safe_VkDeviceOrHostAddressConstKHR displacementVectorBuffer;
+    VkDeviceSize displacementVectorStride;
+    safe_VkDeviceOrHostAddressConstKHR displacedMicromapPrimitiveFlags;
+    VkDeviceSize displacedMicromapPrimitiveFlagsStride;
+    VkIndexType indexType;
+    safe_VkDeviceOrHostAddressConstKHR indexBuffer;
+    VkDeviceSize indexStride;
+    uint32_t baseTriangle;
+    uint32_t usageCountsCount;
+    const VkMicromapUsageEXT* pUsageCounts{};
+    const VkMicromapUsageEXT* const* ppUsageCounts{};
+    VkMicromapEXT micromap;
+    safe_VkAccelerationStructureTrianglesDisplacementMicromapNV(const VkAccelerationStructureTrianglesDisplacementMicromapNV* in_struct);
+    safe_VkAccelerationStructureTrianglesDisplacementMicromapNV(const safe_VkAccelerationStructureTrianglesDisplacementMicromapNV& copy_src);
+    safe_VkAccelerationStructureTrianglesDisplacementMicromapNV& operator=(const safe_VkAccelerationStructureTrianglesDisplacementMicromapNV& copy_src);
+    safe_VkAccelerationStructureTrianglesDisplacementMicromapNV();
+    ~safe_VkAccelerationStructureTrianglesDisplacementMicromapNV();
+    void initialize(const VkAccelerationStructureTrianglesDisplacementMicromapNV* in_struct);
+    void initialize(const safe_VkAccelerationStructureTrianglesDisplacementMicromapNV* copy_src);
+    VkAccelerationStructureTrianglesDisplacementMicromapNV *ptr() { return reinterpret_cast<VkAccelerationStructureTrianglesDisplacementMicromapNV *>(this); }
+    VkAccelerationStructureTrianglesDisplacementMicromapNV const *ptr() const { return reinterpret_cast<VkAccelerationStructureTrianglesDisplacementMicromapNV const *>(this); }
+};
+#endif // VK_ENABLE_BETA_EXTENSIONS
 
 struct safe_VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI {
     VkStructureType sType;

@@ -13,12 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Author: Mark Lobodzinski <mark@lunarg.com>
-# Author: Mike Schuchardt <mikes@lunarg.com>
-# Author: Nathaniel Cesario <nathaniel@lunarg.com>
-# Author: Karl Schultz <karl@lunarg.com>
-# Author: Tony Barbour <tony@lunarg.com>
 
 # Script to determine if source code in Pull Request is properly formatted.
 #
@@ -105,14 +99,15 @@ def VerifyCopyrights(commit, target_files):
     for file in target_files:
         if file is None or not os.path.isfile(file):
             continue
+        for company in ["LunarG", "Valve"]:
         # Capture the last year on the line as a separate match. It should be the highest (or only year of the range)
-        copyright_match = re.search('Copyright .*(\d{4}) LunarG', open(file, encoding="utf-8", errors='ignore').read(1024))
+            copyright_match = re.search('Copyright .*(\d{4}) ' + company, open(file, encoding="utf-8", errors='ignore').read(1024))
         if copyright_match:
             copyright_year = copyright_match.group(1)
             if int(commit_year) > int(copyright_year):
                 msg = 'Change written in {} but copyright ends in {}.'.format(commit_year, copyright_year)
-                CPrint('ERR_MSG', '\n' + file + ' has an out-of-date LunarG copyright notice. ' + msg)
-                retval = 1;
+                CPrint('ERR_MSG', '\n' + file + ' has an out-of-date ' + company + ' copyright notice. ' + msg)
+                retval = 1
     return retval
 #
 #
@@ -188,9 +183,11 @@ def VerifyCommitMessageFormat(commit, target_files):
         CPrint('HELP_MSG', "---------")
         CPrint('HELP_MSG', "     build: Fix Vulkan header/registry detection for SDK")
         CPrint('HELP_MSG', "     tests: Fix QueryPerformanceIncompletePasses stride usage")
+        CPrint('HELP_MSG', "     corechecks: Fix validation of VU 03227")
         CPrint('HELP_MSG', "     state_tracker: Remove 'using std::*' statements")
         CPrint('HELP_MSG', "     stateless: Account for DynStateWithCount for multiViewport\n")
         CPrint('HELP_MSG', "Refer to this document for additional detail:")
+        CPrint('HELP_MSG', "https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/CONTRIBUTING.md#coding-conventions-and-formatting")
     return retval
 
 #

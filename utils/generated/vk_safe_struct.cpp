@@ -20,14 +20,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Author: Mark Lobodzinski <mark@lunarg.com>
- * Author: Courtney Goeltzenleuchter <courtneygo@google.com>
- * Author: Tobin Ehlis <tobine@google.com>
- * Author: Chris Forbes <chrisforbes@google.com>
- * Author: John Zulauf<jzulauf@lunarg.com>
- * Author: Tony Barbour <tony@lunarg.com>
- *
  ****************************************************************************/
 
 
@@ -35,7 +27,7 @@
 #include "vk_concurrent_unordered_map.h"
 #include "vk_typemap_helper.h"
 
-#include <string.h>
+#include <cstddef>
 #include <cassert>
 #include <cstring>
 #include <vector>
@@ -2731,11 +2723,16 @@ safe_VkSpecializationInfo::safe_VkSpecializationInfo(const VkSpecializationInfo*
     mapEntryCount(in_struct->mapEntryCount),
     pMapEntries(nullptr),
     dataSize(in_struct->dataSize),
-    pData(in_struct->pData)
+    pData(nullptr)
 {
     if (in_struct->pMapEntries) {
         pMapEntries = new VkSpecializationMapEntry[in_struct->mapEntryCount];
         memcpy ((void *)pMapEntries, (void *)in_struct->pMapEntries, sizeof(VkSpecializationMapEntry)*in_struct->mapEntryCount);
+    }
+    if (in_struct->pData != nullptr) {
+        auto temp = new std::byte[in_struct->dataSize];
+        std::memcpy(temp, in_struct->pData, in_struct->dataSize);
+        pData = temp;
     }
 }
 
@@ -2751,10 +2748,14 @@ safe_VkSpecializationInfo::safe_VkSpecializationInfo(const safe_VkSpecialization
     mapEntryCount = copy_src.mapEntryCount;
     pMapEntries = nullptr;
     dataSize = copy_src.dataSize;
-    pData = copy_src.pData;
     if (copy_src.pMapEntries) {
         pMapEntries = new VkSpecializationMapEntry[copy_src.mapEntryCount];
         memcpy ((void *)pMapEntries, (void *)copy_src.pMapEntries, sizeof(VkSpecializationMapEntry)*copy_src.mapEntryCount);
+    }
+    if (copy_src.pData != nullptr) {
+        auto temp = new std::byte[copy_src.dataSize];
+        std::memcpy(temp, copy_src.pData, copy_src.dataSize);
+        pData = temp;
     }
 }
 
@@ -2764,14 +2765,22 @@ safe_VkSpecializationInfo& safe_VkSpecializationInfo::operator=(const safe_VkSpe
 
     if (pMapEntries)
         delete[] pMapEntries;
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
 
     mapEntryCount = copy_src.mapEntryCount;
     pMapEntries = nullptr;
     dataSize = copy_src.dataSize;
-    pData = copy_src.pData;
     if (copy_src.pMapEntries) {
         pMapEntries = new VkSpecializationMapEntry[copy_src.mapEntryCount];
         memcpy ((void *)pMapEntries, (void *)copy_src.pMapEntries, sizeof(VkSpecializationMapEntry)*copy_src.mapEntryCount);
+    }
+    if (copy_src.pData != nullptr) {
+        auto temp = new std::byte[copy_src.dataSize];
+        std::memcpy(temp, copy_src.pData, copy_src.dataSize);
+        pData = temp;
     }
 
     return *this;
@@ -2781,19 +2790,31 @@ safe_VkSpecializationInfo::~safe_VkSpecializationInfo()
 {
     if (pMapEntries)
         delete[] pMapEntries;
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
 }
 
 void safe_VkSpecializationInfo::initialize(const VkSpecializationInfo* in_struct)
 {
     if (pMapEntries)
         delete[] pMapEntries;
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
     mapEntryCount = in_struct->mapEntryCount;
     pMapEntries = nullptr;
     dataSize = in_struct->dataSize;
-    pData = in_struct->pData;
     if (in_struct->pMapEntries) {
         pMapEntries = new VkSpecializationMapEntry[in_struct->mapEntryCount];
         memcpy ((void *)pMapEntries, (void *)in_struct->pMapEntries, sizeof(VkSpecializationMapEntry)*in_struct->mapEntryCount);
+    }
+    if (in_struct->pData != nullptr) {
+        auto temp = new std::byte[in_struct->dataSize];
+        std::memcpy(temp, in_struct->pData, in_struct->dataSize);
+        pData = temp;
     }
 }
 
@@ -2802,10 +2823,14 @@ void safe_VkSpecializationInfo::initialize(const safe_VkSpecializationInfo* copy
     mapEntryCount = copy_src->mapEntryCount;
     pMapEntries = nullptr;
     dataSize = copy_src->dataSize;
-    pData = copy_src->pData;
     if (copy_src->pMapEntries) {
         pMapEntries = new VkSpecializationMapEntry[copy_src->mapEntryCount];
         memcpy ((void *)pMapEntries, (void *)copy_src->pMapEntries, sizeof(VkSpecializationMapEntry)*copy_src->mapEntryCount);
+    }
+    if (copy_src->pData != nullptr) {
+        auto temp = new std::byte[copy_src->dataSize];
+        std::memcpy(temp, copy_src->pData, copy_src->dataSize);
+        pData = temp;
     }
 }
 
@@ -3263,13 +3288,13 @@ safe_VkPipelineViewportStateCreateInfo::safe_VkPipelineViewportStateCreateInfo(c
         memcpy ((void *)pViewports, (void *)in_struct->pViewports, sizeof(VkViewport)*in_struct->viewportCount);
     }
     else
-        pViewports = NULL;
+        pViewports = nullptr;
     if (in_struct->pScissors && !is_dynamic_scissors) {
         pScissors = new VkRect2D[in_struct->scissorCount];
         memcpy ((void *)pScissors, (void *)in_struct->pScissors, sizeof(VkRect2D)*in_struct->scissorCount);
     }
     else
-        pScissors = NULL;
+        pScissors = nullptr;
 }
 
 safe_VkPipelineViewportStateCreateInfo::safe_VkPipelineViewportStateCreateInfo() :
@@ -3296,13 +3321,13 @@ safe_VkPipelineViewportStateCreateInfo::safe_VkPipelineViewportStateCreateInfo(c
         memcpy ((void *)pViewports, (void *)copy_src.pViewports, sizeof(VkViewport)*copy_src.viewportCount);
     }
     else
-        pViewports = NULL;
+        pViewports = nullptr;
     if (copy_src.pScissors) {
         pScissors = new VkRect2D[copy_src.scissorCount];
         memcpy ((void *)pScissors, (void *)copy_src.pScissors, sizeof(VkRect2D)*copy_src.scissorCount);
     }
     else
-        pScissors = NULL;
+        pScissors = nullptr;
 }
 
 safe_VkPipelineViewportStateCreateInfo& safe_VkPipelineViewportStateCreateInfo::operator=(const safe_VkPipelineViewportStateCreateInfo& copy_src)
@@ -3328,13 +3353,13 @@ safe_VkPipelineViewportStateCreateInfo& safe_VkPipelineViewportStateCreateInfo::
         memcpy ((void *)pViewports, (void *)copy_src.pViewports, sizeof(VkViewport)*copy_src.viewportCount);
     }
     else
-        pViewports = NULL;
+        pViewports = nullptr;
     if (copy_src.pScissors) {
         pScissors = new VkRect2D[copy_src.scissorCount];
         memcpy ((void *)pScissors, (void *)copy_src.pScissors, sizeof(VkRect2D)*copy_src.scissorCount);
     }
     else
-        pScissors = NULL;
+        pScissors = nullptr;
 
     return *this;
 }
@@ -3369,13 +3394,13 @@ void safe_VkPipelineViewportStateCreateInfo::initialize(const VkPipelineViewport
         memcpy ((void *)pViewports, (void *)in_struct->pViewports, sizeof(VkViewport)*in_struct->viewportCount);
     }
     else
-        pViewports = NULL;
+        pViewports = nullptr;
     if (in_struct->pScissors && !is_dynamic_scissors) {
         pScissors = new VkRect2D[in_struct->scissorCount];
         memcpy ((void *)pScissors, (void *)in_struct->pScissors, sizeof(VkRect2D)*in_struct->scissorCount);
     }
     else
-        pScissors = NULL;
+        pScissors = nullptr;
 }
 
 void safe_VkPipelineViewportStateCreateInfo::initialize(const safe_VkPipelineViewportStateCreateInfo* copy_src)
@@ -3392,13 +3417,13 @@ void safe_VkPipelineViewportStateCreateInfo::initialize(const safe_VkPipelineVie
         memcpy ((void *)pViewports, (void *)copy_src->pViewports, sizeof(VkViewport)*copy_src->viewportCount);
     }
     else
-        pViewports = NULL;
+        pViewports = nullptr;
     if (copy_src->pScissors) {
         pScissors = new VkRect2D[copy_src->scissorCount];
         memcpy ((void *)pScissors, (void *)copy_src->pScissors, sizeof(VkRect2D)*copy_src->scissorCount);
     }
     else
-        pScissors = NULL;
+        pScissors = nullptr;
 }
 
 safe_VkPipelineRasterizationStateCreateInfo::safe_VkPipelineRasterizationStateCreateInfo(const VkPipelineRasterizationStateCreateInfo* in_struct) :
@@ -3976,7 +4001,7 @@ safe_VkGraphicsPipelineCreateInfo::safe_VkGraphicsPipelineCreateInfo(const VkGra
     basePipelineIndex(in_struct->basePipelineIndex)
 {
     pNext = SafePnextCopy(in_struct->pNext);
-    bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(in_struct->pNext) != nullptr;
+    const bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(in_struct->pNext) != nullptr;
     if (stageCount && in_struct->pStages) {
         pStages = new safe_VkPipelineShaderStageCreateInfo[stageCount];
         for (uint32_t i = 0; i < stageCount; ++i) {
@@ -3986,11 +4011,11 @@ safe_VkGraphicsPipelineCreateInfo::safe_VkGraphicsPipelineCreateInfo(const VkGra
     if (in_struct->pVertexInputState)
         pVertexInputState = new safe_VkPipelineVertexInputStateCreateInfo(in_struct->pVertexInputState);
     else
-        pVertexInputState = NULL;
+        pVertexInputState = nullptr;
     if (in_struct->pInputAssemblyState)
         pInputAssemblyState = new safe_VkPipelineInputAssemblyStateCreateInfo(in_struct->pInputAssemblyState);
     else
-        pInputAssemblyState = NULL;
+        pInputAssemblyState = nullptr;
     bool has_tessellation_stage = false;
     if (stageCount && pStages)
         for (uint32_t i = 0; i < stageCount && !has_tessellation_stage; ++i)
@@ -3999,14 +4024,14 @@ safe_VkGraphicsPipelineCreateInfo::safe_VkGraphicsPipelineCreateInfo(const VkGra
     if (in_struct->pTessellationState && has_tessellation_stage)
         pTessellationState = new safe_VkPipelineTessellationStateCreateInfo(in_struct->pTessellationState);
     else
-        pTessellationState = NULL; // original pTessellationState pointer ignored
+        pTessellationState = nullptr; // original pTessellationState pointer ignored
     bool is_dynamic_has_rasterization = false;
     if (in_struct->pDynamicState && in_struct->pDynamicState->pDynamicStates) {
         for (uint32_t i = 0; i < in_struct->pDynamicState->dynamicStateCount && !is_dynamic_has_rasterization; ++i)
             if (in_struct->pDynamicState->pDynamicStates[i] == VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT)
                 is_dynamic_has_rasterization = true;
     }
-    bool has_rasterization = in_struct->pRasterizationState ? (is_dynamic_has_rasterization || !in_struct->pRasterizationState->rasterizerDiscardEnable) : false;
+    const bool has_rasterization = in_struct->pRasterizationState ? (is_dynamic_has_rasterization || !in_struct->pRasterizationState->rasterizerDiscardEnable) : false;
     if (in_struct->pViewportState && (has_rasterization || is_graphics_library)) {
         bool is_dynamic_viewports = false;
         bool is_dynamic_scissors = false;
@@ -4020,29 +4045,29 @@ safe_VkGraphicsPipelineCreateInfo::safe_VkGraphicsPipelineCreateInfo(const VkGra
         }
         pViewportState = new safe_VkPipelineViewportStateCreateInfo(in_struct->pViewportState, is_dynamic_viewports, is_dynamic_scissors);
     } else
-        pViewportState = NULL; // original pViewportState pointer ignored
+        pViewportState = nullptr; // original pViewportState pointer ignored
     if (in_struct->pRasterizationState)
         pRasterizationState = new safe_VkPipelineRasterizationStateCreateInfo(in_struct->pRasterizationState);
     else
-        pRasterizationState = NULL;
+        pRasterizationState = nullptr;
     if (in_struct->pMultisampleState && (renderPass != VK_NULL_HANDLE || has_rasterization || is_graphics_library))
         pMultisampleState = new safe_VkPipelineMultisampleStateCreateInfo(in_struct->pMultisampleState);
     else
-        pMultisampleState = NULL; // original pMultisampleState pointer ignored
+        pMultisampleState = nullptr; // original pMultisampleState pointer ignored
     // needs a tracked subpass state uses_depthstencil_attachment
     if (in_struct->pDepthStencilState && ((has_rasterization && uses_depthstencil_attachment) || is_graphics_library))
         pDepthStencilState = new safe_VkPipelineDepthStencilStateCreateInfo(in_struct->pDepthStencilState);
     else
-        pDepthStencilState = NULL; // original pDepthStencilState pointer ignored
+        pDepthStencilState = nullptr; // original pDepthStencilState pointer ignored
     // needs a tracked subpass state usesColorAttachment
     if (in_struct->pColorBlendState && ((has_rasterization && uses_color_attachment) || is_graphics_library))
         pColorBlendState = new safe_VkPipelineColorBlendStateCreateInfo(in_struct->pColorBlendState);
     else
-        pColorBlendState = NULL; // original pColorBlendState pointer ignored
+        pColorBlendState = nullptr; // original pColorBlendState pointer ignored
     if (in_struct->pDynamicState)
         pDynamicState = new safe_VkPipelineDynamicStateCreateInfo(in_struct->pDynamicState);
     else
-        pDynamicState = NULL;
+        pDynamicState = nullptr;
 }
 
 safe_VkGraphicsPipelineCreateInfo::safe_VkGraphicsPipelineCreateInfo() :
@@ -4088,7 +4113,7 @@ safe_VkGraphicsPipelineCreateInfo::safe_VkGraphicsPipelineCreateInfo(const safe_
     basePipelineHandle = copy_src.basePipelineHandle;
     basePipelineIndex = copy_src.basePipelineIndex;
     pNext = SafePnextCopy(copy_src.pNext);
-    bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(copy_src.pNext);
+    const bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(copy_src.pNext);
     if (stageCount && copy_src.pStages) {
         pStages = new safe_VkPipelineShaderStageCreateInfo[stageCount];
         for (uint32_t i = 0; i < stageCount; ++i) {
@@ -4098,11 +4123,11 @@ safe_VkGraphicsPipelineCreateInfo::safe_VkGraphicsPipelineCreateInfo(const safe_
     if (copy_src.pVertexInputState)
         pVertexInputState = new safe_VkPipelineVertexInputStateCreateInfo(*copy_src.pVertexInputState);
     else
-        pVertexInputState = NULL;
+        pVertexInputState = nullptr;
     if (copy_src.pInputAssemblyState)
         pInputAssemblyState = new safe_VkPipelineInputAssemblyStateCreateInfo(*copy_src.pInputAssemblyState);
     else
-        pInputAssemblyState = NULL;
+        pInputAssemblyState = nullptr;
     bool has_tessellation_stage = false;
     if (stageCount && pStages)
         for (uint32_t i = 0; i < stageCount && !has_tessellation_stage; ++i)
@@ -4111,38 +4136,38 @@ safe_VkGraphicsPipelineCreateInfo::safe_VkGraphicsPipelineCreateInfo(const safe_
     if (copy_src.pTessellationState && has_tessellation_stage)
         pTessellationState = new safe_VkPipelineTessellationStateCreateInfo(*copy_src.pTessellationState);
     else
-        pTessellationState = NULL; // original pTessellationState pointer ignored
+        pTessellationState = nullptr; // original pTessellationState pointer ignored
     bool is_dynamic_has_rasterization = false;
     if (copy_src.pDynamicState && copy_src.pDynamicState->pDynamicStates) {
         for (uint32_t i = 0; i < copy_src.pDynamicState->dynamicStateCount && !is_dynamic_has_rasterization; ++i)
             if (copy_src.pDynamicState->pDynamicStates[i] == VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT)
                 is_dynamic_has_rasterization = true;
     }
-    bool has_rasterization = copy_src.pRasterizationState ? (is_dynamic_has_rasterization || !copy_src.pRasterizationState->rasterizerDiscardEnable) : false;
+    const bool has_rasterization = copy_src.pRasterizationState ? (is_dynamic_has_rasterization || !copy_src.pRasterizationState->rasterizerDiscardEnable) : false;
     if (copy_src.pViewportState && (has_rasterization || is_graphics_library)) {
         pViewportState = new safe_VkPipelineViewportStateCreateInfo(*copy_src.pViewportState);
     } else
-        pViewportState = NULL; // original pViewportState pointer ignored
+        pViewportState = nullptr; // original pViewportState pointer ignored
     if (copy_src.pRasterizationState)
         pRasterizationState = new safe_VkPipelineRasterizationStateCreateInfo(*copy_src.pRasterizationState);
     else
-        pRasterizationState = NULL;
+        pRasterizationState = nullptr;
     if (copy_src.pMultisampleState && (has_rasterization || is_graphics_library))
         pMultisampleState = new safe_VkPipelineMultisampleStateCreateInfo(*copy_src.pMultisampleState);
     else
-        pMultisampleState = NULL; // original pMultisampleState pointer ignored
+        pMultisampleState = nullptr; // original pMultisampleState pointer ignored
     if (copy_src.pDepthStencilState && (has_rasterization || is_graphics_library))
         pDepthStencilState = new safe_VkPipelineDepthStencilStateCreateInfo(*copy_src.pDepthStencilState);
     else
-        pDepthStencilState = NULL; // original pDepthStencilState pointer ignored
+        pDepthStencilState = nullptr; // original pDepthStencilState pointer ignored
     if (copy_src.pColorBlendState && (has_rasterization || is_graphics_library))
         pColorBlendState = new safe_VkPipelineColorBlendStateCreateInfo(*copy_src.pColorBlendState);
     else
-        pColorBlendState = NULL; // original pColorBlendState pointer ignored
+        pColorBlendState = nullptr; // original pColorBlendState pointer ignored
     if (copy_src.pDynamicState)
         pDynamicState = new safe_VkPipelineDynamicStateCreateInfo(*copy_src.pDynamicState);
     else
-        pDynamicState = NULL;
+        pDynamicState = nullptr;
 }
 
 safe_VkGraphicsPipelineCreateInfo& safe_VkGraphicsPipelineCreateInfo::operator=(const safe_VkGraphicsPipelineCreateInfo& copy_src)
@@ -4191,7 +4216,7 @@ safe_VkGraphicsPipelineCreateInfo& safe_VkGraphicsPipelineCreateInfo::operator=(
     basePipelineHandle = copy_src.basePipelineHandle;
     basePipelineIndex = copy_src.basePipelineIndex;
     pNext = SafePnextCopy(copy_src.pNext);
-    bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(copy_src.pNext);
+    const bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(copy_src.pNext);
     if (stageCount && copy_src.pStages) {
         pStages = new safe_VkPipelineShaderStageCreateInfo[stageCount];
         for (uint32_t i = 0; i < stageCount; ++i) {
@@ -4201,11 +4226,11 @@ safe_VkGraphicsPipelineCreateInfo& safe_VkGraphicsPipelineCreateInfo::operator=(
     if (copy_src.pVertexInputState)
         pVertexInputState = new safe_VkPipelineVertexInputStateCreateInfo(*copy_src.pVertexInputState);
     else
-        pVertexInputState = NULL;
+        pVertexInputState = nullptr;
     if (copy_src.pInputAssemblyState)
         pInputAssemblyState = new safe_VkPipelineInputAssemblyStateCreateInfo(*copy_src.pInputAssemblyState);
     else
-        pInputAssemblyState = NULL;
+        pInputAssemblyState = nullptr;
     bool has_tessellation_stage = false;
     if (stageCount && pStages)
         for (uint32_t i = 0; i < stageCount && !has_tessellation_stage; ++i)
@@ -4214,38 +4239,38 @@ safe_VkGraphicsPipelineCreateInfo& safe_VkGraphicsPipelineCreateInfo::operator=(
     if (copy_src.pTessellationState && has_tessellation_stage)
         pTessellationState = new safe_VkPipelineTessellationStateCreateInfo(*copy_src.pTessellationState);
     else
-        pTessellationState = NULL; // original pTessellationState pointer ignored
+        pTessellationState = nullptr; // original pTessellationState pointer ignored
     bool is_dynamic_has_rasterization = false;
     if (copy_src.pDynamicState && copy_src.pDynamicState->pDynamicStates) {
         for (uint32_t i = 0; i < copy_src.pDynamicState->dynamicStateCount && !is_dynamic_has_rasterization; ++i)
             if (copy_src.pDynamicState->pDynamicStates[i] == VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT)
                 is_dynamic_has_rasterization = true;
     }
-    bool has_rasterization = copy_src.pRasterizationState ? (is_dynamic_has_rasterization || !copy_src.pRasterizationState->rasterizerDiscardEnable) : false;
+    const bool has_rasterization = copy_src.pRasterizationState ? (is_dynamic_has_rasterization || !copy_src.pRasterizationState->rasterizerDiscardEnable) : false;
     if (copy_src.pViewportState && (has_rasterization || is_graphics_library)) {
         pViewportState = new safe_VkPipelineViewportStateCreateInfo(*copy_src.pViewportState);
     } else
-        pViewportState = NULL; // original pViewportState pointer ignored
+        pViewportState = nullptr; // original pViewportState pointer ignored
     if (copy_src.pRasterizationState)
         pRasterizationState = new safe_VkPipelineRasterizationStateCreateInfo(*copy_src.pRasterizationState);
     else
-        pRasterizationState = NULL;
+        pRasterizationState = nullptr;
     if (copy_src.pMultisampleState && (has_rasterization || is_graphics_library))
         pMultisampleState = new safe_VkPipelineMultisampleStateCreateInfo(*copy_src.pMultisampleState);
     else
-        pMultisampleState = NULL; // original pMultisampleState pointer ignored
+        pMultisampleState = nullptr; // original pMultisampleState pointer ignored
     if (copy_src.pDepthStencilState && (has_rasterization || is_graphics_library))
         pDepthStencilState = new safe_VkPipelineDepthStencilStateCreateInfo(*copy_src.pDepthStencilState);
     else
-        pDepthStencilState = NULL; // original pDepthStencilState pointer ignored
+        pDepthStencilState = nullptr; // original pDepthStencilState pointer ignored
     if (copy_src.pColorBlendState && (has_rasterization || is_graphics_library))
         pColorBlendState = new safe_VkPipelineColorBlendStateCreateInfo(*copy_src.pColorBlendState);
     else
-        pColorBlendState = NULL; // original pColorBlendState pointer ignored
+        pColorBlendState = nullptr; // original pColorBlendState pointer ignored
     if (copy_src.pDynamicState)
         pDynamicState = new safe_VkPipelineDynamicStateCreateInfo(*copy_src.pDynamicState);
     else
-        pDynamicState = NULL;
+        pDynamicState = nullptr;
 
     return *this;
 }
@@ -4319,7 +4344,7 @@ void safe_VkGraphicsPipelineCreateInfo::initialize(const VkGraphicsPipelineCreat
     basePipelineHandle = in_struct->basePipelineHandle;
     basePipelineIndex = in_struct->basePipelineIndex;
     pNext = SafePnextCopy(in_struct->pNext);
-    bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(in_struct->pNext) != nullptr;
+    const bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(in_struct->pNext) != nullptr;
     if (stageCount && in_struct->pStages) {
         pStages = new safe_VkPipelineShaderStageCreateInfo[stageCount];
         for (uint32_t i = 0; i < stageCount; ++i) {
@@ -4329,11 +4354,11 @@ void safe_VkGraphicsPipelineCreateInfo::initialize(const VkGraphicsPipelineCreat
     if (in_struct->pVertexInputState)
         pVertexInputState = new safe_VkPipelineVertexInputStateCreateInfo(in_struct->pVertexInputState);
     else
-        pVertexInputState = NULL;
+        pVertexInputState = nullptr;
     if (in_struct->pInputAssemblyState)
         pInputAssemblyState = new safe_VkPipelineInputAssemblyStateCreateInfo(in_struct->pInputAssemblyState);
     else
-        pInputAssemblyState = NULL;
+        pInputAssemblyState = nullptr;
     bool has_tessellation_stage = false;
     if (stageCount && pStages)
         for (uint32_t i = 0; i < stageCount && !has_tessellation_stage; ++i)
@@ -4342,14 +4367,14 @@ void safe_VkGraphicsPipelineCreateInfo::initialize(const VkGraphicsPipelineCreat
     if (in_struct->pTessellationState && has_tessellation_stage)
         pTessellationState = new safe_VkPipelineTessellationStateCreateInfo(in_struct->pTessellationState);
     else
-        pTessellationState = NULL; // original pTessellationState pointer ignored
+        pTessellationState = nullptr; // original pTessellationState pointer ignored
     bool is_dynamic_has_rasterization = false;
     if (in_struct->pDynamicState && in_struct->pDynamicState->pDynamicStates) {
         for (uint32_t i = 0; i < in_struct->pDynamicState->dynamicStateCount && !is_dynamic_has_rasterization; ++i)
             if (in_struct->pDynamicState->pDynamicStates[i] == VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT)
                 is_dynamic_has_rasterization = true;
     }
-    bool has_rasterization = in_struct->pRasterizationState ? (is_dynamic_has_rasterization || !in_struct->pRasterizationState->rasterizerDiscardEnable) : false;
+    const bool has_rasterization = in_struct->pRasterizationState ? (is_dynamic_has_rasterization || !in_struct->pRasterizationState->rasterizerDiscardEnable) : false;
     if (in_struct->pViewportState && (has_rasterization || is_graphics_library)) {
         bool is_dynamic_viewports = false;
         bool is_dynamic_scissors = false;
@@ -4363,29 +4388,29 @@ void safe_VkGraphicsPipelineCreateInfo::initialize(const VkGraphicsPipelineCreat
         }
         pViewportState = new safe_VkPipelineViewportStateCreateInfo(in_struct->pViewportState, is_dynamic_viewports, is_dynamic_scissors);
     } else
-        pViewportState = NULL; // original pViewportState pointer ignored
+        pViewportState = nullptr; // original pViewportState pointer ignored
     if (in_struct->pRasterizationState)
         pRasterizationState = new safe_VkPipelineRasterizationStateCreateInfo(in_struct->pRasterizationState);
     else
-        pRasterizationState = NULL;
+        pRasterizationState = nullptr;
     if (in_struct->pMultisampleState && (renderPass != VK_NULL_HANDLE || has_rasterization || is_graphics_library))
         pMultisampleState = new safe_VkPipelineMultisampleStateCreateInfo(in_struct->pMultisampleState);
     else
-        pMultisampleState = NULL; // original pMultisampleState pointer ignored
+        pMultisampleState = nullptr; // original pMultisampleState pointer ignored
     // needs a tracked subpass state uses_depthstencil_attachment
     if (in_struct->pDepthStencilState && ((has_rasterization && uses_depthstencil_attachment) || is_graphics_library))
         pDepthStencilState = new safe_VkPipelineDepthStencilStateCreateInfo(in_struct->pDepthStencilState);
     else
-        pDepthStencilState = NULL; // original pDepthStencilState pointer ignored
+        pDepthStencilState = nullptr; // original pDepthStencilState pointer ignored
     // needs a tracked subpass state usesColorAttachment
     if (in_struct->pColorBlendState && ((has_rasterization && uses_color_attachment) || is_graphics_library))
         pColorBlendState = new safe_VkPipelineColorBlendStateCreateInfo(in_struct->pColorBlendState);
     else
-        pColorBlendState = NULL; // original pColorBlendState pointer ignored
+        pColorBlendState = nullptr; // original pColorBlendState pointer ignored
     if (in_struct->pDynamicState)
         pDynamicState = new safe_VkPipelineDynamicStateCreateInfo(in_struct->pDynamicState);
     else
-        pDynamicState = NULL;
+        pDynamicState = nullptr;
 }
 
 void safe_VkGraphicsPipelineCreateInfo::initialize(const safe_VkGraphicsPipelineCreateInfo* copy_src)
@@ -4409,7 +4434,7 @@ void safe_VkGraphicsPipelineCreateInfo::initialize(const safe_VkGraphicsPipeline
     basePipelineHandle = copy_src->basePipelineHandle;
     basePipelineIndex = copy_src->basePipelineIndex;
     pNext = SafePnextCopy(copy_src->pNext);
-    bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(copy_src->pNext);
+    const bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(copy_src->pNext);
     if (stageCount && copy_src->pStages) {
         pStages = new safe_VkPipelineShaderStageCreateInfo[stageCount];
         for (uint32_t i = 0; i < stageCount; ++i) {
@@ -4419,11 +4444,11 @@ void safe_VkGraphicsPipelineCreateInfo::initialize(const safe_VkGraphicsPipeline
     if (copy_src->pVertexInputState)
         pVertexInputState = new safe_VkPipelineVertexInputStateCreateInfo(*copy_src->pVertexInputState);
     else
-        pVertexInputState = NULL;
+        pVertexInputState = nullptr;
     if (copy_src->pInputAssemblyState)
         pInputAssemblyState = new safe_VkPipelineInputAssemblyStateCreateInfo(*copy_src->pInputAssemblyState);
     else
-        pInputAssemblyState = NULL;
+        pInputAssemblyState = nullptr;
     bool has_tessellation_stage = false;
     if (stageCount && pStages)
         for (uint32_t i = 0; i < stageCount && !has_tessellation_stage; ++i)
@@ -4432,38 +4457,38 @@ void safe_VkGraphicsPipelineCreateInfo::initialize(const safe_VkGraphicsPipeline
     if (copy_src->pTessellationState && has_tessellation_stage)
         pTessellationState = new safe_VkPipelineTessellationStateCreateInfo(*copy_src->pTessellationState);
     else
-        pTessellationState = NULL; // original pTessellationState pointer ignored
+        pTessellationState = nullptr; // original pTessellationState pointer ignored
     bool is_dynamic_has_rasterization = false;
     if (copy_src->pDynamicState && copy_src->pDynamicState->pDynamicStates) {
         for (uint32_t i = 0; i < copy_src->pDynamicState->dynamicStateCount && !is_dynamic_has_rasterization; ++i)
             if (copy_src->pDynamicState->pDynamicStates[i] == VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT)
                 is_dynamic_has_rasterization = true;
     }
-    bool has_rasterization = copy_src->pRasterizationState ? (is_dynamic_has_rasterization || !copy_src->pRasterizationState->rasterizerDiscardEnable) : false;
+    const bool has_rasterization = copy_src->pRasterizationState ? (is_dynamic_has_rasterization || !copy_src->pRasterizationState->rasterizerDiscardEnable) : false;
     if (copy_src->pViewportState && (has_rasterization || is_graphics_library)) {
         pViewportState = new safe_VkPipelineViewportStateCreateInfo(*copy_src->pViewportState);
     } else
-        pViewportState = NULL; // original pViewportState pointer ignored
+        pViewportState = nullptr; // original pViewportState pointer ignored
     if (copy_src->pRasterizationState)
         pRasterizationState = new safe_VkPipelineRasterizationStateCreateInfo(*copy_src->pRasterizationState);
     else
-        pRasterizationState = NULL;
+        pRasterizationState = nullptr;
     if (copy_src->pMultisampleState && (has_rasterization || is_graphics_library))
         pMultisampleState = new safe_VkPipelineMultisampleStateCreateInfo(*copy_src->pMultisampleState);
     else
-        pMultisampleState = NULL; // original pMultisampleState pointer ignored
+        pMultisampleState = nullptr; // original pMultisampleState pointer ignored
     if (copy_src->pDepthStencilState && (has_rasterization || is_graphics_library))
         pDepthStencilState = new safe_VkPipelineDepthStencilStateCreateInfo(*copy_src->pDepthStencilState);
     else
-        pDepthStencilState = NULL; // original pDepthStencilState pointer ignored
+        pDepthStencilState = nullptr; // original pDepthStencilState pointer ignored
     if (copy_src->pColorBlendState && (has_rasterization || is_graphics_library))
         pColorBlendState = new safe_VkPipelineColorBlendStateCreateInfo(*copy_src->pColorBlendState);
     else
-        pColorBlendState = NULL; // original pColorBlendState pointer ignored
+        pColorBlendState = nullptr; // original pColorBlendState pointer ignored
     if (copy_src->pDynamicState)
         pDynamicState = new safe_VkPipelineDynamicStateCreateInfo(*copy_src->pDynamicState);
     else
-        pDynamicState = NULL;
+        pDynamicState = nullptr;
 }
 
 safe_VkPipelineLayoutCreateInfo::safe_VkPipelineLayoutCreateInfo(const VkPipelineLayoutCreateInfo* in_struct) :
@@ -19359,9 +19384,14 @@ void safe_VkPhysicalDeviceInlineUniformBlockProperties::initialize(const safe_Vk
 safe_VkWriteDescriptorSetInlineUniformBlock::safe_VkWriteDescriptorSetInlineUniformBlock(const VkWriteDescriptorSetInlineUniformBlock* in_struct) :
     sType(in_struct->sType),
     dataSize(in_struct->dataSize),
-    pData(in_struct->pData)
+    pData(nullptr)
 {
     pNext = SafePnextCopy(in_struct->pNext);
+    if (in_struct->pData != nullptr) {
+        auto temp = new std::byte[in_struct->dataSize];
+        std::memcpy(temp, in_struct->pData, in_struct->dataSize);
+        pData = temp;
+    }
 }
 
 safe_VkWriteDescriptorSetInlineUniformBlock::safe_VkWriteDescriptorSetInlineUniformBlock() :
@@ -19375,47 +19405,75 @@ safe_VkWriteDescriptorSetInlineUniformBlock::safe_VkWriteDescriptorSetInlineUnif
 {
     sType = copy_src.sType;
     dataSize = copy_src.dataSize;
-    pData = copy_src.pData;
     pNext = SafePnextCopy(copy_src.pNext);
+    if (copy_src.pData != nullptr) {
+        auto temp = new std::byte[copy_src.dataSize];
+        std::memcpy(temp, copy_src.pData, copy_src.dataSize);
+        pData = temp;
+    }
 }
 
 safe_VkWriteDescriptorSetInlineUniformBlock& safe_VkWriteDescriptorSetInlineUniformBlock::operator=(const safe_VkWriteDescriptorSetInlineUniformBlock& copy_src)
 {
     if (&copy_src == this) return *this;
 
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
     if (pNext)
         FreePnextChain(pNext);
 
     sType = copy_src.sType;
     dataSize = copy_src.dataSize;
-    pData = copy_src.pData;
     pNext = SafePnextCopy(copy_src.pNext);
+    if (copy_src.pData != nullptr) {
+        auto temp = new std::byte[copy_src.dataSize];
+        std::memcpy(temp, copy_src.pData, copy_src.dataSize);
+        pData = temp;
+    }
 
     return *this;
 }
 
 safe_VkWriteDescriptorSetInlineUniformBlock::~safe_VkWriteDescriptorSetInlineUniformBlock()
 {
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
     if (pNext)
         FreePnextChain(pNext);
 }
 
 void safe_VkWriteDescriptorSetInlineUniformBlock::initialize(const VkWriteDescriptorSetInlineUniformBlock* in_struct)
 {
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
     if (pNext)
         FreePnextChain(pNext);
     sType = in_struct->sType;
     dataSize = in_struct->dataSize;
-    pData = in_struct->pData;
     pNext = SafePnextCopy(in_struct->pNext);
+    if (in_struct->pData != nullptr) {
+        auto temp = new std::byte[in_struct->dataSize];
+        std::memcpy(temp, in_struct->pData, in_struct->dataSize);
+        pData = temp;
+    }
 }
 
 void safe_VkWriteDescriptorSetInlineUniformBlock::initialize(const safe_VkWriteDescriptorSetInlineUniformBlock* copy_src)
 {
     sType = copy_src->sType;
     dataSize = copy_src->dataSize;
-    pData = copy_src->pData;
     pNext = SafePnextCopy(copy_src->pNext);
+    if (copy_src->pData != nullptr) {
+        auto temp = new std::byte[copy_src->dataSize];
+        std::memcpy(temp, copy_src->pData, copy_src->dataSize);
+        pData = temp;
+    }
 }
 
 safe_VkDescriptorPoolInlineUniformBlockCreateInfo::safe_VkDescriptorPoolInlineUniformBlockCreateInfo(const VkDescriptorPoolInlineUniformBlockCreateInfo* in_struct) :
@@ -29029,7 +29087,7 @@ safe_VkPipelineExecutableInternalRepresentationKHR::safe_VkPipelineExecutableInt
     sType(in_struct->sType),
     isText(in_struct->isText),
     dataSize(in_struct->dataSize),
-    pData(in_struct->pData)
+    pData(nullptr)
 {
     pNext = SafePnextCopy(in_struct->pNext);
     for (uint32_t i = 0; i < VK_MAX_DESCRIPTION_SIZE; ++i) {
@@ -29037,6 +29095,11 @@ safe_VkPipelineExecutableInternalRepresentationKHR::safe_VkPipelineExecutableInt
     }
     for (uint32_t i = 0; i < VK_MAX_DESCRIPTION_SIZE; ++i) {
         description[i] = in_struct->description[i];
+    }
+    if (in_struct->pData != nullptr) {
+        auto temp = new std::byte[in_struct->dataSize];
+        std::memcpy(temp, in_struct->pData, in_struct->dataSize);
+        pData = temp;
     }
 }
 
@@ -29053,13 +29116,17 @@ safe_VkPipelineExecutableInternalRepresentationKHR::safe_VkPipelineExecutableInt
     sType = copy_src.sType;
     isText = copy_src.isText;
     dataSize = copy_src.dataSize;
-    pData = copy_src.pData;
     pNext = SafePnextCopy(copy_src.pNext);
     for (uint32_t i = 0; i < VK_MAX_DESCRIPTION_SIZE; ++i) {
         name[i] = copy_src.name[i];
     }
     for (uint32_t i = 0; i < VK_MAX_DESCRIPTION_SIZE; ++i) {
         description[i] = copy_src.description[i];
+    }
+    if (copy_src.pData != nullptr) {
+        auto temp = new std::byte[copy_src.dataSize];
+        std::memcpy(temp, copy_src.pData, copy_src.dataSize);
+        pData = temp;
     }
 }
 
@@ -29067,13 +29134,16 @@ safe_VkPipelineExecutableInternalRepresentationKHR& safe_VkPipelineExecutableInt
 {
     if (&copy_src == this) return *this;
 
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
     if (pNext)
         FreePnextChain(pNext);
 
     sType = copy_src.sType;
     isText = copy_src.isText;
     dataSize = copy_src.dataSize;
-    pData = copy_src.pData;
     pNext = SafePnextCopy(copy_src.pNext);
     for (uint32_t i = 0; i < VK_MAX_DESCRIPTION_SIZE; ++i) {
         name[i] = copy_src.name[i];
@@ -29081,30 +29151,47 @@ safe_VkPipelineExecutableInternalRepresentationKHR& safe_VkPipelineExecutableInt
     for (uint32_t i = 0; i < VK_MAX_DESCRIPTION_SIZE; ++i) {
         description[i] = copy_src.description[i];
     }
+    if (copy_src.pData != nullptr) {
+        auto temp = new std::byte[copy_src.dataSize];
+        std::memcpy(temp, copy_src.pData, copy_src.dataSize);
+        pData = temp;
+    }
 
     return *this;
 }
 
 safe_VkPipelineExecutableInternalRepresentationKHR::~safe_VkPipelineExecutableInternalRepresentationKHR()
 {
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
     if (pNext)
         FreePnextChain(pNext);
 }
 
 void safe_VkPipelineExecutableInternalRepresentationKHR::initialize(const VkPipelineExecutableInternalRepresentationKHR* in_struct)
 {
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
     if (pNext)
         FreePnextChain(pNext);
     sType = in_struct->sType;
     isText = in_struct->isText;
     dataSize = in_struct->dataSize;
-    pData = in_struct->pData;
     pNext = SafePnextCopy(in_struct->pNext);
     for (uint32_t i = 0; i < VK_MAX_DESCRIPTION_SIZE; ++i) {
         name[i] = in_struct->name[i];
     }
     for (uint32_t i = 0; i < VK_MAX_DESCRIPTION_SIZE; ++i) {
         description[i] = in_struct->description[i];
+    }
+    if (in_struct->pData != nullptr) {
+        auto temp = new std::byte[in_struct->dataSize];
+        std::memcpy(temp, in_struct->pData, in_struct->dataSize);
+        pData = temp;
     }
 }
 
@@ -29113,13 +29200,17 @@ void safe_VkPipelineExecutableInternalRepresentationKHR::initialize(const safe_V
     sType = copy_src->sType;
     isText = copy_src->isText;
     dataSize = copy_src->dataSize;
-    pData = copy_src->pData;
     pNext = SafePnextCopy(copy_src->pNext);
     for (uint32_t i = 0; i < VK_MAX_DESCRIPTION_SIZE; ++i) {
         name[i] = copy_src->name[i];
     }
     for (uint32_t i = 0; i < VK_MAX_DESCRIPTION_SIZE; ++i) {
         description[i] = copy_src->description[i];
+    }
+    if (copy_src->pData != nullptr) {
+        auto temp = new std::byte[copy_src->dataSize];
+        std::memcpy(temp, copy_src->pData, copy_src->dataSize);
+        pData = temp;
     }
 }
 
@@ -31274,9 +31365,14 @@ void safe_VkPipelineRasterizationStateStreamCreateInfoEXT::initialize(const safe
 safe_VkCuModuleCreateInfoNVX::safe_VkCuModuleCreateInfoNVX(const VkCuModuleCreateInfoNVX* in_struct) :
     sType(in_struct->sType),
     dataSize(in_struct->dataSize),
-    pData(in_struct->pData)
+    pData(nullptr)
 {
     pNext = SafePnextCopy(in_struct->pNext);
+    if (in_struct->pData != nullptr) {
+        auto temp = new std::byte[in_struct->dataSize];
+        std::memcpy(temp, in_struct->pData, in_struct->dataSize);
+        pData = temp;
+    }
 }
 
 safe_VkCuModuleCreateInfoNVX::safe_VkCuModuleCreateInfoNVX() :
@@ -31290,47 +31386,75 @@ safe_VkCuModuleCreateInfoNVX::safe_VkCuModuleCreateInfoNVX(const safe_VkCuModule
 {
     sType = copy_src.sType;
     dataSize = copy_src.dataSize;
-    pData = copy_src.pData;
     pNext = SafePnextCopy(copy_src.pNext);
+    if (copy_src.pData != nullptr) {
+        auto temp = new std::byte[copy_src.dataSize];
+        std::memcpy(temp, copy_src.pData, copy_src.dataSize);
+        pData = temp;
+    }
 }
 
 safe_VkCuModuleCreateInfoNVX& safe_VkCuModuleCreateInfoNVX::operator=(const safe_VkCuModuleCreateInfoNVX& copy_src)
 {
     if (&copy_src == this) return *this;
 
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
     if (pNext)
         FreePnextChain(pNext);
 
     sType = copy_src.sType;
     dataSize = copy_src.dataSize;
-    pData = copy_src.pData;
     pNext = SafePnextCopy(copy_src.pNext);
+    if (copy_src.pData != nullptr) {
+        auto temp = new std::byte[copy_src.dataSize];
+        std::memcpy(temp, copy_src.pData, copy_src.dataSize);
+        pData = temp;
+    }
 
     return *this;
 }
 
 safe_VkCuModuleCreateInfoNVX::~safe_VkCuModuleCreateInfoNVX()
 {
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
     if (pNext)
         FreePnextChain(pNext);
 }
 
 void safe_VkCuModuleCreateInfoNVX::initialize(const VkCuModuleCreateInfoNVX* in_struct)
 {
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
     if (pNext)
         FreePnextChain(pNext);
     sType = in_struct->sType;
     dataSize = in_struct->dataSize;
-    pData = in_struct->pData;
     pNext = SafePnextCopy(in_struct->pNext);
+    if (in_struct->pData != nullptr) {
+        auto temp = new std::byte[in_struct->dataSize];
+        std::memcpy(temp, in_struct->pData, in_struct->dataSize);
+        pData = temp;
+    }
 }
 
 void safe_VkCuModuleCreateInfoNVX::initialize(const safe_VkCuModuleCreateInfoNVX* copy_src)
 {
     sType = copy_src->sType;
     dataSize = copy_src->dataSize;
-    pData = copy_src->pData;
     pNext = SafePnextCopy(copy_src->pNext);
+    if (copy_src->pData != nullptr) {
+        auto temp = new std::byte[copy_src->dataSize];
+        std::memcpy(temp, copy_src->pData, copy_src->dataSize);
+        pData = temp;
+    }
 }
 
 safe_VkCuFunctionCreateInfoNVX::safe_VkCuFunctionCreateInfoNVX(const VkCuFunctionCreateInfoNVX* in_struct) :
@@ -41953,7 +42077,7 @@ void safe_VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL::initialize(const
 
 safe_VkPerformanceValueDataINTEL::safe_VkPerformanceValueDataINTEL(const VkPerformanceValueDataINTEL* in_struct)
 {
-    valueString = SafeStringCopy(in_struct->valueString);
+    initialize(in_struct);
 }
 
 safe_VkPerformanceValueDataINTEL::safe_VkPerformanceValueDataINTEL() :
@@ -50340,6 +50464,7 @@ void safe_VkPipelineFragmentShadingRateEnumStateCreateInfoNV::initialize(const s
 
 safe_VkDeviceOrHostAddressConstKHR::safe_VkDeviceOrHostAddressConstKHR(const VkDeviceOrHostAddressConstKHR* in_struct)
 {
+    initialize(in_struct);
 }
 
 safe_VkDeviceOrHostAddressConstKHR::safe_VkDeviceOrHostAddressConstKHR() :
@@ -55043,6 +55168,7 @@ void safe_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT::initialize(const safe_VkPh
 
 safe_VkDeviceOrHostAddressKHR::safe_VkDeviceOrHostAddressKHR(const VkDeviceOrHostAddressKHR* in_struct)
 {
+    initialize(in_struct);
 }
 
 safe_VkDeviceOrHostAddressKHR::safe_VkDeviceOrHostAddressKHR() :
@@ -55097,18 +55223,17 @@ safe_VkMicromapBuildInfoEXT::safe_VkMicromapBuildInfoEXT(const VkMicromapBuildIn
     triangleArrayStride(in_struct->triangleArrayStride)
 {
     pNext = SafePnextCopy(in_struct->pNext);
-   pNext = SafePnextCopy(in_struct->pNext);
-   if (in_struct->pUsageCounts) {
-       pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];
-       memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);
-   }
-   if (in_struct->ppUsageCounts) {
-       VkMicromapUsageEXT** pointer_array  = new VkMicromapUsageEXT*[in_struct->usageCountsCount];
-       for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {
-           pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);
-       }
-       ppUsageCounts = pointer_array;
-   }
+    if (in_struct->pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);
+    }
+    if (in_struct->ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array  = new VkMicromapUsageEXT*[in_struct->usageCountsCount];
+        for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
 }
 
 safe_VkMicromapBuildInfoEXT::safe_VkMicromapBuildInfoEXT() :
@@ -55139,18 +55264,17 @@ safe_VkMicromapBuildInfoEXT::safe_VkMicromapBuildInfoEXT(const safe_VkMicromapBu
     triangleArray.initialize(&copy_src.triangleArray);
     triangleArrayStride = copy_src.triangleArrayStride;
     pNext = SafePnextCopy(copy_src.pNext);
-   pNext = SafePnextCopy(copy_src.pNext);
-   if (copy_src.pUsageCounts) {
-       pUsageCounts = new VkMicromapUsageEXT[copy_src.usageCountsCount];
-       memcpy ((void *)pUsageCounts, (void *)copy_src.pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src.usageCountsCount);
-   }
-   if (copy_src.ppUsageCounts) {
-       VkMicromapUsageEXT** pointer_array  = new VkMicromapUsageEXT*[copy_src.usageCountsCount];
-       for (uint32_t i = 0; i < copy_src.usageCountsCount; ++i) {
-           pointer_array[i] = new VkMicromapUsageEXT(*copy_src.ppUsageCounts[i]);
-       }
-       ppUsageCounts = pointer_array;
-   }
+    if (copy_src.pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[copy_src.usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)copy_src.pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src.usageCountsCount);
+    }
+    if (copy_src.ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array  = new VkMicromapUsageEXT*[copy_src.usageCountsCount];
+        for (uint32_t i = 0; i < copy_src.usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*copy_src.ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
 }
 
 safe_VkMicromapBuildInfoEXT& safe_VkMicromapBuildInfoEXT::operator=(const safe_VkMicromapBuildInfoEXT& copy_src)
@@ -55167,8 +55291,6 @@ safe_VkMicromapBuildInfoEXT& safe_VkMicromapBuildInfoEXT::operator=(const safe_V
     }
     if (pNext)
         FreePnextChain(pNext);
-    if (pNext)
-        FreePnextChain(pNext);
 
     sType = copy_src.sType;
     type = copy_src.type;
@@ -55183,18 +55305,17 @@ safe_VkMicromapBuildInfoEXT& safe_VkMicromapBuildInfoEXT::operator=(const safe_V
     triangleArray.initialize(&copy_src.triangleArray);
     triangleArrayStride = copy_src.triangleArrayStride;
     pNext = SafePnextCopy(copy_src.pNext);
-   pNext = SafePnextCopy(copy_src.pNext);
-   if (copy_src.pUsageCounts) {
-       pUsageCounts = new VkMicromapUsageEXT[copy_src.usageCountsCount];
-       memcpy ((void *)pUsageCounts, (void *)copy_src.pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src.usageCountsCount);
-   }
-   if (copy_src.ppUsageCounts) {
-       VkMicromapUsageEXT** pointer_array  = new VkMicromapUsageEXT*[copy_src.usageCountsCount];
-       for (uint32_t i = 0; i < copy_src.usageCountsCount; ++i) {
-           pointer_array[i] = new VkMicromapUsageEXT(*copy_src.ppUsageCounts[i]);
-       }
-       ppUsageCounts = pointer_array;
-   }
+    if (copy_src.pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[copy_src.usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)copy_src.pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src.usageCountsCount);
+    }
+    if (copy_src.ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array  = new VkMicromapUsageEXT*[copy_src.usageCountsCount];
+        for (uint32_t i = 0; i < copy_src.usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*copy_src.ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
 
     return *this;
 }
@@ -55211,8 +55332,6 @@ safe_VkMicromapBuildInfoEXT::~safe_VkMicromapBuildInfoEXT()
     }
     if (pNext)
         FreePnextChain(pNext);
-    if (pNext)
-        FreePnextChain(pNext);
 }
 
 void safe_VkMicromapBuildInfoEXT::initialize(const VkMicromapBuildInfoEXT* in_struct)
@@ -55225,8 +55344,6 @@ void safe_VkMicromapBuildInfoEXT::initialize(const VkMicromapBuildInfoEXT* in_st
         }
         delete[] ppUsageCounts;
     }
-    if (pNext)
-        FreePnextChain(pNext);
     if (pNext)
         FreePnextChain(pNext);
     sType = in_struct->sType;
@@ -55242,18 +55359,17 @@ void safe_VkMicromapBuildInfoEXT::initialize(const VkMicromapBuildInfoEXT* in_st
     triangleArray.initialize(&in_struct->triangleArray);
     triangleArrayStride = in_struct->triangleArrayStride;
     pNext = SafePnextCopy(in_struct->pNext);
-   pNext = SafePnextCopy(in_struct->pNext);
-   if (in_struct->pUsageCounts) {
-       pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];
-       memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);
-   }
-   if (in_struct->ppUsageCounts) {
-       VkMicromapUsageEXT** pointer_array  = new VkMicromapUsageEXT*[in_struct->usageCountsCount];
-       for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {
-           pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);
-       }
-       ppUsageCounts = pointer_array;
-   }
+    if (in_struct->pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);
+    }
+    if (in_struct->ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array  = new VkMicromapUsageEXT*[in_struct->usageCountsCount];
+        for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
 }
 
 void safe_VkMicromapBuildInfoEXT::initialize(const safe_VkMicromapBuildInfoEXT* copy_src)
@@ -55271,18 +55387,17 @@ void safe_VkMicromapBuildInfoEXT::initialize(const safe_VkMicromapBuildInfoEXT* 
     triangleArray.initialize(&copy_src->triangleArray);
     triangleArrayStride = copy_src->triangleArrayStride;
     pNext = SafePnextCopy(copy_src->pNext);
-   pNext = SafePnextCopy(copy_src->pNext);
-   if (copy_src->pUsageCounts) {
-       pUsageCounts = new VkMicromapUsageEXT[copy_src->usageCountsCount];
-       memcpy ((void *)pUsageCounts, (void *)copy_src->pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src->usageCountsCount);
-   }
-   if (copy_src->ppUsageCounts) {
-       VkMicromapUsageEXT** pointer_array  = new VkMicromapUsageEXT*[copy_src->usageCountsCount];
-       for (uint32_t i = 0; i < copy_src->usageCountsCount; ++i) {
-           pointer_array[i] = new VkMicromapUsageEXT(*copy_src->ppUsageCounts[i]);
-       }
-       ppUsageCounts = pointer_array;
-   }
+    if (copy_src->pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[copy_src->usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)copy_src->pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src->usageCountsCount);
+    }
+    if (copy_src->ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array  = new VkMicromapUsageEXT*[copy_src->usageCountsCount];
+        for (uint32_t i = 0; i < copy_src->usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*copy_src->ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
 }
 
 safe_VkMicromapCreateInfoEXT::safe_VkMicromapCreateInfoEXT(const VkMicromapCreateInfoEXT* in_struct) :
@@ -55865,18 +55980,17 @@ safe_VkAccelerationStructureTrianglesOpacityMicromapEXT::safe_VkAccelerationStru
     micromap(in_struct->micromap)
 {
     pNext = SafePnextCopy(in_struct->pNext);
-   pNext = SafePnextCopy(in_struct->pNext);
-   if (in_struct->pUsageCounts) {
-       pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];
-       memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);
-   }
-   if (in_struct->ppUsageCounts) {
-       VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[in_struct->usageCountsCount];
-       for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {
-           pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);
-       }
-       ppUsageCounts = pointer_array;
-   }
+    if (in_struct->pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);
+    }
+    if (in_struct->ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[in_struct->usageCountsCount];
+        for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
 }
 
 safe_VkAccelerationStructureTrianglesOpacityMicromapEXT::safe_VkAccelerationStructureTrianglesOpacityMicromapEXT() :
@@ -55903,18 +56017,17 @@ safe_VkAccelerationStructureTrianglesOpacityMicromapEXT::safe_VkAccelerationStru
     ppUsageCounts = nullptr;
     micromap = copy_src.micromap;
     pNext = SafePnextCopy(copy_src.pNext);
-   pNext = SafePnextCopy(copy_src.pNext);
-   if (copy_src.pUsageCounts) {
-       pUsageCounts = new VkMicromapUsageEXT[copy_src.usageCountsCount];
-       memcpy ((void *)pUsageCounts, (void *)copy_src.pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src.usageCountsCount);
-   }
-   if (copy_src.ppUsageCounts) {
-       VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[copy_src.usageCountsCount];
-       for (uint32_t i = 0; i < copy_src.usageCountsCount; ++i) {
-           pointer_array[i] = new VkMicromapUsageEXT(*copy_src.ppUsageCounts[i]);
-       }
-       ppUsageCounts = pointer_array;
-   }
+    if (copy_src.pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[copy_src.usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)copy_src.pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src.usageCountsCount);
+    }
+    if (copy_src.ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[copy_src.usageCountsCount];
+        for (uint32_t i = 0; i < copy_src.usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*copy_src.ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
 }
 
 safe_VkAccelerationStructureTrianglesOpacityMicromapEXT& safe_VkAccelerationStructureTrianglesOpacityMicromapEXT::operator=(const safe_VkAccelerationStructureTrianglesOpacityMicromapEXT& copy_src)
@@ -55931,8 +56044,6 @@ safe_VkAccelerationStructureTrianglesOpacityMicromapEXT& safe_VkAccelerationStru
     }
     if (pNext)
         FreePnextChain(pNext);
-    if (pNext)
-        FreePnextChain(pNext);
 
     sType = copy_src.sType;
     indexType = copy_src.indexType;
@@ -55944,18 +56055,17 @@ safe_VkAccelerationStructureTrianglesOpacityMicromapEXT& safe_VkAccelerationStru
     ppUsageCounts = nullptr;
     micromap = copy_src.micromap;
     pNext = SafePnextCopy(copy_src.pNext);
-   pNext = SafePnextCopy(copy_src.pNext);
-   if (copy_src.pUsageCounts) {
-       pUsageCounts = new VkMicromapUsageEXT[copy_src.usageCountsCount];
-       memcpy ((void *)pUsageCounts, (void *)copy_src.pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src.usageCountsCount);
-   }
-   if (copy_src.ppUsageCounts) {
-       VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[copy_src.usageCountsCount];
-       for (uint32_t i = 0; i < copy_src.usageCountsCount; ++i) {
-           pointer_array[i] = new VkMicromapUsageEXT(*copy_src.ppUsageCounts[i]);
-       }
-       ppUsageCounts = pointer_array;
-   }
+    if (copy_src.pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[copy_src.usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)copy_src.pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src.usageCountsCount);
+    }
+    if (copy_src.ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[copy_src.usageCountsCount];
+        for (uint32_t i = 0; i < copy_src.usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*copy_src.ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
 
     return *this;
 }
@@ -55972,8 +56082,6 @@ safe_VkAccelerationStructureTrianglesOpacityMicromapEXT::~safe_VkAccelerationStr
     }
     if (pNext)
         FreePnextChain(pNext);
-    if (pNext)
-        FreePnextChain(pNext);
 }
 
 void safe_VkAccelerationStructureTrianglesOpacityMicromapEXT::initialize(const VkAccelerationStructureTrianglesOpacityMicromapEXT* in_struct)
@@ -55988,8 +56096,6 @@ void safe_VkAccelerationStructureTrianglesOpacityMicromapEXT::initialize(const V
     }
     if (pNext)
         FreePnextChain(pNext);
-    if (pNext)
-        FreePnextChain(pNext);
     sType = in_struct->sType;
     indexType = in_struct->indexType;
     indexBuffer.initialize(&in_struct->indexBuffer);
@@ -56000,18 +56106,17 @@ void safe_VkAccelerationStructureTrianglesOpacityMicromapEXT::initialize(const V
     ppUsageCounts = nullptr;
     micromap = in_struct->micromap;
     pNext = SafePnextCopy(in_struct->pNext);
-   pNext = SafePnextCopy(in_struct->pNext);
-   if (in_struct->pUsageCounts) {
-       pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];
-       memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);
-   }
-   if (in_struct->ppUsageCounts) {
-       VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[in_struct->usageCountsCount];
-       for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {
-           pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);
-       }
-       ppUsageCounts = pointer_array;
-   }
+    if (in_struct->pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);
+    }
+    if (in_struct->ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[in_struct->usageCountsCount];
+        for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
 }
 
 void safe_VkAccelerationStructureTrianglesOpacityMicromapEXT::initialize(const safe_VkAccelerationStructureTrianglesOpacityMicromapEXT* copy_src)
@@ -56026,19 +56131,363 @@ void safe_VkAccelerationStructureTrianglesOpacityMicromapEXT::initialize(const s
     ppUsageCounts = nullptr;
     micromap = copy_src->micromap;
     pNext = SafePnextCopy(copy_src->pNext);
-   pNext = SafePnextCopy(copy_src->pNext);
-   if (copy_src->pUsageCounts) {
-       pUsageCounts = new VkMicromapUsageEXT[copy_src->usageCountsCount];
-       memcpy ((void *)pUsageCounts, (void *)copy_src->pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src->usageCountsCount);
-   }
-   if (copy_src->ppUsageCounts) {
-       VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[copy_src->usageCountsCount];
-       for (uint32_t i = 0; i < copy_src->usageCountsCount; ++i) {
-           pointer_array[i] = new VkMicromapUsageEXT(*copy_src->ppUsageCounts[i]);
-       }
-       ppUsageCounts = pointer_array;
-   }
+    if (copy_src->pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[copy_src->usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)copy_src->pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src->usageCountsCount);
+    }
+    if (copy_src->ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[copy_src->usageCountsCount];
+        for (uint32_t i = 0; i < copy_src->usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*copy_src->ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
 }
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+
+safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV::safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV(const VkPhysicalDeviceDisplacementMicromapFeaturesNV* in_struct) :
+    sType(in_struct->sType),
+    displacementMicromap(in_struct->displacementMicromap)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV::safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_FEATURES_NV),
+    pNext(nullptr),
+    displacementMicromap()
+{}
+
+safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV::safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV(const safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV& copy_src)
+{
+    sType = copy_src.sType;
+    displacementMicromap = copy_src.displacementMicromap;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV& safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV::operator=(const safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    displacementMicromap = copy_src.displacementMicromap;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV::~safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV::initialize(const VkPhysicalDeviceDisplacementMicromapFeaturesNV* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    displacementMicromap = in_struct->displacementMicromap;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV::initialize(const safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV* copy_src)
+{
+    sType = copy_src->sType;
+    displacementMicromap = copy_src->displacementMicromap;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+
+safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV::safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV(const VkPhysicalDeviceDisplacementMicromapPropertiesNV* in_struct) :
+    sType(in_struct->sType),
+    maxDisplacementMicromapSubdivisionLevel(in_struct->maxDisplacementMicromapSubdivisionLevel)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV::safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_PROPERTIES_NV),
+    pNext(nullptr),
+    maxDisplacementMicromapSubdivisionLevel()
+{}
+
+safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV::safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV(const safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV& copy_src)
+{
+    sType = copy_src.sType;
+    maxDisplacementMicromapSubdivisionLevel = copy_src.maxDisplacementMicromapSubdivisionLevel;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV& safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV::operator=(const safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    maxDisplacementMicromapSubdivisionLevel = copy_src.maxDisplacementMicromapSubdivisionLevel;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV::~safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV::initialize(const VkPhysicalDeviceDisplacementMicromapPropertiesNV* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    maxDisplacementMicromapSubdivisionLevel = in_struct->maxDisplacementMicromapSubdivisionLevel;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV::initialize(const safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV* copy_src)
+{
+    sType = copy_src->sType;
+    maxDisplacementMicromapSubdivisionLevel = copy_src->maxDisplacementMicromapSubdivisionLevel;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+
+safe_VkAccelerationStructureTrianglesDisplacementMicromapNV::safe_VkAccelerationStructureTrianglesDisplacementMicromapNV(const VkAccelerationStructureTrianglesDisplacementMicromapNV* in_struct) :
+    sType(in_struct->sType),
+    displacementBiasAndScaleFormat(in_struct->displacementBiasAndScaleFormat),
+    displacementVectorFormat(in_struct->displacementVectorFormat),
+    displacementBiasAndScaleBuffer(&in_struct->displacementBiasAndScaleBuffer),
+    displacementBiasAndScaleStride(in_struct->displacementBiasAndScaleStride),
+    displacementVectorBuffer(&in_struct->displacementVectorBuffer),
+    displacementVectorStride(in_struct->displacementVectorStride),
+    displacedMicromapPrimitiveFlags(&in_struct->displacedMicromapPrimitiveFlags),
+    displacedMicromapPrimitiveFlagsStride(in_struct->displacedMicromapPrimitiveFlagsStride),
+    indexType(in_struct->indexType),
+    indexBuffer(&in_struct->indexBuffer),
+    indexStride(in_struct->indexStride),
+    baseTriangle(in_struct->baseTriangle),
+    usageCountsCount(in_struct->usageCountsCount),
+    pUsageCounts(nullptr),
+    ppUsageCounts(nullptr),
+    micromap(in_struct->micromap)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+    if (in_struct->pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);
+    }
+    if (in_struct->ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[in_struct->usageCountsCount];
+        for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
+}
+
+safe_VkAccelerationStructureTrianglesDisplacementMicromapNV::safe_VkAccelerationStructureTrianglesDisplacementMicromapNV() :
+    sType(VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_DISPLACEMENT_MICROMAP_NV),
+    pNext(nullptr),
+    displacementBiasAndScaleFormat(),
+    displacementVectorFormat(),
+    displacementBiasAndScaleStride(),
+    displacementVectorStride(),
+    displacedMicromapPrimitiveFlagsStride(),
+    indexType(),
+    indexStride(),
+    baseTriangle(),
+    usageCountsCount(),
+    pUsageCounts(nullptr),
+    ppUsageCounts(nullptr),
+    micromap()
+{}
+
+safe_VkAccelerationStructureTrianglesDisplacementMicromapNV::safe_VkAccelerationStructureTrianglesDisplacementMicromapNV(const safe_VkAccelerationStructureTrianglesDisplacementMicromapNV& copy_src)
+{
+    sType = copy_src.sType;
+    displacementBiasAndScaleFormat = copy_src.displacementBiasAndScaleFormat;
+    displacementVectorFormat = copy_src.displacementVectorFormat;
+    displacementBiasAndScaleBuffer.initialize(&copy_src.displacementBiasAndScaleBuffer);
+    displacementBiasAndScaleStride = copy_src.displacementBiasAndScaleStride;
+    displacementVectorBuffer.initialize(&copy_src.displacementVectorBuffer);
+    displacementVectorStride = copy_src.displacementVectorStride;
+    displacedMicromapPrimitiveFlags.initialize(&copy_src.displacedMicromapPrimitiveFlags);
+    displacedMicromapPrimitiveFlagsStride = copy_src.displacedMicromapPrimitiveFlagsStride;
+    indexType = copy_src.indexType;
+    indexBuffer.initialize(&copy_src.indexBuffer);
+    indexStride = copy_src.indexStride;
+    baseTriangle = copy_src.baseTriangle;
+    usageCountsCount = copy_src.usageCountsCount;
+    pUsageCounts = nullptr;
+    ppUsageCounts = nullptr;
+    micromap = copy_src.micromap;
+    pNext = SafePnextCopy(copy_src.pNext);
+    if (copy_src.pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[copy_src.usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)copy_src.pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src.usageCountsCount);
+    }
+    if (copy_src.ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[copy_src.usageCountsCount];
+        for (uint32_t i = 0; i < copy_src.usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*copy_src.ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
+}
+
+safe_VkAccelerationStructureTrianglesDisplacementMicromapNV& safe_VkAccelerationStructureTrianglesDisplacementMicromapNV::operator=(const safe_VkAccelerationStructureTrianglesDisplacementMicromapNV& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pUsageCounts)
+        delete[] pUsageCounts;
+    if (ppUsageCounts) {
+        for (uint32_t i = 0; i < usageCountsCount; ++i) {
+             delete ppUsageCounts[i];
+        }
+        delete[] ppUsageCounts;
+    }
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    displacementBiasAndScaleFormat = copy_src.displacementBiasAndScaleFormat;
+    displacementVectorFormat = copy_src.displacementVectorFormat;
+    displacementBiasAndScaleBuffer.initialize(&copy_src.displacementBiasAndScaleBuffer);
+    displacementBiasAndScaleStride = copy_src.displacementBiasAndScaleStride;
+    displacementVectorBuffer.initialize(&copy_src.displacementVectorBuffer);
+    displacementVectorStride = copy_src.displacementVectorStride;
+    displacedMicromapPrimitiveFlags.initialize(&copy_src.displacedMicromapPrimitiveFlags);
+    displacedMicromapPrimitiveFlagsStride = copy_src.displacedMicromapPrimitiveFlagsStride;
+    indexType = copy_src.indexType;
+    indexBuffer.initialize(&copy_src.indexBuffer);
+    indexStride = copy_src.indexStride;
+    baseTriangle = copy_src.baseTriangle;
+    usageCountsCount = copy_src.usageCountsCount;
+    pUsageCounts = nullptr;
+    ppUsageCounts = nullptr;
+    micromap = copy_src.micromap;
+    pNext = SafePnextCopy(copy_src.pNext);
+    if (copy_src.pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[copy_src.usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)copy_src.pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src.usageCountsCount);
+    }
+    if (copy_src.ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[copy_src.usageCountsCount];
+        for (uint32_t i = 0; i < copy_src.usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*copy_src.ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
+
+    return *this;
+}
+
+safe_VkAccelerationStructureTrianglesDisplacementMicromapNV::~safe_VkAccelerationStructureTrianglesDisplacementMicromapNV()
+{
+    if (pUsageCounts)
+        delete[] pUsageCounts;
+    if (ppUsageCounts) {
+        for (uint32_t i = 0; i < usageCountsCount; ++i) {
+             delete ppUsageCounts[i];
+        }
+        delete[] ppUsageCounts;
+    }
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkAccelerationStructureTrianglesDisplacementMicromapNV::initialize(const VkAccelerationStructureTrianglesDisplacementMicromapNV* in_struct)
+{
+    if (pUsageCounts)
+        delete[] pUsageCounts;
+    if (ppUsageCounts) {
+        for (uint32_t i = 0; i < usageCountsCount; ++i) {
+             delete ppUsageCounts[i];
+        }
+        delete[] ppUsageCounts;
+    }
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    displacementBiasAndScaleFormat = in_struct->displacementBiasAndScaleFormat;
+    displacementVectorFormat = in_struct->displacementVectorFormat;
+    displacementBiasAndScaleBuffer.initialize(&in_struct->displacementBiasAndScaleBuffer);
+    displacementBiasAndScaleStride = in_struct->displacementBiasAndScaleStride;
+    displacementVectorBuffer.initialize(&in_struct->displacementVectorBuffer);
+    displacementVectorStride = in_struct->displacementVectorStride;
+    displacedMicromapPrimitiveFlags.initialize(&in_struct->displacedMicromapPrimitiveFlags);
+    displacedMicromapPrimitiveFlagsStride = in_struct->displacedMicromapPrimitiveFlagsStride;
+    indexType = in_struct->indexType;
+    indexBuffer.initialize(&in_struct->indexBuffer);
+    indexStride = in_struct->indexStride;
+    baseTriangle = in_struct->baseTriangle;
+    usageCountsCount = in_struct->usageCountsCount;
+    pUsageCounts = nullptr;
+    ppUsageCounts = nullptr;
+    micromap = in_struct->micromap;
+    pNext = SafePnextCopy(in_struct->pNext);
+    if (in_struct->pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);
+    }
+    if (in_struct->ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[in_struct->usageCountsCount];
+        for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
+}
+
+void safe_VkAccelerationStructureTrianglesDisplacementMicromapNV::initialize(const safe_VkAccelerationStructureTrianglesDisplacementMicromapNV* copy_src)
+{
+    sType = copy_src->sType;
+    displacementBiasAndScaleFormat = copy_src->displacementBiasAndScaleFormat;
+    displacementVectorFormat = copy_src->displacementVectorFormat;
+    displacementBiasAndScaleBuffer.initialize(&copy_src->displacementBiasAndScaleBuffer);
+    displacementBiasAndScaleStride = copy_src->displacementBiasAndScaleStride;
+    displacementVectorBuffer.initialize(&copy_src->displacementVectorBuffer);
+    displacementVectorStride = copy_src->displacementVectorStride;
+    displacedMicromapPrimitiveFlags.initialize(&copy_src->displacedMicromapPrimitiveFlags);
+    displacedMicromapPrimitiveFlagsStride = copy_src->displacedMicromapPrimitiveFlagsStride;
+    indexType = copy_src->indexType;
+    indexBuffer.initialize(&copy_src->indexBuffer);
+    indexStride = copy_src->indexStride;
+    baseTriangle = copy_src->baseTriangle;
+    usageCountsCount = copy_src->usageCountsCount;
+    pUsageCounts = nullptr;
+    ppUsageCounts = nullptr;
+    micromap = copy_src->micromap;
+    pNext = SafePnextCopy(copy_src->pNext);
+    if (copy_src->pUsageCounts) {
+        pUsageCounts = new VkMicromapUsageEXT[copy_src->usageCountsCount];
+        memcpy ((void *)pUsageCounts, (void *)copy_src->pUsageCounts, sizeof(VkMicromapUsageEXT)*copy_src->usageCountsCount);
+    }
+    if (copy_src->ppUsageCounts) {
+        VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[copy_src->usageCountsCount];
+        for (uint32_t i = 0; i < copy_src->usageCountsCount; ++i) {
+            pointer_array[i] = new VkMicromapUsageEXT(*copy_src->ppUsageCounts[i]);
+        }
+        ppUsageCounts = pointer_array;
+    }
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
 
 safe_VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI::safe_VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI(const VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI* in_struct) :
     sType(in_struct->sType),
@@ -60238,9 +60687,12 @@ safe_VkAccelerationStructureGeometryKHR::safe_VkAccelerationStructureGeometryKHR
             geometry.instances.data.hostAddress = allocation;
             as_geom_khr_host_alloc.insert(this, new ASGeomKHRExtraData(allocation, build_range_info->primitiveOffset, build_range_info->primitiveCount));
         } else {
-            size_t array_size = build_range_info->primitiveOffset + build_range_info->primitiveCount * sizeof(VkAccelerationStructureInstanceKHR);
+            const auto primitive_offset = build_range_info->primitiveOffset;
+            const auto primitive_count = build_range_info->primitiveCount;
+            size_t array_size = primitive_offset + primitive_count * sizeof(VkAccelerationStructureInstanceKHR);
             uint8_t *allocation = new uint8_t[array_size];
-            memcpy(allocation, in_struct->geometry.instances.data.hostAddress, array_size);
+            auto host_address = static_cast<const uint8_t*>(in_struct->geometry.instances.data.hostAddress);
+            memcpy(allocation + primitive_offset, host_address + primitive_offset, primitive_count * sizeof(VkAccelerationStructureInstanceKHR));
             geometry.instances.data.hostAddress = allocation;
             as_geom_khr_host_alloc.insert(this, new ASGeomKHRExtraData(allocation, build_range_info->primitiveOffset, build_range_info->primitiveCount));
         }
@@ -60371,9 +60823,12 @@ void safe_VkAccelerationStructureGeometryKHR::initialize(const VkAccelerationStr
             geometry.instances.data.hostAddress = allocation;
             as_geom_khr_host_alloc.insert(this, new ASGeomKHRExtraData(allocation, build_range_info->primitiveOffset, build_range_info->primitiveCount));
         } else {
-            size_t array_size = build_range_info->primitiveOffset + build_range_info->primitiveCount * sizeof(VkAccelerationStructureInstanceKHR);
+            const auto primitive_offset = build_range_info->primitiveOffset;
+            const auto primitive_count = build_range_info->primitiveCount;
+            size_t array_size = primitive_offset + primitive_count * sizeof(VkAccelerationStructureInstanceKHR);
             uint8_t *allocation = new uint8_t[array_size];
-            memcpy(allocation, in_struct->geometry.instances.data.hostAddress, array_size);
+            auto host_address = static_cast<const uint8_t*>(in_struct->geometry.instances.data.hostAddress);
+            memcpy(allocation + primitive_offset, host_address + primitive_offset, primitive_count * sizeof(VkAccelerationStructureInstanceKHR));
             geometry.instances.data.hostAddress = allocation;
             as_geom_khr_host_alloc.insert(this, new ASGeomKHRExtraData(allocation, build_range_info->primitiveOffset, build_range_info->primitiveCount));
         }
@@ -63676,6 +64131,15 @@ void *SafePnextCopy(const void *pNext) {
         case VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_RATE_CONTROL_LAYER_INFO_EXT:
             safe_pNext = new safe_VkVideoEncodeH265RateControlLayerInfoEXT(reinterpret_cast<const VkVideoEncodeH265RateControlLayerInfoEXT *>(pNext));
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_FEATURES_NV:
+            safe_pNext = new safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV(reinterpret_cast<const VkPhysicalDeviceDisplacementMicromapFeaturesNV *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_PROPERTIES_NV:
+            safe_pNext = new safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV(reinterpret_cast<const VkPhysicalDeviceDisplacementMicromapPropertiesNV *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_DISPLACEMENT_MICROMAP_NV:
+            safe_pNext = new safe_VkAccelerationStructureTrianglesDisplacementMicromapNV(reinterpret_cast<const VkAccelerationStructureTrianglesDisplacementMicromapNV *>(pNext));
+            break;
 #endif // VK_ENABLE_BETA_EXTENSIONS
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
         case VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_USAGE_ANDROID:
@@ -65138,6 +65602,15 @@ void FreePnextChain(const void *pNext) {
             break;
         case VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_RATE_CONTROL_LAYER_INFO_EXT:
             delete reinterpret_cast<const safe_VkVideoEncodeH265RateControlLayerInfoEXT *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_FEATURES_NV:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceDisplacementMicromapFeaturesNV *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_PROPERTIES_NV:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceDisplacementMicromapPropertiesNV *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_DISPLACEMENT_MICROMAP_NV:
+            delete reinterpret_cast<const safe_VkAccelerationStructureTrianglesDisplacementMicromapNV *>(header);
             break;
 #endif // VK_ENABLE_BETA_EXTENSIONS
 #ifdef VK_USE_PLATFORM_ANDROID_KHR

@@ -1,9 +1,9 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2015-2022 The Khronos Group Inc.
-# Copyright (c) 2015-2022 Valve Corporation
-# Copyright (c) 2015-2022 LunarG, Inc.
-# Copyright (c) 2015-2022 Google Inc.
+# Copyright (c) 2015-2023 The Khronos Group Inc.
+# Copyright (c) 2015-2023 Valve Corporation
+# Copyright (c) 2015-2023 LunarG, Inc.
+# Copyright (c) 2015-2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Author: Mark Lobodzinski <mark@lunarg.com>
 
 import os,re,sys
 import xml.etree.ElementTree as etree
@@ -101,9 +99,9 @@ class DispatchTableHelperOutputGenerator(OutputGenerator):
         write(file_comment, file=self.outFile)
         # Copyright Notice
         copyright =  '/*\n'
-        copyright += ' * Copyright (c) 2015-2022 The Khronos Group Inc.\n'
-        copyright += ' * Copyright (c) 2015-2022 Valve Corporation\n'
-        copyright += ' * Copyright (c) 2015-2022 LunarG, Inc.\n'
+        copyright += ' * Copyright (c) 2015-2023 The Khronos Group Inc.\n'
+        copyright += ' * Copyright (c) 2015-2023 Valve Corporation\n'
+        copyright += ' * Copyright (c) 2015-2023 LunarG, Inc.\n'
         copyright += ' *\n'
         copyright += ' * Licensed under the Apache License, Version 2.0 (the "License");\n'
         copyright += ' * you may not use this file except in compliance with the License.\n'
@@ -116,10 +114,6 @@ class DispatchTableHelperOutputGenerator(OutputGenerator):
         copyright += ' * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n'
         copyright += ' * See the License for the specific language governing permissions and\n'
         copyright += ' * limitations under the License.\n'
-        copyright += ' *\n'
-        copyright += ' * Author: Courtney Goeltzenleuchter <courtney@LunarG.com>\n'
-        copyright += ' * Author: Jon Ashburn <jon@lunarg.com>\n'
-        copyright += ' * Author: Mark Lobodzinski <mark@lunarg.com>\n'
         copyright += ' */\n'
 
         preamble = ''
@@ -127,8 +121,6 @@ class DispatchTableHelperOutputGenerator(OutputGenerator):
         preamble += '#include <vulkan/vk_layer.h>\n'
         preamble += '#include <cstring>\n'
         preamble += '#include <string>\n'
-        preamble += '#include <unordered_set>\n'
-        preamble += '#include <unordered_map>\n'
         preamble += '#include "vk_layer_dispatch_table.h"\n'
         preamble += '#include "vk_extension_helper.h"\n'
 
@@ -266,17 +258,24 @@ class DispatchTableHelperOutputGenerator(OutputGenerator):
         ext_fcn += '};\n\n'
         ext_fcn += '// Using the above code-generated map of APINames-to-parent extension names, this function will:\n'
         ext_fcn += '//   o  Determine if the API has an associated extension\n'
-        ext_fcn += '//   o  If it does, determine if that extension name is present in the passed-in set of enabled_ext_names \n'
-        ext_fcn += '//   If the APIname has no parent extension, OR its parent extension name is IN the set, return TRUE, else FALSE\n'
+        ext_fcn += '//   o  If it does, determine if that extension name is present in the passed-in set of device or instance enabled_ext_names\n'
+        ext_fcn += '//   If the APIname has no parent extension, OR its parent extension name is IN one of the sets, return TRUE, else FALSE\n'
         ext_fcn += 'static inline bool ApiParentExtensionEnabled(const std::string api_name, const DeviceExtensions *device_extension_info) {\n'
         ext_fcn += '    auto has_ext = api_extension_map.find(api_name);\n'
         ext_fcn += '    // Is this API part of an extension or feature group?\n'
         ext_fcn += '    if (has_ext != api_extension_map.end()) {\n'
         ext_fcn += '        // Was the extension for this API enabled in the CreateDevice call?\n'
         ext_fcn += '        auto info = device_extension_info->get_info(has_ext->second.c_str());\n'
-        ext_fcn += '        if ((!info.state) || (device_extension_info->*(info.state) != kEnabledByCreateinfo)) {\n'
-        ext_fcn += '            return false;\n'
+        ext_fcn += '        if (info.state) {\n'
+        ext_fcn += '            return device_extension_info->*(info.state) == kEnabledByCreateinfo;\n'
         ext_fcn += '        }\n'
+        ext_fcn += '        // Was the extension for this API enabled in the CreateInstance call?\n'
+        ext_fcn += '        auto instance_extension_info = static_cast<const InstanceExtensions*>(device_extension_info);\n'
+        ext_fcn += '        auto inst_info = instance_extension_info->get_info(has_ext->second.c_str());\n'
+        ext_fcn += '        if (inst_info.state) {\n'
+        ext_fcn += '            return instance_extension_info->*(inst_info.state) == kEnabledByCreateinfo;\n'
+        ext_fcn += '        }\n'
+        ext_fcn += '        return false;\n'
         ext_fcn += '    }\n'
         ext_fcn += '    return true;\n'
         ext_fcn += '}\n'

@@ -20,14 +20,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Author: Mark Lobodzinski <mark@lunarg.com>
- * Author: Courtney Goeltzenleuchter <courtneygo@google.com>
- * Author: Tobin Ehlis <tobine@google.com>
- * Author: Chris Forbes <chrisforbes@google.com>
- * Author: John Zulauf<jzulauf@lunarg.com>
- * Author: Tony Barbour <tony@lunarg.com>
- *
  ****************************************************************************/
 
 #pragma once
@@ -6272,6 +6264,39 @@ template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLE
     typedef VkAccelerationStructureTrianglesOpacityMicromapEXT Type;
 };
 
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+// Map type VkPhysicalDeviceDisplacementMicromapFeaturesNV to id VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_FEATURES_NV
+template <> struct LvlTypeMap<VkPhysicalDeviceDisplacementMicromapFeaturesNV> {
+    static const VkStructureType kSType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_FEATURES_NV;
+};
+
+template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_FEATURES_NV> {
+    typedef VkPhysicalDeviceDisplacementMicromapFeaturesNV Type;
+};
+
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+// Map type VkPhysicalDeviceDisplacementMicromapPropertiesNV to id VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_PROPERTIES_NV
+template <> struct LvlTypeMap<VkPhysicalDeviceDisplacementMicromapPropertiesNV> {
+    static const VkStructureType kSType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_PROPERTIES_NV;
+};
+
+template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_PROPERTIES_NV> {
+    typedef VkPhysicalDeviceDisplacementMicromapPropertiesNV Type;
+};
+
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+// Map type VkAccelerationStructureTrianglesDisplacementMicromapNV to id VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_DISPLACEMENT_MICROMAP_NV
+template <> struct LvlTypeMap<VkAccelerationStructureTrianglesDisplacementMicromapNV> {
+    static const VkStructureType kSType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_DISPLACEMENT_MICROMAP_NV;
+};
+
+template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_DISPLACEMENT_MICROMAP_NV> {
+    typedef VkAccelerationStructureTrianglesDisplacementMicromapNV Type;
+};
+
+#endif // VK_ENABLE_BETA_EXTENSIONS
 // Map type VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI to id VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_FEATURES_HUAWEI
 template <> struct LvlTypeMap<VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI> {
     static const VkStructureType kSType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_FEATURES_HUAWEI;
@@ -7031,66 +7056,18 @@ template <typename T> T *LvlFindModInChain(void *next) {
     return found;
 }
 
-// Init the header of an sType struct with pNext
-template <typename T> T LvlInitStruct(void *p_next) {
+// Init the header of an sType struct with pNext and optional fields
+template <typename T, typename... StructFields>
+T LvlInitStruct(void *p_next, StructFields... fields) {
+    T out = {LvlTypeMap<T>::kSType, p_next, fields...};
+    return out;
+}
+
+// Init the header of an sType struct
+template <typename T>
+T LvlInitStruct(void *p_next = nullptr) {
     T out = {};
     out.sType = LvlTypeMap<T>::kSType;
     out.pNext = p_next;
     return out;
 }
-
-// Init the header of an sType struct
-template <typename T> T LvlInitStruct() {
-    T out = {};
-    out.sType = LvlTypeMap<T>::kSType;
-    out.pNext = nullptr;
-    return out;
-}
-
-
-// Find an entry of the given type in the const pNext chain
-template <typename T> const T *lvl_find_in_chain(const void *next) {
-    const VkBaseOutStructure *current = reinterpret_cast<const VkBaseOutStructure *>(next);
-    const T *found = nullptr;
-    while (current) {
-        if (LvlTypeMap<T>::kSType == current->sType) {
-            found = reinterpret_cast<const T*>(current);
-            current = nullptr;
-        } else {
-            current = current->pNext;
-        }
-    }
-    return found;
-}
-
-// Find an entry of the given type in the pNext chain
-template <typename T> T *lvl_find_mod_in_chain(void *next) {
-    VkBaseOutStructure *current = reinterpret_cast<VkBaseOutStructure *>(next);
-    T *found = nullptr;
-    while (current) {
-        if (LvlTypeMap<T>::kSType == current->sType) {
-            found = reinterpret_cast<T*>(current);
-            current = nullptr;
-        } else {
-            current = current->pNext;
-        }
-    }
-    return found;
-}
-
-// Init the header of an sType struct with pNext
-template <typename T> T lvl_init_struct(void *p_next) {
-    T out = {};
-    out.sType = LvlTypeMap<T>::kSType;
-    out.pNext = p_next;
-    return out;
-}
-
-// Init the header of an sType struct
-template <typename T> T lvl_init_struct() {
-    T out = {};
-    out.sType = LvlTypeMap<T>::kSType;
-    out.pNext = nullptr;
-    return out;
-}
-
