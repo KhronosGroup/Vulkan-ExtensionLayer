@@ -314,6 +314,10 @@ extern PFN_vkGetQueueCheckpointData2NV GetQueueCheckpointData2NV;
 #ifdef VK_USE_PLATFORM_MACOS_MVK
 extern PFN_vkCreateMacOSSurfaceMVK CreateMacOSSurfaceMVK;
 #endif // VK_USE_PLATFORM_MACOS_MVK
+extern PFN_vkCreateShadersEXT CreateShadersEXT;
+extern PFN_vkDestroyShaderEXT DestroyShaderEXT;
+extern PFN_vkGetShaderBinaryDataEXT GetShaderBinaryDataEXT;
+extern PFN_vkCmdBindShadersEXT CmdBindShadersEXT;
 
 void InitDispatchTable();
 

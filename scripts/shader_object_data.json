@@ -1,0 +1,1312 @@
+{
+    "extensions": [
+        {
+            "name": "DYNAMIC_RENDERING",
+            "extension_name_macro": "VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceDynamicRenderingFeatures",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES"
+        },
+        {
+            "name": "MAINTENANCE_2",
+            "extension_name_macro": "VK_KHR_MAINTENANCE2_EXTENSION_NAME"
+        },
+        {
+            "name": "PRIVATE_DATA",
+            "extension_name_macro": "VK_EXT_PRIVATE_DATA_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDevicePrivateDataFeaturesEXT",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES"
+        },
+        {
+            "name": "EXTENDED_DYNAMIC_STATE_1",
+            "extension_name_macro": "VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceExtendedDynamicStateFeaturesEXT",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT",
+            "dynamic_states": [
+                {
+                    "function_names": [
+                        "CmdSetCullMode",
+                        "CmdSetCullModeEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_CULL_MODE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState",
+                    "variables": [
+                        {
+                            "type": "VkCullModeFlags",
+                            "name": "cull_mode"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetDepthBoundsTestEnable",
+                        "CmdSetDepthBoundsTestEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "depth_bounds_test_enable"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetDepthCompareOp",
+                        "CmdSetDepthCompareOpEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT",
+                    "required_feature_struct_member": "extendedDynamicState",
+                    "variables": [
+                        {
+                            "type": "VkCompareOp",
+                            "name": "depth_compare_op"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetDepthTestEnable",
+                        "CmdSetDepthTestEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "depth_test_enable"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetDepthWriteEnable",
+                        "CmdSetDepthWriteEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "depth_write_enable"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetFrontFace",
+                        "CmdSetFrontFaceEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_FRONT_FACE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState",
+                    "variables": [
+                        {
+                            "type": "VkFrontFace",
+                            "name": "front_face"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetPrimitiveTopology",
+                        "CmdSetPrimitiveTopologyEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY_EXT",
+                    "required_feature_struct_member": "extendedDynamicState",
+                    "variables": [
+                        {
+                            "type": "VkPrimitiveTopology",
+                            "name": "primitive_topology"
+                        }
+                    ],
+                    "additional_interception_requirement": "(flags & DeviceData::HAS_PRIMITIVE_TOPLOGY_UNRESTRICTED) != 0"
+                },
+                {
+                    "function_names": [
+                        "CmdSetScissorWithCount",
+                        "CmdSetScissorWithCountEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT",
+                    "required_feature_struct_member": "extendedDynamicState",
+                    "variables": [
+                        {
+                            "type": "uint32_t",
+                            "name": "num_scissors"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetViewportWithCount",
+                        "CmdSetViewportWithCountEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT",
+                    "required_feature_struct_member": "extendedDynamicState",
+                    "variables": [
+                        {
+                            "type": "uint32_t",
+                            "name": "num_viewports"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetStencilOp",
+                        "CmdSetStencilOpEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_STENCIL_OP_EXT",
+                    "required_feature_struct_member": "extendedDynamicState",
+                    "variables": [
+                        {
+                            "type": "VkStencilOpState",
+                            "name": "stencil_front"
+                        },
+                        {
+                            "type": "VkStencilOpState",
+                            "name": "stencil_back"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetStencilTestEnable",
+                        "CmdSetStencilTestEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "stencil_test_enable"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdBindVertexBuffers2",
+                        "CmdBindVertexBuffers2EXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState"
+                }
+            ]
+        },
+        {
+            "name": "EXTENDED_DYNAMIC_STATE_2",
+            "extension_name_macro": "VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceExtendedDynamicState2FeaturesEXT",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT",
+            "dynamic_states": [
+                {
+                    "function_names": [
+                        "CmdSetLogicOpEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_LOGIC_OP_EXT",
+                    "required_feature_struct_member": "extendedDynamicState2LogicOp",
+                    "variables": [
+                        {
+                            "type": "VkLogicOp",
+                            "name": "logic_op"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetPrimitiveRestartEnable",
+                        "CmdSetPrimitiveRestartEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE",
+                    "required_feature_struct_member": "extendedDynamicState2",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "primitive_restart_enable"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetRasterizerDiscardEnable",
+                        "CmdSetRasterizerDiscardEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE",
+                    "required_feature_struct_member": "extendedDynamicState2",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "rasterizer_discard_enable"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetDepthBiasEnable",
+                        "CmdSetDepthBiasEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState2",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "depth_bias_enable"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetPatchControlPointsEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_PATCH_CONTROL_POINTS_EXT",
+                    "required_feature_struct_member": "extendedDynamicState2PatchControlPoints",
+                    "variables": [
+                        {
+                            "type": "uint32_t",
+                            "name": "patch_control_points"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "EXTENDED_DYNAMIC_STATE_3",
+            "extension_name_macro": "VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceExtendedDynamicState3FeaturesEXT",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT",
+            "dynamic_states": [
+                {
+                    "function_names": [
+                        "CmdSetPolygonModeEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_POLYGON_MODE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3PolygonMode",
+                    "variables": [
+                        {
+                            "type": "VkPolygonMode",
+                            "name": "polygon_mode"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetRasterizationSamplesEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3RasterizationSamples",
+                    "variables": [
+                        {
+                            "type": "VkSampleCountFlagBits",
+                            "name": "rasterization_samples"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetLogicOpEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_LOGIC_OP_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3LogicOpEnable",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "logic_op_enable"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetColorWriteMaskEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_COLOR_WRITE_MASK_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3ColorWriteMask",
+                    "variables": []
+                },
+                {
+                    "function_names": [
+                        "CmdSetColorBlendEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3ColorBlendEnable",
+                    "variables": []
+                },
+                {
+                    "function_names": [
+                        "CmdSetColorBlendEquationEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3ColorBlendEquation",
+                    "variables": []
+                },
+                {
+                    "function_names": [
+                        "CmdSetDepthClampEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_DEPTH_CLAMP_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3DepthClampEnable",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "depth_clamp_enable"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetTessellationDomainOriginEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_TESSELLATION_DOMAIN_ORIGIN_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3TessellationDomainOrigin",
+                    "variables": [
+                        {
+                            "type": "VkTessellationDomainOrigin",
+                            "name": "domain_origin"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetAlphaToOneEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_ALPHA_TO_ONE_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3AlphaToOneEnable",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "alpha_to_one_enable"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetAlphaToCoverageEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_ALPHA_TO_COVERAGE_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3AlphaToCoverageEnable",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "alpha_to_coverage_enable"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetSampleMaskEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_SAMPLE_MASK_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3SampleMask",
+                    "variables": [
+                        {
+                            "type": "VkSampleMask",
+                            "name": "sample_mask",
+                            "compile_time_array_length": "kMaxSampleMaskLength"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetRasterizationStreamEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_RASTERIZATION_STREAM_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3RasterizationStream",
+                    "variables": [
+                        {
+                            "type": "uint32_t",
+                            "name": "rasterization_stream"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "TRANSFORM_FEEDBACK",
+                            "member": "transformFeedback"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetConservativeRasterizationModeEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_CONSERVATIVE_RASTERIZATION_MODE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3ConservativeRasterizationMode",
+                    "variables": [
+                        {
+                            "type": "VkConservativeRasterizationModeEXT",
+                            "name": "conservative_rasterization_mode"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "CONSERVATIVE_RASTERIZATION"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetExtraPrimitiveOverestimationSizeEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_EXTRA_PRIMITIVE_OVERESTIMATION_SIZE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3ExtraPrimitiveOverestimationSize",
+                    "variables": [
+                        {
+                            "type": "float",
+                            "name": "extra_primitive_overestimation_size"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "CONSERVATIVE_RASTERIZATION"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetDepthClipEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_DEPTH_CLIP_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3DepthClipEnable",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "depth_clip_enable"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "DEPTH_CLIP_ENABLE",
+                            "member": "depthClipEnable"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetSampleLocationsEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3SampleLocationsEnable",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "sample_locations_enable"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "SAMPLE_LOCATIONS"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetProvokingVertexModeEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_PROVOKING_VERTEX_MODE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3ProvokingVertexMode",
+                    "variables": [
+                        {
+                            "type": "VkProvokingVertexModeEXT",
+                            "name": "provoking_vertex_mode"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "PROVOKING_VERTEX"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetLineRasterizationModeEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_LINE_RASTERIZATION_MODE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3LineRasterizationMode",
+                    "variables": [
+                        {
+                            "type": "VkLineRasterizationModeEXT",
+                            "name": "line_rasterization_mode"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "LINE_RASTERIZATION"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetLineStippleEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_LINE_STIPPLE_ENABLE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3LineStippleEnable",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "stippled_line_enable"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "LINE_RASTERIZATION"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetDepthClipNegativeOneToOneEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_DEPTH_CLIP_NEGATIVE_ONE_TO_ONE_EXT",
+                    "required_feature_struct_member": "extendedDynamicState3DepthClipNegativeOneToOne",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "negative_one_to_one"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "DEPTH_CLIP_CONTROL"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetCoverageModulationModeNV"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_COVERAGE_MODULATION_MODE_NV",
+                    "required_feature_struct_member": "extendedDynamicState3CoverageModulationMode",
+                    "variables": [
+                        {
+                            "type": "VkCoverageModulationModeNV",
+                            "name": "coverage_modulation_mode"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "NV_FRAMEBUFFER_MIXED_SAMPLES"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetCoverageModulationTableEnableNV"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_COVERAGE_MODULATION_TABLE_ENABLE_NV",
+                    "required_feature_struct_member": "extendedDynamicState3CoverageModulationTableEnable",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "coverage_modulation_table_enable"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "NV_FRAMEBUFFER_MIXED_SAMPLES"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetCoverageModulationTableNV"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_COVERAGE_MODULATION_TABLE_NV",
+                    "required_feature_struct_member": "extendedDynamicState3CoverageModulationTable",
+                    "variables": [
+                        {
+                            "type": "float",
+                            "name": "coverage_modulation_table_values",
+                            "compile_time_array_length": "VK_SAMPLE_COUNT_64_BIT"
+                        },
+                        {
+                            "type": "uint32_t",
+                            "name": "coverage_modulation_table_count"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "NV_FRAMEBUFFER_MIXED_SAMPLES"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetCoverageReductionModeNV"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_COVERAGE_REDUCTION_MODE_NV",
+                    "required_feature_struct_member": "extendedDynamicState3CoverageReductionMode",
+                    "variables": [
+                        {
+                            "type": "VkCoverageReductionModeNV",
+                            "name": "coverage_reduction_mode"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "NV_COVERAGE_REDUCTION_MODE"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetCoverageToColorEnableNV"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_COVERAGE_TO_COLOR_ENABLE_NV",
+                    "required_feature_struct_member": "extendedDynamicState3CoverageToColorEnable",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "coverage_to_color_enable"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "NV_FRAGMENT_COVERAGE_TO_COLOR"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetCoverageToColorLocationNV"
+                    ],
+                    "required_feature_struct_member": "extendedDynamicState3CoverageToColorLocation",
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_COVERAGE_TO_COLOR_LOCATION_NV",
+                    "variables": [
+                        {
+                            "type": "uint32_t",
+                            "name": "coverage_to_color_location"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "NV_FRAGMENT_COVERAGE_TO_COLOR"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetViewportWScalingEnableNV"
+                    ],
+                    "required_feature_struct_member": "extendedDynamicState3ViewportWScalingEnable",
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_VIEWPORT_W_SCALING_ENABLE_NV",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "viewport_w_scaling_enable"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "NV_CLIP_SPACE_W_SCALING"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetViewportSwizzleNV"
+                    ],
+                    "required_feature_struct_member": "extendedDynamicState3ViewportSwizzle",
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_VIEWPORT_SWIZZLE_NV",
+                    "variables": [
+                        {
+                            "type": "uint32_t",
+                            "name": "viewport_swizzle_count"
+                        },
+                        {
+                            "type": "VkViewportSwizzleNV",
+                            "name": "viewport_swizzle",
+                            "init_time_array_length": "max_viewports"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "NV_VIEWPORT_SWIZZLE"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetShadingRateImageEnableNV"
+                    ],
+                    "required_feature_struct_member": "extendedDynamicState3ShadingRateImageEnable",
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_SHADING_RATE_IMAGE_ENABLE_NV",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "shading_rate_image_enable"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "NV_SHADING_RATE_IMAGE"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetRepresentativeFragmentTestEnableNV"
+                    ],
+                    "required_feature_struct_member": "extendedDynamicState3RepresentativeFragmentTestEnable",
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_REPRESENTATIVE_FRAGMENT_TEST_ENABLE_NV",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "representative_fragment_test_enable"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "NV_REPRESENTATIVE_FRAGMENT_TEST"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "VERTEX_INPUT_DYNAMIC",
+            "extension_name_macro": "VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT",
+            "dynamic_states": [
+                {
+                    "function_names": [
+                        "CmdSetVertexInputEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_VERTEX_INPUT_EXT",
+                    "required_feature_struct_member": "vertexInputDynamicState",
+                    "variables": [
+                        {
+                            "type": "VkVertexInputAttributeDescription",
+                            "name": "vertex_input_attribute_description",
+                            "init_time_array_length": "max_vertex_input_attributes"
+                        },
+                        {
+                            "type": "VkVertexInputBindingDescription",
+                            "name": "vertex_input_binding_description",
+                            "init_time_array_length": "max_vertex_input_bindings"
+                        },
+                        {
+                            "type": "uint32_t",
+                            "name": "num_vertex_input_attribute_descriptions"
+                        },
+                        {
+                            "type": "uint32_t",
+                            "name": "num_vertex_input_binding_descriptions"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "GRAPHICS_PIPELINE_LIBRARY",
+            "extension_name_macro": "VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT",
+            "dynamic_states": []
+        }
+    ],
+    "optional_extensions": [
+        {
+            "name": "TRANSFORM_FEEDBACK",
+            "extension_name_macro": "VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceTransformFeedbackFeaturesEXT",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT"
+        },
+        {
+            "name": "CONSERVATIVE_RASTERIZATION",
+            "extension_name_macro": "VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME"
+        },
+        {
+            "name": "DEPTH_CLIP_ENABLE",
+            "extension_name_macro": "VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceDepthClipEnableFeaturesEXT",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT"
+        },
+        {
+            "name": "SAMPLE_LOCATIONS",
+            "extension_name_macro": "VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME"
+        },
+        {
+            "name": "PROVOKING_VERTEX",
+            "extension_name_macro": "VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceProvokingVertexFeaturesEXT",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT"
+        },
+        {
+            "name": "LINE_RASTERIZATION",
+            "extension_name_macro": "VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceLineRasterizationFeaturesEXT",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT"
+        },
+        {
+            "name": "DEPTH_CLIP_CONTROL",
+            "extension_name_macro": "VK_EXT_DEPTH_CLIP_CONTROL_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceDepthClipControlFeaturesEXT",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT"
+        },
+        {
+            "name": "NV_FRAMEBUFFER_MIXED_SAMPLES",
+            "extension_name_macro": "VK_NV_FRAMEBUFFER_MIXED_SAMPLES_EXTENSION_NAME"
+        },
+        {
+            "name": "NV_COVERAGE_REDUCTION_MODE",
+            "extension_name_macro": "VK_NV_COVERAGE_REDUCTION_MODE_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceCoverageReductionModeFeaturesNV",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COVERAGE_REDUCTION_MODE_FEATURES_NV"
+        },
+        {
+            "name": "NV_FRAGMENT_COVERAGE_TO_COLOR",
+            "extension_name_macro": "VK_NV_FRAGMENT_COVERAGE_TO_COLOR_EXTENSION_NAME"
+        },
+        {
+            "name": "NV_CLIP_SPACE_W_SCALING",
+            "extension_name_macro": "VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME"
+        },
+        {
+            "name": "NV_VIEWPORT_SWIZZLE",
+            "extension_name_macro": "VK_NV_VIEWPORT_SWIZZLE_EXTENSION_NAME"
+        },
+        {
+            "name": "NV_SHADING_RATE_IMAGE",
+            "extension_name_macro": "VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceShadingRateImageFeaturesNV",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV"
+        },
+        {
+            "name": "NV_REPRESENTATIVE_FRAGMENT_TEST",
+            "extension_name_macro": "VK_NV_REPRESENTATIVE_FRAGMENT_TEST_EXTENSION_NAME",
+            "feature_struct": "VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV",
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV"
+        }
+    ],
+    "static_draw_states": [
+        {
+            "type": "VkFormat",
+            "name": "depth_attachment_format"
+        },
+        {
+            "type": "VkFormat",
+            "name": "stencil_attachment_format"
+        },
+        {
+            "type": "VkFormat",
+            "name": "color_attachment_format",
+            "init_time_array_length": "max_color_attachments"
+        },
+        {
+            "type": "uint32_t",
+            "name": "num_color_attachments"
+        },
+        {
+            "type": "VkPipelineColorBlendAttachmentState",
+            "name": "color_blend_attachment_state",
+            "init_time_array_length": "max_color_attachments"
+        },
+        {
+            "type": "Shader*",
+            "name": "shader",
+            "compile_time_array_length": "NUM_SHADERS"
+        }
+    ],
+    "entry_points": {
+        "intercept": {
+            "instance": [
+                [
+                    "GetInstanceProcAddr"
+                ],
+                [
+                    "CreateInstance"
+                ],
+                [
+                    "DestroyInstance"
+                ],
+                [
+                    "EnumerateDeviceExtensionProperties"
+                ],
+                [
+                    "GetPhysicalDeviceFeatures2",
+                    "GetPhysicalDeviceFeatures2KHR"
+                ],
+                [
+                    "GetPhysicalDeviceProperties2",
+                    "GetPhysicalDeviceProperties2KHR"
+                ],
+                [
+                    "CreateDevice"
+                ]
+            ],
+            "device": [
+                [
+                    "GetDeviceProcAddr"
+                ],
+                [
+                    "DestroyDevice"
+                ],
+                [
+                    "CreateShadersEXT"
+                ],
+                [
+                    "DestroyShaderEXT"
+                ],
+                [
+                    "CmdBindShadersEXT"
+                ],
+                [
+                    "CmdBindPipeline"
+                ],
+                [
+                    "CreateImageView"
+                ],
+                [
+                    "DestroyImageView"
+                ],
+                [
+                    "AllocateCommandBuffers"
+                ],
+                [
+                    "FreeCommandBuffers"
+                ],
+                [
+                    "DestroyCommandPool"
+                ],
+                [
+                    "BeginCommandBuffer"
+                ],
+                [
+                    "CmdBeginRendering",
+                    "CmdBeginRenderingKHR"
+                ],
+                [
+                    "GetShaderBinaryDataEXT"
+                ],
+                [
+                    "CmdSetViewportWithCount",
+                    "CmdSetViewportWithCountEXT"
+                ],
+                [
+                    "CmdSetScissorWithCount",
+                    "CmdSetScissorWithCountEXT"
+                ],
+                [
+                    "CmdSetVertexInputEXT"
+                ],
+                [
+                    "CmdSetPrimitiveTopology",
+                    "CmdSetPrimitiveTopologyEXT"
+                ],
+                [
+                    "CmdSetPrimitiveRestartEnable",
+                    "CmdSetPrimitiveRestartEnableEXT"
+                ],
+                [
+                    "CmdSetRasterizerDiscardEnable",
+                    "CmdSetRasterizerDiscardEnableEXT"
+                ],
+                [
+                    "CmdSetRasterizationSamplesEXT"
+                ],
+                [
+                    "CmdSetPolygonModeEXT"
+                ],
+                [
+                    "CmdSetCullMode",
+                    "CmdSetCullModeEXT"
+                ],
+                [
+                    "CmdSetFrontFace",
+                    "CmdSetFrontFaceEXT"
+                ],
+                [
+                    "CmdSetDepthTestEnable",
+                    "CmdSetDepthTestEnableEXT"
+                ],
+                [
+                    "CmdSetDepthWriteEnable",
+                    "CmdSetDepthWriteEnableEXT"
+                ],
+                [
+                    "CmdSetDepthCompareOp",
+                    "CmdSetDepthCompareOpEXT"
+                ],
+                [
+                    "CmdSetStencilTestEnable",
+                    "CmdSetStencilTestEnableEXT"
+                ],
+                [
+                    "CmdSetLogicOpEnableEXT"
+                ],
+                [
+                    "CmdSetColorBlendEnableEXT"
+                ],
+                [
+                    "CmdSetColorBlendEquationEXT"
+                ],
+                [
+                    "CmdSetColorWriteMaskEXT"
+                ],
+                [
+                    "CmdSetDepthBoundsTestEnable",
+                    "CmdSetDepthBoundsTestEnableEXT"
+                ],
+                [
+                    "CmdSetDepthBiasEnable",
+                    "CmdSetDepthBiasEnableEXT"
+                ],
+                [
+                    "CmdSetDepthClampEnableEXT"
+                ],
+                [
+                    "CmdSetStencilOp",
+                    "CmdSetStencilOpEXT"
+                ],
+                [
+                    "CmdDraw"
+                ],
+                [
+                    "CmdDrawIndirect"
+                ],
+                [
+                    "CmdDrawIndirectCount"
+                ],
+                [
+                    "CmdDrawIndexed"
+                ],
+                [
+                    "CmdDrawIndexedIndirect"
+                ],
+                [
+                    "CmdDrawIndexedIndirectCount"
+                ],
+                [
+                    "CmdDrawMeshTasksEXT"
+                ],
+                [
+                    "CmdDrawMeshTasksIndirectEXT"
+                ],
+                [
+                    "CmdDrawMeshTasksIndirectCountEXT"
+                ],
+                [
+                    "CmdDrawMeshTasksNV"
+                ],
+                [
+                    "CmdDrawMeshTasksIndirectNV"
+                ],
+                [
+                    "CmdDrawMeshTasksIndirectCountNV"
+                ],
+                [
+                    "CmdSetLogicOpEXT"
+                ],
+                [
+                    "CmdSetPatchControlPointsEXT"
+                ],
+                [
+                    "CmdSetTessellationDomainOriginEXT"
+                ],
+                [
+                    "CmdSetAlphaToOneEnableEXT"
+                ],
+                [
+                    "CmdSetAlphaToCoverageEnableEXT"
+                ],
+                [
+                    "CmdSetSampleMaskEXT"
+                ],
+                [
+                    "CmdSetRasterizationStreamEXT"
+                ],
+                [
+                    "CmdSetConservativeRasterizationModeEXT"
+                ],
+                [
+                    "CmdSetExtraPrimitiveOverestimationSizeEXT"
+                ],
+                [
+                    "CmdSetDepthClipEnableEXT"
+                ],
+                [
+                    "CmdSetSampleLocationsEnableEXT"
+                ],
+                [
+                    "CmdSetProvokingVertexModeEXT"
+                ],
+                [
+                    "CmdSetLineRasterizationModeEXT"
+                ],
+                [
+                    "CmdSetLineStippleEnableEXT"
+                ],
+                [
+                    "CmdSetDepthClipNegativeOneToOneEXT"
+                ],
+                [
+                    "CmdSetCoverageModulationModeNV"
+                ],
+                [
+                    "CmdSetCoverageModulationTableEnableNV"
+                ],
+                [
+                    "CmdSetCoverageModulationTableNV"
+                ],
+                [
+                    "CmdSetCoverageReductionModeNV"
+                ],
+                [
+                    "CmdSetCoverageToColorEnableNV"
+                ],
+                [
+                    "CmdSetCoverageToColorLocationNV"
+                ],
+                [
+                    "CmdSetViewportWScalingEnableNV"
+                ],
+                [
+                    "CmdSetViewportSwizzleNV"
+                ],
+                [
+                    "CmdSetShadingRateImageEnableNV"
+                ],
+                [
+                    "CmdSetRepresentativeFragmentTestEnableNV"
+                ],
+                [
+                    "CmdBindVertexBuffers2",
+                    "CmdBindVertexBuffers2EXT"
+                ],
+                [
+                    "CmdBindDescriptorSets"
+                ],
+                [
+                    "CmdPushDescriptorSetKHR"
+                ],
+                [
+                    "CmdPushDescriptorSetWithTemplateKHR"
+                ],
+                [
+                    "CmdPushConstants"
+                ],
+                [
+                    "SetPrivateData",
+                    "SetPrivateDataEXT"
+                ],
+                [
+                    "GetPrivateData",
+                    "GetPrivateDataEXT"
+                ],
+                [
+                    "CreateDescriptorUpdateTemplate",
+                    "CreateDescriptorUpdateTemplateKHR"
+                ],
+                [
+                    "DestroyDescriptorUpdateTemplate",
+                    "DestroyDescriptorUpdateTemplateKHR"
+                ]
+            ]
+        },
+        "forward": {
+            "instance": [
+                [
+                    "GetPhysicalDeviceProperties"
+                ],
+                [
+                    "GetPhysicalDeviceImageFormatProperties"
+                ]
+            ],
+            "device": [
+                [
+                    "CreatePipelineLayout"
+                ],
+                [
+                    "CreateGraphicsPipelines"
+                ],
+                [
+                    "CreateComputePipelines"
+                ],
+                [
+                    "DestroyPipelineLayout"
+                ],
+                [
+                    "DestroyPipeline"
+                ],
+                [
+                    "CreateShaderModule"
+                ],
+                [
+                    "DestroyShaderModule"
+                ],
+                [
+                    "CreatePipelineCache"
+                ],
+                [
+                    "DestroyPipelineCache"
+                ],
+                [
+                    "GetPipelineCacheData"
+                ],
+                [
+                    "MergePipelineCaches"
+                ],
+                [
+                    "GetDeviceQueue"
+                ],
+                [
+                    "QueueSubmit"
+                ],
+                [
+                    "QueueSubmit2",
+                    "QueueSubmit2KHR"
+                ],
+                [
+                    "CmdSetViewport"
+                ],
+                [
+                    "CmdSetScissor"
+                ],
+                [
+                    "CreatePrivateDataSlotEXT"
+                ],
+                [
+                    "DestroyPrivateDataSlotEXT"
+                ],
+                [
+                    "CmdBindVertexBuffers"
+                ]
+            ]
+        }
+    },
+    "pipeline_subsets": {
+        "VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT": {
+            "shaders": [
+                "VERTEX_SHADER",
+                "TESSELLATION_CONTROL_SHADER",
+                "TESSELLATION_EVALUATION_SHADER",
+                "GEOMETRY_SHADER",
+                "TASK_SHADER",
+                "MESH_SHADER"
+            ],
+            "dynamic_state_enums": [
+                "VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT",
+                "VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT",
+                "VK_DYNAMIC_STATE_DEPTH_CLAMP_ENABLE_EXT",
+                "VK_DYNAMIC_STATE_POLYGON_MODE_EXT",
+                "VK_DYNAMIC_STATE_CULL_MODE_EXT",
+                "VK_DYNAMIC_STATE_FRONT_FACE_EXT",
+                "VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE_EXT",
+                "VK_DYNAMIC_STATE_PATCH_CONTROL_POINTS_EXT"
+            ]
+        },
+        "VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT": {
+            "shaders": [
+                "FRAGMENT_SHADER"
+            ],
+            "dynamic_state_enums": [
+                "VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES_EXT",
+                "VK_DYNAMIC_STATE_ALPHA_TO_COVERAGE_ENABLE_EXT",
+                "VK_DYNAMIC_STATE_ALPHA_TO_ONE_ENABLE_EXT",
+                "VK_DYNAMIC_STATE_SAMPLE_MASK_EXT",
+                "VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT",
+                "VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT",
+                "VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT",
+                "VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE_EXT",
+                "VK_DYNAMIC_STATE_STENCIL_OP_EXT"
+            ]
+        }
+    }
+}

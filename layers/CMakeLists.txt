@@ -17,9 +17,9 @@
 # ~~~
 
 if(WIN32)
-    set(TARGET_NAMES VkLayer_khronos_synchronization2) # timeline_semaphore doesn't build on windows yet
+    set(TARGET_NAMES VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object) # timeline_semaphore doesn't build on windows yet
 else()
-    set(TARGET_NAMES VkLayer_khronos_timeline_semaphore VkLayer_khronos_synchronization2)
+    set(TARGET_NAMES VkLayer_khronos_timeline_semaphore VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object)
 endif()
 
 # System-specific macros to create a library target.
@@ -72,6 +72,12 @@ set(SYNCHRONIZATION2_FILES
 
 AddVkLayer(khronos_synchronization2 ""
     ${SYNCHRONIZATION2_FILES})
+
+set(SHADER_OBJECT_FILES
+    shader_object.cpp)
+
+AddVkLayer(khronos_shader_object ""
+    ${SHADER_OBJECT_FILES})
 
 foreach(TARGET_NAME ${TARGET_NAMES})
     set(INPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in")
