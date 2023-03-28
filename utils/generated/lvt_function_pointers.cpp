@@ -349,6 +349,10 @@ PFN_vkGetQueueCheckpointData2NV GetQueueCheckpointData2NV;
 #ifdef VK_USE_PLATFORM_MACOS_MVK
 PFN_vkCreateMacOSSurfaceMVK CreateMacOSSurfaceMVK;
 #endif // VK_USE_PLATFORM_MACOS_MVK
+PFN_vkCreateShadersEXT CreateShadersEXT;
+PFN_vkDestroyShaderEXT DestroyShaderEXT;
+PFN_vkGetShaderBinaryDataEXT GetShaderBinaryDataEXT;
+PFN_vkCmdBindShadersEXT CmdBindShadersEXT;
 
 
 void InitDispatchTable() {
@@ -650,6 +654,10 @@ void InitDispatchTable() {
 #ifdef VK_USE_PLATFORM_MACOS_MVK
     CreateMacOSSurfaceMVK = reinterpret_cast<PFN_vkCreateMacOSSurfaceMVK>(get_proc_address(lib_handle, "vkCreateMacOSSurfaceMVK"));
 #endif // VK_USE_PLATFORM_MACOS_MVK
+    CreateShadersEXT = reinterpret_cast<PFN_vkCreateShadersEXT>(get_proc_address(lib_handle, "vkCreateShadersEXT"));
+    DestroyShaderEXT = reinterpret_cast<PFN_vkDestroyShaderEXT>(get_proc_address(lib_handle, "vkDestroyShaderEXT"));
+    GetShaderBinaryDataEXT = reinterpret_cast<PFN_vkGetShaderBinaryDataEXT>(get_proc_address(lib_handle, "vkGetShaderBinaryDataEXT"));
+    CmdBindShadersEXT = reinterpret_cast<PFN_vkCmdBindShadersEXT>(get_proc_address(lib_handle, "vkCmdBindShadersEXT"));
 }
 
 } // namespace vk

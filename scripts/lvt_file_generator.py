@@ -229,7 +229,8 @@ class LvtFileOutputGenerator(OutputGenerator):
             'VK_KHR_display',
             'VK_KHR_android_surface',
             'VK_KHR_synchronization2',
-            'VK_KHR_timeline_semaphore'
+            'VK_KHR_timeline_semaphore',
+            'VK_EXT_shader_object'
             ]
         if 'VK_VERSION' in self.featureName or self.featureName in WSI_mandatory_extensions:
             self.dispatch_list.append((name, self.featureExtraProtect))
