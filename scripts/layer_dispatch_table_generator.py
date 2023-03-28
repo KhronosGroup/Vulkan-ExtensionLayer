@@ -1,9 +1,9 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2015-2022 The Khronos Group Inc.
-# Copyright (c) 2015-2022 Valve Corporation
-# Copyright (c) 2015-2022 LunarG, Inc.
-# Copyright (c) 2015-2022 Google Inc.
+# Copyright (c) 2015-2023 The Khronos Group Inc.
+# Copyright (c) 2015-2023 Valve Corporation
+# Copyright (c) 2015-2023 LunarG, Inc.
+# Copyright (c) 2015-2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Author: Mark Young <marky@lunarg.com>
-# Author: Mark Lobodzinski <mark@lunarg.com>
 
 import os,re,sys
 import xml.etree.ElementTree as etree
@@ -114,9 +111,9 @@ class LayerDispatchTableOutputGenerator(OutputGenerator):
 
         # Copyright Notice
         copyright =  '/*\n'
-        copyright += ' * Copyright (c) 2015-2022 The Khronos Group Inc.\n'
-        copyright += ' * Copyright (c) 2015-2022 Valve Corporation\n'
-        copyright += ' * Copyright (c) 2015-2022 LunarG, Inc.\n'
+        copyright += ' * Copyright (c) 2015-2023 The Khronos Group Inc.\n'
+        copyright += ' * Copyright (c) 2015-2023 Valve Corporation\n'
+        copyright += ' * Copyright (c) 2015-2023 LunarG, Inc.\n'
         copyright += ' *\n'
         copyright += ' * Licensed under the Apache License, Version 2.0 (the "License");\n'
         copyright += ' * you may not use this file except in compliance with the License.\n'
@@ -129,9 +126,6 @@ class LayerDispatchTableOutputGenerator(OutputGenerator):
         copyright += ' * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n'
         copyright += ' * See the License for the specific language governing permissions and\n'
         copyright += ' * limitations under the License.\n'
-        copyright += ' *\n'
-        copyright += ' * Author: Mark Lobodzinski <mark@lunarg.com>\n'
-        copyright += ' * Author: Mark Young <marky@lunarg.com>\n'
         copyright += ' */\n'
 
         preamble = ''

@@ -16,10 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Author: Mark Lobodzinski <mark@lunarg.com>
-# Author: Tobin Ehlis <tobine@google.com>
-# Author: John Zulauf <jzulauf@lunarg.com>
 
 import os,re,sys
 import xml.etree.ElementTree as etree
@@ -106,9 +102,6 @@ class HelperFileOutputGenerator(OutputGenerator):
         self.instance_extension_info = dict()             # Dict of instance extension name defines and ifdef values
         self.structextends_list = []                      # List of structs which extend another struct via pNext
         self.structOrUnion = dict()                       # Map of Vulkan typename to 'struct' or 'union'
-        self.inst_header_decls = ''                       # String of instrumentation function declarations
-        self.inst_source_funcs = ''                       # String of instrumentation function definitions
-
 
         # Named tuples to store struct and command data
         self.StructType = namedtuple('StructType', ['name', 'value'])
@@ -133,44 +126,10 @@ class HelperFileOutputGenerator(OutputGenerator):
                 ', const VkDescriptorType type',
         }
 
-        # Note that adding an API here requires that all three pre/post routines be added to inline_corechecks_instrumentation_source.
-        self.inst_manually_written_functions = [
-            'vkQueuePresentKHR',
-        ]
-
         # Some bits are helper that include multiple bits, but it is more useful to use the flag name instead
         self.custom_bit_flag_print = {
             'VkShaderStageFlags' : ['VK_SHADER_STAGE_ALL', 'VK_SHADER_STAGE_ALL_GRAPHICS']
         }
-
-    inline_corechecks_instrumentation_source = """
-
-#include "core_validation.h"
-#include "corechecks_optick_instrumentation.h"
-
-#ifdef INSTRUMENT_OPTICK
-
-// Manually written intercepts
-void CoreChecksOptickInstrumented::PostCallRecordQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPresentInfo, VkResult result) {
-    OPTICK_FRAME("CPU FRAME");
-    OPTICK_EVENT();
-    CoreChecks::PostCallRecordQueuePresentKHR(queue, pPresentInfo, result);
-};
-
-bool CoreChecksOptickInstrumented::PreCallValidateQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPresentInfo) const {
-    OPTICK_EVENT();
-    auto result = CoreChecks::PreCallValidateQueuePresentKHR(queue, pPresentInfo);
-    return result;
-};
-
-void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPresentInfo) {
-    OPTICK_EVENT();
-    CoreChecks::PreCallRecordQueuePresentKHR(queue, pPresentInfo);
-};
-
-// Code-generated intercepts
-"""
-
 
     #
     # Called once at the beginning of each run
@@ -206,14 +165,6 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
         copyright += ' * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n'
         copyright += ' * See the License for the specific language governing permissions and\n'
         copyright += ' * limitations under the License.\n'
-        copyright += ' *\n'
-        copyright += ' * Author: Mark Lobodzinski <mark@lunarg.com>\n'
-        copyright += ' * Author: Courtney Goeltzenleuchter <courtneygo@google.com>\n'
-        copyright += ' * Author: Tobin Ehlis <tobine@google.com>\n'
-        copyright += ' * Author: Chris Forbes <chrisforbes@google.com>\n'
-        copyright += ' * Author: John Zulauf<jzulauf@lunarg.com>\n'
-        copyright += ' * Author: Tony Barbour <tony@lunarg.com>\n'
-        copyright += ' *\n'
         copyright += ' ****************************************************************************/\n'
         write(copyright, file=self.outFile)
     #
@@ -244,14 +195,13 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
         name_define = nameElem.get('name')
         if 'EXTENSION_NAME' not in name_define:
             print("Error in vk.xml file -- extension name is not available")
-        requires = interface.get('requires')
+        requires = interface.get('depends')
         if requires is not None:
-            required_extensions = requires.split(',')
+            # This is a work around for https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/5372
+            requires = re.sub(r',VK_VERSION_1_\d+', '', requires)
+            required_extensions = exprValues(parseExpr(requires))
         else:
             required_extensions = list()
-        requiresCore = interface.get('requiresCore')
-        if requiresCore is not None:
-            required_extensions.append('VK_VERSION_%s' % ('_'.join(requiresCore.split('.'))))
         info = { 'define': GetNameDefine(interface), 'ifdef':self.featureExtraProtect, 'reqs':required_extensions }
         if interface.get('type') == 'instance':
             self.instance_extension_info[name] = info
@@ -316,140 +266,6 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                 self.structOrUnion[name] = 'union'
             else:
                 self.structOrUnion[name] = 'struct'
-    #
-    # Command generation
-    def genCmd(self, cmdInfo, name, alias):
-        if 'optick_instrumentation' not in self.helper_file_type:
-            return
-        header_ignore_functions = [
-            'vkEnumerateInstanceVersion',
-            'vkGetDeviceProcAddr',
-            'vkGetInstanceProcAddr',
-        ]
-
-        if self.helper_file_type == 'optick_instrumentation_header':
-            if name in header_ignore_functions:
-                return
-            if self.featureExtraProtect != None:
-                self.inst_header_decls += '#ifdef %s\n' % self.featureExtraProtect
-            if 'ValidationCache' not in name:
-                self.inst_header_decls += self.InstBaseClassCdecl(cmdInfo, name)
-            if self.featureExtraProtect != None:
-                self.inst_header_decls += '#endif // %s\n' % self.featureExtraProtect
-            return
-        elif self.helper_file_type == 'optick_instrumentation_source':
-            if name in header_ignore_functions:
-                return
-            if self.featureExtraProtect != None:
-                self.inst_source_funcs += '#ifdef %s\n' % self.featureExtraProtect
-            if 'ValidationCache' not in name:
-                self.inst_source_funcs += self.InstBaseClassCdecl(cmdInfo, name)
-            if self.featureExtraProtect != None:
-                self.inst_source_funcs += '#endif // %s\n' % self.featureExtraProtect
-            return
-    #
-    # Get parameters from function definition
-    def GetParameterList(self, func_call):
-        parm_list = ''
-        parms = func_call.split("(")[1]
-        parms = parms.split(")")[0]
-        parm_defs = parms.split(",")
-        for parm_def in parm_defs:
-            parm_name = parm_def.split(" ")[-1]
-            parm_name = parm_name.split("[")[0]
-            parm_list += parm_name + ', '
-        parm_list = parm_list[:-2]
-        return parm_list
-    #
-    # Customize Cdecl for corechecks instrumentation header base class
-    def InstBaseClassCdecl(self, cmdinfo, name):
-
-        if name in self.inst_manually_written_functions and self.helper_file_type == "optick_instrumentation_source":
-            return ''
-
-        # These APIs are special-cased by the chassis and include an extra void* for a final parameter
-        inst_overloaded_apis = [
-            'PreCallValidateCreateGraphicsPipelines',
-            'PreCallRecordCreateGraphicsPipelines',
-            'PostCallRecordCreateGraphicsPipelines',
-            'PreCallValidateCreateComputePipelines',
-            'PreCallRecordCreateComputePipelines',
-            'PostCallRecordCreateComputePipelines',
-            'PreCallValidateCreateRayTracingPipelinesNV',
-            'PreCallRecordCreateRayTracingPipelinesNV',
-            'PostCallRecordCreateRayTracingPipelinesNV',
-            'PreCallValidateCreateRayTracingPipelinesKHR',
-            'PreCallRecordCreateRayTracingPipelinesKHR',
-            'PostCallRecordCreateRayTracingPipelinesKHR',
-            'PreCallRecordCreatePipelineLayout',
-            'PreCallRecordCreateShaderModule',
-            'PostCallRecordCreateShaderModule',
-            'PreCallValidateAllocateDescriptorSets',
-            'PostCallRecordAllocateDescriptorSets',
-            'PreCallRecordCreateBuffer',
-            'PreCallRecordCreateDevice',
-            ]
-
-        raw = self.makeCDecls(cmdinfo.elem)[1]
-        prototype = raw.split("VKAPI_PTR *PFN_vk")[1]
-        prototype = prototype.replace(")", "", 1)
-
-        decl_terminator = ';'
-        if self.helper_file_type == 'optick_instrumentation_header':
-            decl_terminator = ' override;'
-
-        # Build up pre/post call function declarations
-        pre_call_validate = 'bool PreCallValidate' + prototype
-        pre_call_validate = pre_call_validate.replace(");", ") const" + decl_terminator)
-        if 'PreCallValidate' + name[2:] in inst_overloaded_apis:
-            pre_call_validate = pre_call_validate.replace(")", ", void* extra_data)")
-
-        pre_call_record = 'void PreCallRecord' + prototype
-        pre_call_record = pre_call_record.replace(");", ")" + decl_terminator)
-        if 'PreCallRecord' + name[2:] in inst_overloaded_apis:
-            pre_call_record = pre_call_record.replace(")", ", void* extra_data)")
-
-        post_call_record = 'void PostCallRecord' + prototype
-        resulttype = cmdinfo.elem.find('proto/type')
-        if resulttype.text == 'VkResult':
-            post_call_record = post_call_record.replace(');', ', VkResult result);')
-        elif resulttype.text == 'VkDeviceAddress':
-            post_call_record = post_call_record.replace(');', ', VkDeviceAddress result);')
-        post_call_record = post_call_record.replace(');', ')' + decl_terminator)
-        if 'PostCallRecord' + name[2:] in inst_overloaded_apis:
-            post_call_record = post_call_record.replace(")", ", void* extra_data)")
-
-        # If creating header, done
-        if self.helper_file_type == 'optick_instrumentation_header':
-            return '    %s\n    %s\n    %s\n' % (pre_call_validate, pre_call_record, post_call_record)
-
-        optick_event = "    OPTICK_EVENT();\n"
-
-        # Create PreCallValidate Function
-        pre_call_validate_sig = pre_call_validate.replace("bool ", "bool CoreChecksOptickInstrumented::")
-        pre_call_validate_sig = pre_call_validate_sig.replace(";", " {\n")
-        pre_call_validate_func = pre_call_validate.replace("bool ", "    auto result = CoreChecks::")
-        pre_call_validate_func = pre_call_validate_func.split("(")[0] + "(" + self.GetParameterList(pre_call_validate) + ")" + pre_call_validate_func.split(")")[1]
-        pre_call_validate_func = pre_call_validate_func.replace(" const;", ";\n")
-        pre_call_validate = pre_call_validate_sig + optick_event + pre_call_validate_func + '    return result;\n}\n'
-
-        # Create PreCallRecord Function
-        pre_call_record_sig = pre_call_record.replace("void ", "void CoreChecksOptickInstrumented::")
-        pre_call_record_sig = pre_call_record_sig.replace(";", " {\n")
-        pre_call_record_func = pre_call_record.replace("void ", "    CoreChecks::")
-        pre_call_record_func = pre_call_record_func.split("(")[0] + "(" + self.GetParameterList(pre_call_record) + ")" + pre_call_record_func.split(")")[1]
-        pre_call_record_func = pre_call_record_func.replace(";", ";\n")
-        pre_call_record = pre_call_record_sig +  optick_event + pre_call_record_func + '}\n'
-
-        # Create PostCallRecord Function
-        post_call_record_sig = post_call_record.replace("void ", "void CoreChecksOptickInstrumented::")
-        post_call_record_sig = post_call_record_sig.replace(";", " {\n")
-        post_call_record_func = post_call_record.replace("void ", "    CoreChecks::")
-        post_call_record_func = post_call_record_func.split("(")[0] + "(" + self.GetParameterList(post_call_record) + ")" + post_call_record_func.split(")")[1]
-        post_call_record_func = post_call_record_func.replace(";", ";\n")
-        post_call_record = post_call_record_sig + optick_event + post_call_record_func + '}\n'
-
-        return '%s\n%s\n%s\n' %  (pre_call_validate, pre_call_record, post_call_record)
 
     #
     # Check if the parameter passed in is a pointer
@@ -608,7 +424,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
             outstring += '        ++index;\n'
             outstring += '        input_value >>= 1;\n'
             outstring += '    }\n'
-            outstring += '    if( ret.empty()) ret.append(string_%s(static_cast<%s>(0)));\n' % (groupName, groupType)
+            outstring += '    if (ret.empty()) ret.append("%s(0)");\n' % flagsName
             outstring += '    return ret;\n'
             outstring += '}\n'
 
@@ -739,9 +555,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
     // Primarily intended for use by GPUAV when replacing shader module code with instrumented code
     template<typename Container>
     void SetCode(const Container &code) {
-        if (pCode) {
-            delete[] pCode;
-        }
+        delete[] pCode;
         codeSize = static_cast<uint32_t>(code.size() * sizeof(uint32_t));
         pCode = new uint32_t[code.size()];
         std::copy(&code.front(), &code.back() + 1, const_cast<uint32_t*>(pCode));
@@ -752,142 +566,35 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     safe_struct_header += '#endif // %s\n' % item.ifdef_protect
         return safe_struct_header
     #
-    # Combine helper preamble with instrumented function declarations
-    def GenerateCcOptickInstrumentationHelperHeader(self):
-        header = ''
-        header += '#pragma once\n'
-        header += '\n'
-        header += '#ifdef INSTRUMENT_OPTICK\n'
-        header += '#include "optick.h"\n'
-        header += '#endif // INSTRUMENT_OPTICK\n'
-        header += '\n'
-        header += 'class CoreChecksOptickInstrumented : public CoreChecks {\n'
-        header += '  public:\n'
-        header += '#ifdef INSTRUMENT_OPTICK\n'
-        header += self.inst_header_decls
-        header += '#endif // INSTRUMENT_OPTICK\n'
-        header += '\n'
-        header += '};\n'
-        return header
-    #
-    # Combine helper preamble with instrumented function definitions
-    def GenerateCcOptickInstrumentationHelperSource(self):
-        source = self.inline_corechecks_instrumentation_source
-        source += self.inst_source_funcs
-        source += '#endif // INSTRUMENT_OPTICK'
-        return source
-    #
     # Generate extension helper header file
     def GenerateExtensionHelperHeader(self):
 
-        V_1_0_instance_extensions_promoted_to_V_1_1_core = [
-            'VK_KHR_device_group_creation',
-            'VK_KHR_external_fence_capabilities',
-            'VK_KHR_external_memory_capabilities',
-            'VK_KHR_external_semaphore_capabilities',
-            'VK_KHR_get_physical_device_properties2',
-            ]
+        promoted_1_1_exts = self.registry.tree.findall('*/extension[@promotedto="VK_VERSION_1_1"]')
+        V_1_0_instance_extensions_promoted_to_V_1_1_core = sorted([e.get('name') for e in promoted_1_1_exts if e.get('type') == 'instance'])
+        V_1_0_device_extensions_promoted_to_V_1_1_core = sorted([e.get('name') for e in promoted_1_1_exts if e.get('type') == 'device'])
 
-        V_1_0_device_extensions_promoted_to_V_1_1_core = [
-            'VK_KHR_16bit_storage',
-            'VK_KHR_bind_memory2',
-            'VK_KHR_dedicated_allocation',
-            'VK_KHR_descriptor_update_template',
-            'VK_KHR_device_group',
-            'VK_KHR_external_fence',
-            'VK_KHR_external_memory',
-            'VK_KHR_external_semaphore',
-            'VK_KHR_get_memory_requirements2',
-            'VK_KHR_maintenance1',
-            'VK_KHR_maintenance2',
-            'VK_KHR_maintenance3',
-            'VK_KHR_multiview',
-            'VK_KHR_relaxed_block_layout',
-            'VK_KHR_sampler_ycbcr_conversion',
-            'VK_KHR_shader_draw_parameters',
-            'VK_KHR_storage_buffer_storage_class',
-            'VK_KHR_variable_pointers',
-            ]
+        promoted_1_2_exts = self.registry.tree.findall('*/extension[@promotedto="VK_VERSION_1_2"]')
+        V_1_1_instance_extensions_promoted_to_V_1_2_core = sorted([e.get('name') for e in promoted_1_2_exts if e.get('type') == 'instance'])
+        V_1_1_device_extensions_promoted_to_V_1_2_core = sorted([e.get('name') for e in promoted_1_2_exts if e.get('type') == 'device'])
 
-        V_1_1_instance_extensions_promoted_to_V_1_2_core = [
-            ]
-
-        V_1_1_device_extensions_promoted_to_V_1_2_core = [
-            'VK_KHR_8bit_storage',
-            'VK_KHR_buffer_device_address',
-            'VK_KHR_create_renderpass2',
-            'VK_KHR_depth_stencil_resolve',
-            'VK_KHR_draw_indirect_count',
-            'VK_KHR_driver_properties',
-            'VK_KHR_image_format_list',
-            'VK_KHR_imageless_framebuffer',
-            'VK_KHR_sampler_mirror_clamp_to_edge',
-            'VK_KHR_separate_depth_stencil_layouts',
-            'VK_KHR_shader_atomic_int64',
-            'VK_KHR_shader_float16_int8',
-            'VK_KHR_shader_float_controls',
-            'VK_KHR_shader_subgroup_extended_types',
-            'VK_KHR_spirv_1_4',
-            'VK_KHR_timeline_semaphore',
-            'VK_KHR_uniform_buffer_standard_layout',
-            'VK_KHR_vulkan_memory_model',
-            'VK_EXT_descriptor_indexing',
-            'VK_EXT_host_query_reset',
-            'VK_EXT_sampler_filter_minmax',
-            'VK_EXT_scalar_block_layout',
-            'VK_EXT_separate_stencil_usage',
-            'VK_EXT_shader_viewport_index_layer',
-            ]
-
-        V_1_2_instance_extensions_promoted_to_V_1_3_core = [
-            ]
-
-        V_1_2_device_extensions_promoted_to_V_1_3_core = [
-            'VK_KHR_copy_commands2',
-            'VK_KHR_dynamic_rendering',
-            'VK_KHR_format_feature_flags2',
-            'VK_KHR_maintenance4',
-            'VK_KHR_shader_integer_dot_product',
-            'VK_KHR_shader_non_semantic_info',
-            'VK_KHR_shader_terminate_invocation',
-            'VK_KHR_synchronization2',
-            'VK_KHR_zero_initialize_workgroup_memory',
-            'VK_EXT_extended_dynamic_state',
-            'VK_EXT_extended_dynamic_state2',
-            'VK_EXT_image_robustness',
-            'VK_EXT_inline_uniform_block',
-            'VK_EXT_pipeline_creation_cache_control',
-            'VK_EXT_pipeline_creation_feedback',
-            'VK_EXT_private_data',
-            'VK_EXT_shader_demote_to_helper_invocation',
-            'VK_EXT_subgroup_size_control',
-            'VK_EXT_texel_buffer_alignment',
-            'VK_EXT_texture_compression_astc_hdr',
-            'VK_EXT_tooling_info',
-            ]
+        promoted_1_3_exts = self.registry.tree.findall('*/extension[@promotedto="VK_VERSION_1_3"]')
+        V_1_2_instance_extensions_promoted_to_V_1_3_core = sorted([e.get('name') for e in promoted_1_3_exts if e.get('type') == 'instance'])
+        V_1_2_device_extensions_promoted_to_V_1_3_core = sorted([e.get('name') for e in promoted_1_3_exts if e.get('type') == 'device'])
 
         output = [
+            '#pragma once',
             '',
-            '#ifndef VK_EXTENSION_HELPER_H_',
-            '#define VK_EXTENSION_HELPER_H_',
-            '#include <unordered_set>',
             '#include <string>',
-            '#include <unordered_map>',
             '#include <utility>',
             '#include <set>',
+            '#include <array>',
             '#include <vector>',
             '#include <cassert>',
             '',
             '#include <vulkan/vulkan.h>',
-            '',
+            '#include "containers/custom_containers.h"',
+            ''
             '#define VK_VERSION_1_1_NAME "VK_VERSION_1_1"',
-            '',
-            '// Suppress unused warning on Linux',
-            '#if defined(__GNUC__)',
-            '#define DECORATE_UNUSED __attribute__((unused))',
-            '#else',
-            '#define DECORATE_UNUSED',
-            '#endif',
             '',
             'enum ExtEnabled : unsigned char {',
             '    kNotEnabled,',
@@ -895,11 +602,11 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
             '    kEnabledByApiLevel,',
             '};',
             '',
-            'static bool DECORATE_UNUSED IsExtEnabled(ExtEnabled extension) {',
+            '[[maybe_unused]] static bool IsExtEnabled(ExtEnabled extension) {',
             '    return (extension != kNotEnabled);',
             '};',
             '',
-            'static bool DECORATE_UNUSED IsExtEnabledByCreateinfo(ExtEnabled extension) {',
+            '[[maybe_unused]] static bool IsExtEnabledByCreateinfo(ExtEnabled extension) {',
             '    return (extension == kEnabledByCreateinfo);',
             '};',
             '#define VK_VERSION_1_2_NAME "VK_VERSION_1_2"',
@@ -1028,22 +735,22 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '    %s(const %s& instance_ext) : %s(instance_ext) {}' % (struct_type, instance_struct_type, instance_struct_type),
                     '',
                     '    uint32_t InitFromDeviceCreateInfo(const %s *instance_extensions, uint32_t requested_api_version,' % instance_struct_type,
-                    '                                      const VkDeviceCreateInfo *pCreateInfo) {',
+                    '                                      const VkDeviceCreateInfo *pCreateInfo = nullptr) {',
                     '        // Initialize: this to defaults,  base class fields to input.',
                     '        assert(instance_extensions);',
                     '        *this = %s(*instance_extensions);' % struct_type,
                     '']),
             struct.extend([
                 '',
-                '        static const std::vector<const char *> V_1_1_promoted_%s_apis = {' % type.lower() ])
+                f'        constexpr std::array<const char*, {len(promoted_1_1_ext_list)}> V_1_1_promoted_{type.lower()}_apis = {{' ])
             struct.extend(['            %s,' % extension_dict[ext_name]['define'] for ext_name in promoted_1_1_ext_list])
             struct.extend([
                 '        };',
-                '        static const std::vector<const char *> V_1_2_promoted_%s_apis = {' % type.lower() ])
+                f'        constexpr std::array<const char*, {len(promoted_1_2_ext_list)}> V_1_2_promoted_{type.lower()}_apis = {{' ])
             struct.extend(['            %s,' % extension_dict[ext_name]['define'] for ext_name in promoted_1_2_ext_list])
             struct.extend([
                 '        };',
-                '        static const std::vector<const char *> V_1_3_promoted_%s_apis = {' % type.lower() ])
+                f'        constexpr std::array<const char*, {len(promoted_1_3_ext_list)}> V_1_3_promoted_{type.lower()}_apis = {{' ])
             struct.extend(['            %s,' % extension_dict[ext_name]['define'] for ext_name in promoted_1_3_ext_list])
             struct.extend([
                 '        };',
@@ -1078,7 +785,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                 '            }',
                 '        }',
                 '        // CreateInfo takes precedence over promoted',
-                '        if (pCreateInfo->ppEnabledExtensionNames) {',
+                '        if (pCreateInfo && pCreateInfo->ppEnabledExtensionNames) {',
                 '            for (uint32_t i = 0; i < pCreateInfo->enabledExtensionCount; i++) {',
                 '                if (!pCreateInfo->ppEnabledExtensionNames[i]) continue;',
                 '                auto info = get_info(pCreateInfo->ppEnabledExtensionNames[i]);',
@@ -1095,7 +802,6 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
             struct.extend(['};', ''])
             output.extend(struct)
 
-        output.extend(['', '#endif // VK_EXTENSION_HELPER_H_'])
         return '\n'.join(output)
     #
     # Combine object types helper header file preamble with body text and return
@@ -1108,7 +814,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
     #
     # Object types header: create object enum type header file
     def GenerateObjectTypesHeader(self):
-        object_types_header = '#include "cast_utils.h"\n'
+        object_types_header = '#include "utils/cast_utils.h"\n'
         object_types_header += '\n'
         object_types_header += '// Object Type enum for validation layer internal object handling\n'
         object_types_header += 'typedef enum VulkanObjectType {\n'
@@ -1455,7 +1161,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
         safe_struct_helper_source += '#include "vk_concurrent_unordered_map.h"\n'
         safe_struct_helper_source += '#include "vk_typemap_helper.h"\n'
         safe_struct_helper_source += '\n'
-        safe_struct_helper_source += '#include <string.h>\n'
+        safe_struct_helper_source += '#include <cstddef>\n'
         safe_struct_helper_source += '#include <cassert>\n'
         safe_struct_helper_source += '#include <cstring>\n'
         safe_struct_helper_source += '#include <vector>\n'
@@ -1586,7 +1292,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '    }\n',
                 # VkGraphicsPipelineCreateInfo is special case because its pointers may be non-null but ignored
                 'VkGraphicsPipelineCreateInfo' :
-                    '    bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(in_struct->pNext) != nullptr;\n'
+                    '    const bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(in_struct->pNext) != nullptr;\n'
                     '    if (stageCount && in_struct->pStages) {\n'
                     '        pStages = new safe_VkPipelineShaderStageCreateInfo[stageCount];\n'
                     '        for (uint32_t i = 0; i < stageCount; ++i) {\n'
@@ -1596,11 +1302,11 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '    if (in_struct->pVertexInputState)\n'
                     '        pVertexInputState = new safe_VkPipelineVertexInputStateCreateInfo(in_struct->pVertexInputState);\n'
                     '    else\n'
-                    '        pVertexInputState = NULL;\n'
+                    '        pVertexInputState = nullptr;\n'
                     '    if (in_struct->pInputAssemblyState)\n'
                     '        pInputAssemblyState = new safe_VkPipelineInputAssemblyStateCreateInfo(in_struct->pInputAssemblyState);\n'
                     '    else\n'
-                    '        pInputAssemblyState = NULL;\n'
+                    '        pInputAssemblyState = nullptr;\n'
                     '    bool has_tessellation_stage = false;\n'
                     '    if (stageCount && pStages)\n'
                     '        for (uint32_t i = 0; i < stageCount && !has_tessellation_stage; ++i)\n'
@@ -1609,14 +1315,14 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '    if (in_struct->pTessellationState && has_tessellation_stage)\n'
                     '        pTessellationState = new safe_VkPipelineTessellationStateCreateInfo(in_struct->pTessellationState);\n'
                     '    else\n'
-                    '        pTessellationState = NULL; // original pTessellationState pointer ignored\n'
+                    '        pTessellationState = nullptr; // original pTessellationState pointer ignored\n'
                     '    bool is_dynamic_has_rasterization = false;\n'
                     '    if (in_struct->pDynamicState && in_struct->pDynamicState->pDynamicStates) {\n'
                     '        for (uint32_t i = 0; i < in_struct->pDynamicState->dynamicStateCount && !is_dynamic_has_rasterization; ++i)\n'
                     '            if (in_struct->pDynamicState->pDynamicStates[i] == VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT)\n'
                     '                is_dynamic_has_rasterization = true;\n'
                     '    }\n'
-                    '    bool has_rasterization = in_struct->pRasterizationState ? (is_dynamic_has_rasterization || !in_struct->pRasterizationState->rasterizerDiscardEnable) : false;\n'
+                    '    const bool has_rasterization = in_struct->pRasterizationState ? (is_dynamic_has_rasterization || !in_struct->pRasterizationState->rasterizerDiscardEnable) : false;\n'
                     '    if (in_struct->pViewportState && (has_rasterization || is_graphics_library)) {\n'
                     '        bool is_dynamic_viewports = false;\n'
                     '        bool is_dynamic_scissors = false;\n'
@@ -1630,29 +1336,29 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '        }\n'
                     '        pViewportState = new safe_VkPipelineViewportStateCreateInfo(in_struct->pViewportState, is_dynamic_viewports, is_dynamic_scissors);\n'
                     '    } else\n'
-                    '        pViewportState = NULL; // original pViewportState pointer ignored\n'
+                    '        pViewportState = nullptr; // original pViewportState pointer ignored\n'
                     '    if (in_struct->pRasterizationState)\n'
                     '        pRasterizationState = new safe_VkPipelineRasterizationStateCreateInfo(in_struct->pRasterizationState);\n'
                     '    else\n'
-                    '        pRasterizationState = NULL;\n'
+                    '        pRasterizationState = nullptr;\n'
                     '    if (in_struct->pMultisampleState && (renderPass != VK_NULL_HANDLE || has_rasterization || is_graphics_library))\n'
                     '        pMultisampleState = new safe_VkPipelineMultisampleStateCreateInfo(in_struct->pMultisampleState);\n'
                     '    else\n'
-                    '        pMultisampleState = NULL; // original pMultisampleState pointer ignored\n'
+                    '        pMultisampleState = nullptr; // original pMultisampleState pointer ignored\n'
                     '    // needs a tracked subpass state uses_depthstencil_attachment\n'
                     '    if (in_struct->pDepthStencilState && ((has_rasterization && uses_depthstencil_attachment) || is_graphics_library))\n'
                     '        pDepthStencilState = new safe_VkPipelineDepthStencilStateCreateInfo(in_struct->pDepthStencilState);\n'
                     '    else\n'
-                    '        pDepthStencilState = NULL; // original pDepthStencilState pointer ignored\n'
+                    '        pDepthStencilState = nullptr; // original pDepthStencilState pointer ignored\n'
                     '    // needs a tracked subpass state usesColorAttachment\n'
                     '    if (in_struct->pColorBlendState && ((has_rasterization && uses_color_attachment) || is_graphics_library))\n'
                     '        pColorBlendState = new safe_VkPipelineColorBlendStateCreateInfo(in_struct->pColorBlendState);\n'
                     '    else\n'
-                    '        pColorBlendState = NULL; // original pColorBlendState pointer ignored\n'
+                    '        pColorBlendState = nullptr; // original pColorBlendState pointer ignored\n'
                     '    if (in_struct->pDynamicState)\n'
                     '        pDynamicState = new safe_VkPipelineDynamicStateCreateInfo(in_struct->pDynamicState);\n'
                     '    else\n'
-                    '        pDynamicState = NULL;\n',
+                    '        pDynamicState = nullptr;\n',
                  # VkPipelineViewportStateCreateInfo is special case because its pointers may be non-null but ignored
                 'VkPipelineViewportStateCreateInfo' :
                     '    if (in_struct->pViewports && !is_dynamic_viewports) {\n'
@@ -1660,13 +1366,13 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '        memcpy ((void *)pViewports, (void *)in_struct->pViewports, sizeof(VkViewport)*in_struct->viewportCount);\n'
                     '    }\n'
                     '    else\n'
-                    '        pViewports = NULL;\n'
+                    '        pViewports = nullptr;\n'
                     '    if (in_struct->pScissors && !is_dynamic_scissors) {\n'
                     '        pScissors = new VkRect2D[in_struct->scissorCount];\n'
                     '        memcpy ((void *)pScissors, (void *)in_struct->pScissors, sizeof(VkRect2D)*in_struct->scissorCount);\n'
                     '    }\n'
                     '    else\n'
-                    '        pScissors = NULL;\n',
+                    '        pScissors = nullptr;\n',
                 # VkFrameBufferCreateInfo is special case because its pAttachments pointer may be non-null but ignored
                 'VkFramebufferCreateInfo' :
                     '    if (attachmentCount && in_struct->pAttachments && !(flags & VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT)) {\n'
@@ -1698,30 +1404,6 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '            }\n'
                     '        }\n'
                     '    }\n',
-                'VkAccelerationStructureTrianglesOpacityMicromapEXT':
-                    '    if (usageCountsCount) {\n'
-                    '        if ( in_struct->ppUsageCounts) {\n'
-                    '            ppUsageCounts = new VkMicromapUsageEXT *[usageCountsCount];\n'
-                    '            for (uint32_t i = 0; i < usageCountsCount; ++i) {\n'
-                    '                memcpy ((void *)ppUsageCounts[i], (void *)in_struct->ppUsageCounts[i], sizeof(VkMicromapUsageEXT));'
-                    '            }\n'
-                    '        } else {\n'
-                    '            pUsageCounts = new VkMicromapUsageEXT[usageCountsCount];\n'
-                    '            memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*usageCountsCount);'
-                    '        }\n'
-                    '    }\n',
-                'VkMicromapBuildInfoEXT':
-                    '    if (usageCountsCount) {\n'
-                    '        if ( in_struct->ppUsageCounts) {\n'
-                    '            ppUsageCounts = new VkMicromapUsageEXT *[usageCountsCount];\n'
-                    '            for (uint32_t i = 0; i < usageCountsCount; ++i) {\n'
-                    '                memcpy ((void *)ppUsageCounts[i], (void *)in_struct->ppUsageCounts[i], sizeof(VkMicromapUsageEXT));'
-                    '            }\n'
-                    '        } else {\n'
-                    '            pUsageCounts = new VkMicromapUsageEXT[usageCountsCount];\n'
-                    '            memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*usageCountsCount);'
-                    '        }\n'
-                    '    }\n',
                 'VkAccelerationStructureGeometryKHR':
                     '    if (is_host && geometryType == VK_GEOMETRY_TYPE_INSTANCES_KHR) {\n'
                     '        if (geometry.instances.arrayOfPointers) {\n'
@@ -1739,39 +1421,52 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '            geometry.instances.data.hostAddress = allocation;\n'
                     '            as_geom_khr_host_alloc.insert(this, new ASGeomKHRExtraData(allocation, build_range_info->primitiveOffset, build_range_info->primitiveCount));\n'
                     '        } else {\n'
-                    '            size_t array_size = build_range_info->primitiveOffset + build_range_info->primitiveCount * sizeof(VkAccelerationStructureInstanceKHR);\n'
+                    '            const auto primitive_offset = build_range_info->primitiveOffset;\n'
+                    '            const auto primitive_count = build_range_info->primitiveCount;\n'
+                    '            size_t array_size = primitive_offset + primitive_count * sizeof(VkAccelerationStructureInstanceKHR);\n'
                     '            uint8_t *allocation = new uint8_t[array_size];\n'
-                    '            memcpy(allocation, in_struct->geometry.instances.data.hostAddress, array_size);\n'
+                    '            auto host_address = static_cast<const uint8_t*>(in_struct->geometry.instances.data.hostAddress);\n'
+                    '            memcpy(allocation + primitive_offset, host_address + primitive_offset, primitive_count * sizeof(VkAccelerationStructureInstanceKHR));\n'
                     '            geometry.instances.data.hostAddress = allocation;\n'
                     '            as_geom_khr_host_alloc.insert(this, new ASGeomKHRExtraData(allocation, build_range_info->primitiveOffset, build_range_info->primitiveCount));\n'
                     '        }\n'
                     '    }\n',
                 'VkMicromapBuildInfoEXT':
-                    '   pNext = SafePnextCopy(in_struct->pNext);\n'
-                    '   if (in_struct->pUsageCounts) {\n'
-                    '       pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];\n'
-                    '       memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);\n'
-                    '   }\n'
-                    '   if (in_struct->ppUsageCounts) {\n'
-                    '       VkMicromapUsageEXT** pointer_array  = new VkMicromapUsageEXT*[in_struct->usageCountsCount];\n'
-                    '       for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {\n'
-                    '           pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);\n'
-                    '       }\n'
-                    '       ppUsageCounts = pointer_array;\n'
-                    '   }\n',
+                    '    if (in_struct->pUsageCounts) {\n'
+                    '        pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];\n'
+                    '        memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);\n'
+                    '    }\n'
+                    '    if (in_struct->ppUsageCounts) {\n'
+                    '        VkMicromapUsageEXT** pointer_array  = new VkMicromapUsageEXT*[in_struct->usageCountsCount];\n'
+                    '        for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {\n'
+                    '            pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);\n'
+                    '        }\n'
+                    '        ppUsageCounts = pointer_array;\n'
+                    '    }\n',
                 'VkAccelerationStructureTrianglesOpacityMicromapEXT':
-                    '   pNext = SafePnextCopy(in_struct->pNext);\n'
-                    '   if (in_struct->pUsageCounts) {\n'
-                    '       pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];\n'
-                    '       memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);\n'
-                    '   }\n'
-                    '   if (in_struct->ppUsageCounts) {\n'
-                    '       VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[in_struct->usageCountsCount];\n'
-                    '       for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {\n'
-                    '           pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);\n'
-                    '       }\n'
-                    '       ppUsageCounts = pointer_array;\n'
-                    '   }\n',
+                    '    if (in_struct->pUsageCounts) {\n'
+                    '        pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];\n'
+                    '        memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);\n'
+                    '    }\n'
+                    '    if (in_struct->ppUsageCounts) {\n'
+                    '        VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[in_struct->usageCountsCount];\n'
+                    '        for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {\n'
+                    '            pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);\n'
+                    '        }\n'
+                    '        ppUsageCounts = pointer_array;\n'
+                    '    }\n',
+                'VkAccelerationStructureTrianglesDisplacementMicromapNV':
+                    '    if (in_struct->pUsageCounts) {\n'
+                    '        pUsageCounts = new VkMicromapUsageEXT[in_struct->usageCountsCount];\n'
+                    '        memcpy ((void *)pUsageCounts, (void *)in_struct->pUsageCounts, sizeof(VkMicromapUsageEXT)*in_struct->usageCountsCount);\n'
+                    '    }\n'
+                    '    if (in_struct->ppUsageCounts) {\n'
+                    '        VkMicromapUsageEXT** pointer_array = new VkMicromapUsageEXT*[in_struct->usageCountsCount];\n'
+                    '        for (uint32_t i = 0; i < in_struct->usageCountsCount; ++i) {\n'
+                    '            pointer_array[i] = new VkMicromapUsageEXT(*in_struct->ppUsageCounts[i]);\n'
+                    '        }\n'
+                    '        ppUsageCounts = pointer_array;\n'
+                    '    }\n',
                 'VkDescriptorDataEXT' :
                     '    VkDescriptorType* pType = (VkDescriptorType*)&type_at_end[sizeof(VkDescriptorDataEXT)];\n'
                     '\n'
@@ -1801,7 +1496,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                 # VkGraphicsPipelineCreateInfo is special case because it has custom construct parameters
                 'VkGraphicsPipelineCreateInfo' :
                     '    pNext = SafePnextCopy(copy_src.pNext);\n'
-                    '    bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(copy_src.pNext);\n'
+                    '    const bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(copy_src.pNext);\n'
                     '    if (stageCount && copy_src.pStages) {\n'
                     '        pStages = new safe_VkPipelineShaderStageCreateInfo[stageCount];\n'
                     '        for (uint32_t i = 0; i < stageCount; ++i) {\n'
@@ -1811,11 +1506,11 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '    if (copy_src.pVertexInputState)\n'
                     '        pVertexInputState = new safe_VkPipelineVertexInputStateCreateInfo(*copy_src.pVertexInputState);\n'
                     '    else\n'
-                    '        pVertexInputState = NULL;\n'
+                    '        pVertexInputState = nullptr;\n'
                     '    if (copy_src.pInputAssemblyState)\n'
                     '        pInputAssemblyState = new safe_VkPipelineInputAssemblyStateCreateInfo(*copy_src.pInputAssemblyState);\n'
                     '    else\n'
-                    '        pInputAssemblyState = NULL;\n'
+                    '        pInputAssemblyState = nullptr;\n'
                     '    bool has_tessellation_stage = false;\n'
                     '    if (stageCount && pStages)\n'
                     '        for (uint32_t i = 0; i < stageCount && !has_tessellation_stage; ++i)\n'
@@ -1824,38 +1519,38 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '    if (copy_src.pTessellationState && has_tessellation_stage)\n'
                     '        pTessellationState = new safe_VkPipelineTessellationStateCreateInfo(*copy_src.pTessellationState);\n'
                     '    else\n'
-                    '        pTessellationState = NULL; // original pTessellationState pointer ignored\n'
+                    '        pTessellationState = nullptr; // original pTessellationState pointer ignored\n'
                     '    bool is_dynamic_has_rasterization = false;\n'
                     '    if (copy_src.pDynamicState && copy_src.pDynamicState->pDynamicStates) {\n'
                     '        for (uint32_t i = 0; i < copy_src.pDynamicState->dynamicStateCount && !is_dynamic_has_rasterization; ++i)\n'
                     '            if (copy_src.pDynamicState->pDynamicStates[i] == VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT)\n'
                     '                is_dynamic_has_rasterization = true;\n'
                     '    }\n'
-                    '    bool has_rasterization = copy_src.pRasterizationState ? (is_dynamic_has_rasterization || !copy_src.pRasterizationState->rasterizerDiscardEnable) : false;\n'
+                    '    const bool has_rasterization = copy_src.pRasterizationState ? (is_dynamic_has_rasterization || !copy_src.pRasterizationState->rasterizerDiscardEnable) : false;\n'
                     '    if (copy_src.pViewportState && (has_rasterization || is_graphics_library)) {\n'
                     '        pViewportState = new safe_VkPipelineViewportStateCreateInfo(*copy_src.pViewportState);\n'
                     '    } else\n'
-                    '        pViewportState = NULL; // original pViewportState pointer ignored\n'
+                    '        pViewportState = nullptr; // original pViewportState pointer ignored\n'
                     '    if (copy_src.pRasterizationState)\n'
                     '        pRasterizationState = new safe_VkPipelineRasterizationStateCreateInfo(*copy_src.pRasterizationState);\n'
                     '    else\n'
-                    '        pRasterizationState = NULL;\n'
+                    '        pRasterizationState = nullptr;\n'
                     '    if (copy_src.pMultisampleState && (has_rasterization || is_graphics_library))\n'
                     '        pMultisampleState = new safe_VkPipelineMultisampleStateCreateInfo(*copy_src.pMultisampleState);\n'
                     '    else\n'
-                    '        pMultisampleState = NULL; // original pMultisampleState pointer ignored\n'
+                    '        pMultisampleState = nullptr; // original pMultisampleState pointer ignored\n'
                     '    if (copy_src.pDepthStencilState && (has_rasterization || is_graphics_library))\n'
                     '        pDepthStencilState = new safe_VkPipelineDepthStencilStateCreateInfo(*copy_src.pDepthStencilState);\n'
                     '    else\n'
-                    '        pDepthStencilState = NULL; // original pDepthStencilState pointer ignored\n'
+                    '        pDepthStencilState = nullptr; // original pDepthStencilState pointer ignored\n'
                     '    if (copy_src.pColorBlendState && (has_rasterization || is_graphics_library))\n'
                     '        pColorBlendState = new safe_VkPipelineColorBlendStateCreateInfo(*copy_src.pColorBlendState);\n'
                     '    else\n'
-                    '        pColorBlendState = NULL; // original pColorBlendState pointer ignored\n'
+                    '        pColorBlendState = nullptr; // original pColorBlendState pointer ignored\n'
                     '    if (copy_src.pDynamicState)\n'
                     '        pDynamicState = new safe_VkPipelineDynamicStateCreateInfo(*copy_src.pDynamicState);\n'
                     '    else\n'
-                    '        pDynamicState = NULL;\n',
+                    '        pDynamicState = nullptr;\n',
                  # VkPipelineViewportStateCreateInfo is special case because it has custom construct parameters
                 'VkPipelineViewportStateCreateInfo' :
                     '    pNext = SafePnextCopy(copy_src.pNext);\n'
@@ -1864,13 +1559,13 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '        memcpy ((void *)pViewports, (void *)copy_src.pViewports, sizeof(VkViewport)*copy_src.viewportCount);\n'
                     '    }\n'
                     '    else\n'
-                    '        pViewports = NULL;\n'
+                    '        pViewports = nullptr;\n'
                     '    if (copy_src.pScissors) {\n'
                     '        pScissors = new VkRect2D[copy_src.scissorCount];\n'
                     '        memcpy ((void *)pScissors, (void *)copy_src.pScissors, sizeof(VkRect2D)*copy_src.scissorCount);\n'
                     '    }\n'
                     '    else\n'
-                    '        pScissors = NULL;\n',
+                    '        pScissors = nullptr;\n',
                 'VkFramebufferCreateInfo' :
                     '    pNext = SafePnextCopy(copy_src.pNext);\n'
                     '    if (attachmentCount && copy_src.pAttachments && !(flags & VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT)) {\n'
@@ -1971,9 +1666,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '             delete ppUsageCounts[i];\n'
                     '        }\n'
                     '        delete[] ppUsageCounts;\n'
-                    '    }\n'
-                    '    if (pNext)\n'
-                    '        FreePnextChain(pNext);\n',
+                    '    }\n',
                 'VkAccelerationStructureTrianglesOpacityMicromapEXT':
                     '    if (pUsageCounts)\n'
                     '        delete[] pUsageCounts;\n'
@@ -1982,9 +1675,16 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '             delete ppUsageCounts[i];\n'
                     '        }\n'
                     '        delete[] ppUsageCounts;\n'
-                    '    }\n'
-                    '    if (pNext)\n'
-                    '        FreePnextChain(pNext);\n',
+                    '    }\n',
+                'VkAccelerationStructureTrianglesDisplacementMicromapNV':
+                    '    if (pUsageCounts)\n'
+                    '        delete[] pUsageCounts;\n'
+                    '    if (ppUsageCounts) {\n'
+                    '        for (uint32_t i = 0; i < usageCountsCount; ++i) {\n'
+                    '             delete ppUsageCounts[i];\n'
+                    '        }\n'
+                    '        delete[] ppUsageCounts;\n'
+                    '    }\n',
                 'VkDescriptorDataEXT' :
                     '\n'
                     '    VkDescriptorType& thisType = *(VkDescriptorType*)&type_at_end[sizeof(VkDescriptorDataEXT)];\n'
@@ -2043,9 +1743,22 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                                     copy_strings += '    %s = SafeStringCopy(in_struct->%s);\n' % (member.name, member.name)
                                     destruct_txt += '    if (%s) delete [] %s;\n' % (member.name, member.name)
                             else:
-                                # For these exceptions just copy initial value over for now
-                                init_list += '\n    %s(in_struct->%s),' % (member.name, member.name)
-                                init_func_txt += '    %s = in_struct->%s;\n' % (member.name, member.name)
+                                # We need a deep copy of pData / dataSize combos
+                                if member.name == 'pData':
+                                    init_list += '\n    %s(nullptr),' % (member.name)
+                                    construct_txt += '    if (in_struct->pData != nullptr) {\n'
+                                    construct_txt += '        auto temp = new std::byte[in_struct->dataSize];\n'
+                                    construct_txt += '        std::memcpy(temp, in_struct->pData, in_struct->dataSize);\n'
+                                    construct_txt += '        pData = temp;\n'
+                                    construct_txt += '    }\n'
+
+                                    destruct_txt  += '    if (pData != nullptr) {\n'
+                                    destruct_txt  += '        auto temp = reinterpret_cast<const std::byte*>(pData);\n'
+                                    destruct_txt  += '        delete [] temp;\n'
+                                    destruct_txt  += '    }\n'
+                                else:
+                                    init_list += '\n    %s(in_struct->%s),' % (member.name, member.name)
+                                    init_func_txt += '    %s = in_struct->%s;\n' % (member.name, member.name)
                         default_init_list += '\n    %s(nullptr),' % (member.name)
                     else:
                         default_init_list += '\n    %s(nullptr),' % (member.name)
@@ -2148,10 +1861,12 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                 destruct_txt += '        FreePnextChain(pNext);\n'
 
             if (self.structOrUnion[item.name] == 'union'):
-                # Unions don't allow multiple members in the initialization list, so just call initialize
-                safe_struct_body.append("\n%s::%s(const %s* in_struct%s)\n{\n%s}" % (ss_name, ss_name, item.name, self.custom_construct_params.get(item.name, ''), construct_txt))
                 if (item.name == 'VkDescriptorDataEXT'):
                     default_init_list = ' type_at_end {0},'
+                    safe_struct_body.append("\n%s::%s(const %s* in_struct%s)\n{\n%s}" % (ss_name, ss_name, item.name, self.custom_construct_params.get(item.name, ''), construct_txt))
+                else:
+                    # Unions don't allow multiple members in the initialization list, so just call initialize
+                    safe_struct_body.append("\n%s::%s(const %s* in_struct%s)\n{\n    initialize(in_struct);\n}" % (ss_name, ss_name, item.name, self.custom_construct_params.get(item.name, '')))
             else:
                 safe_struct_body.append("\n%s::%s(const %s* in_struct%s) :%s\n{\n%s}" % (ss_name, ss_name, item.name, self.custom_construct_params.get(item.name, ''), init_list, construct_txt))
             if '' != default_init_list:
@@ -2240,23 +1955,22 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
             '    return found;',
             '}}',
             '',
-            '// Init the header of an sType struct with pNext',
-            'template <typename T> T {init_func}(void *p_next) {{',
+            '// Init the header of an sType struct with pNext and optional fields',
+            'template <typename T, typename... StructFields>',
+            'T {init_func}(void *p_next, StructFields... fields) {{',
+            '    T out = {{{type_map}<T>::kSType, p_next, fields...}};',
+            '    return out;',
+            '}}',
+            '',
+            '// Init the header of an sType struct',
+            'template <typename T>',
+            'T {init_func}(void *p_next = nullptr) {{',
             '    T out = {{}};',
             '    out.sType = {type_map}<T>::kSType;',
             '    out.pNext = p_next;',
             '    return out;',
-            '}}',
-                        '',
-            '// Init the header of an sType struct',
-            'template <typename T> T {init_func}() {{',
-            '    T out = {{}};',
-            '    out.sType = {type_map}<T>::kSType;',
-            '    out.pNext = nullptr;',
-            '    return out;',
-            '}}',
-
-            ''))
+            '}}'
+            ))
 
         code = []
 
@@ -2296,17 +2010,6 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                 find_mod_func=find_mod_func, init_func=init_func), ''
             )))
 
-        # Generate utilities using legacy names for backwards compatibility
-        fprefix = 'lvl_'
-        find_func = fprefix + 'find_in_chain'
-        find_mod_func = fprefix + 'find_mod_in_chain'
-        init_func = fprefix + 'init_struct'
-        code.append('\n'.join((
-            utilities_format.format(id_member=id_member, type_map=typemap,
-                header=generic_header, find_func=find_func,
-                find_mod_func=find_mod_func, init_func=init_func), ''
-            )))
-
         return "\n".join(code)
 
     #
@@ -2332,14 +2035,10 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
             return self.GenerateExtensionHelperHeader()
         elif self.helper_file_type == 'typemap_helper_header':
             return self.GenerateTypeMapHelperHeader()
-        elif self.helper_file_type == 'synchronization_helper_header':
+        elif self.helper_file_type == 'sync_helper_header':
             return self.GenerateSyncHelperHeader()
-        elif self.helper_file_type == 'synchronization_helper_source':
+        elif self.helper_file_type == 'sync_helper_source':
             return self.GenerateSyncHelperSource()
-        elif self.helper_file_type == 'optick_instrumentation_header':
-            return self.GenerateCcOptickInstrumentationHelperHeader()
-        elif self.helper_file_type == 'optick_instrumentation_source':
-            return self.GenerateCcOptickInstrumentationHelperSource()
         else:
             return 'Bad Helper File Generator Option %s' % self.helper_file_type
 

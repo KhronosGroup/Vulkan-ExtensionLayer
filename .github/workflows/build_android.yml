@@ -37,6 +37,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.7'
+          python-version: '3.8'
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$GITHUB_WORKSPACE/external/${{ matrix.config }}/Vulkan-Headers/registry:$PYTHONPATH" >> $GITHUB_ENV
       - name: Build ExtensionLayer
         run: python3 scripts/github_ci_android.py --abi ${{ matrix.abi }}

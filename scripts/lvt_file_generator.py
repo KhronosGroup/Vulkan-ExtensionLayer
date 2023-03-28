@@ -1,8 +1,8 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2015-2022 The Khronos Group Inc.
-# Copyright (c) 2015-2022 Valve Corporation
-# Copyright (c) 2015-2022 LunarG, Inc.
+# Copyright (c) 2015-2023 The Khronos Group Inc.
+# Copyright (c) 2015-2023 Valve Corporation
+# Copyright (c) 2015-2023 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Author: Mark Lobodzinski <mark@lunarg.com>
 
 import os,re,sys
 import xml.etree.ElementTree as etree
@@ -174,9 +172,9 @@ class LvtFileOutputGenerator(OutputGenerator):
         write(file_comment, file=self.outFile)
         # Copyright Notice
         copyright =  '/*\n'
-        copyright += ' * Copyright (c) 2015-2022 The Khronos Group Inc.\n'
-        copyright += ' * Copyright (c) 2015-2022 Valve Corporation\n'
-        copyright += ' * Copyright (c) 2015-2022 LunarG, Inc.\n'
+        copyright += ' * Copyright (c) 2015-2023 The Khronos Group Inc.\n'
+        copyright += ' * Copyright (c) 2015-2023 Valve Corporation\n'
+        copyright += ' * Copyright (c) 2015-2023 LunarG, Inc.\n'
         copyright += ' *\n'
         copyright += ' * Licensed under the Apache License, Version 2.0 (the "License");\n'
         copyright += ' * you may not use this file except in compliance with the License.\n'
@@ -189,8 +187,6 @@ class LvtFileOutputGenerator(OutputGenerator):
         copyright += ' * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n'
         copyright += ' * See the License for the specific language governing permissions and\n'
         copyright += ' * limitations under the License.\n'
-        copyright += ' *\n'
-        copyright += ' * Author: Mark Lobodzinski <mark@lunarg.com>\n'
         copyright += ' */\n'
         write(copyright, file=self.outFile)
     #
@@ -265,23 +261,31 @@ class LvtFileOutputGenerator(OutputGenerator):
             if item[1] is not None:
                 table += '#endif // %s\n' % item[1]
 
-        table += '\n\n'
-        table += 'void InitDispatchTable() {\n'
-        table += '\n'
-        table += '#if(WIN32)\n'
-        table += '    const char filename[] = "vulkan-1.dll";\n'
-        table += '#elif(__APPLE__)\n'
-        table += '    const char filename[] = "libvulkan.dylib";\n'
-        table += '#else\n'
-        table += '    const char filename[] = "libvulkan.so";\n'
-        table += '#endif\n'
-        table += '\n'
-        table += '    auto lib_handle = open_library(filename);\n'
-        table += '\n'
-        table += '    if (lib_handle == nullptr) {\n'
-        table += '        printf("%s\\n", open_library_error(filename));\n'
-        table += '        exit(1);\n'
-        table += '    }\n\n'
+        table += '''
+
+void InitDispatchTable() {
+
+#if(WIN32)
+    const char filename[] = "vulkan-1.dll";
+    auto lib_handle = open_library(filename);
+#elif(__APPLE__)
+    const char filename[] = "libvulkan.dylib";
+    auto lib_handle = open_library(filename);
+#else
+    const char *filename = "libvulkan.so";
+    auto lib_handle = open_library(filename);
+    if (!lib_handle) {
+        filename = "libvulkan.so.1";
+        lib_handle = open_library(filename);
+    }
+#endif
+
+    if (lib_handle == nullptr) {
+        printf("%s\\n", open_library_error(filename));
+        exit(1);
+    }
+
+'''
 
         for item in entries:
             # Remove 'vk' from proto name

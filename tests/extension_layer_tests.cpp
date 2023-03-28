@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015-2022 The Khronos Group Inc.
- * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2023 Valve Corporation
  * Copyright (c) 2015-2023 LunarG, Inc.
  * Copyright (c) 2015-2022 Google, Inc.
  *
@@ -185,8 +185,8 @@ bool CheckTimelineSemaphoreSupportAndInitState(VkRenderFramework *renderFramewor
     PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
         (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(renderFramework->instance(),
                                                                      "vkGetPhysicalDeviceFeatures2KHR");
-    auto timeline_semaphore_features = lvl_init_struct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
-    auto features2 = lvl_init_struct<VkPhysicalDeviceFeatures2KHR>(&timeline_semaphore_features);
+    auto timeline_semaphore_features = LvlInitStruct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&timeline_semaphore_features);
     vkGetPhysicalDeviceFeatures2KHR(renderFramework->gpu(), &features2);
     if (!timeline_semaphore_features.timelineSemaphore) {
         return false;
@@ -209,9 +209,9 @@ bool VkExtensionLayerTest::CheckSynchronization2SupportAndInitState() {
         m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
     }
 
-    auto timeline_features = lvl_init_struct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
-    auto sync2_features = lvl_init_struct<VkPhysicalDeviceSynchronization2FeaturesKHR>(&timeline_features);
-    auto features2 = lvl_init_struct<VkPhysicalDeviceFeatures2KHR>(&sync2_features);
+    auto timeline_features = LvlInitStruct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
+    auto sync2_features = LvlInitStruct<VkPhysicalDeviceSynchronization2FeaturesKHR>(&timeline_features);
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&sync2_features);
     vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
     if (!sync2_features.synchronization2) {
         return false;
