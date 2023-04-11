@@ -70,9 +70,6 @@ indicated by *install_dir*:
 - *install_dir*`/share/vulkan/explicit_layer.d` : The Vulkan Extension layer
   JSON files (Linux and MacOS)
 
-The `uninstall` target can be used to remove the above files from the install
-directory.
-
 ## Repository Set-Up
 
 ### Display Drivers
@@ -623,12 +620,6 @@ further customize your installation.
 Also see the `LoaderAndLayerInterface` document in the `loader` folder of the
 Vulkan-Loader repository for more information about loader and layer
 operation.
-
-#### Linux Uninstall
-
-To uninstall the files from the system directories, you can execute:
-
-    sudo make uninstall
 
 #### Linux Tests
 
