@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2022 Valve Corporation
-# Copyright (c) 2014-2022 LunarG, Inc.
+# Copyright (c) 2014-2023 Valve Corporation
+# Copyright (c) 2014-2023 LunarG, Inc.
 # Copyright (c) 2019      Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,7 +66,6 @@ endif()
 if(WIN32)
    target_compile_definitions(VkExtLayer_utils PUBLIC _CRT_SECURE_NO_WARNINGS)
 endif()
-install(TARGETS VkExtLayer_utils DESTINATION ${CMAKE_INSTALL_LIBDIR})
 set_target_properties(VkExtLayer_utils PROPERTIES LINKER_LANGUAGE CXX)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${CMAKE_CURRENT_SOURCE_DIR}/generated)
