@@ -64,6 +64,7 @@ set_source_files_properties(${PROJECT_BINARY_DIR}/vk_safe_struct.cpp PROPERTIES 
 add_executable(vk_extension_layer_tests
                extension_layer_tests.cpp
                synchronization2_tests.cpp
+               decompression_tests.cpp
                ${COMMON_CPP})
 add_test(NAME vk_extension_layer_tests COMMAND vk_extension_layer_tests)
 
@@ -71,7 +72,7 @@ if(MSVC_IDE)
     set_target_properties(vk_extension_layer_tests PROPERTIES VS_DEBUGGER_ENVIRONMENT "VK_LAYER_PATH=$<TARGET_FILE_DIR:VkLayer_khronos_synchronization2>")
 endif()
 
-add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2)
+add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_memory_decompression)
 # Note that there is no need to add GTEST directories here due to googletest exporting them via the gtest target.
 target_include_directories(vk_extension_layer_tests
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}

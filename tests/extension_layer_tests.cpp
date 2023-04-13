@@ -3,6 +3,7 @@
  * Copyright (c) 2015-2023 Valve Corporation
  * Copyright (c) 2015-2023 LunarG, Inc.
  * Copyright (c) 2015-2022 Google, Inc.
+ * Copyright (c) 2015-2023 Nvidia Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +23,7 @@
  * Author: Jeremy Kniager <jeremyk@lunarg.com>
  * Author: Shannon McPherson <shannon@lunarg.com>
  * Author: John Zulauf <jzulauf@lunarg.com>
+ * Author: Vikram Kushwaha <vkushwaha@nvidia.com>
  */
 #include "extension_layer_tests.h"
 #include "vk_typemap_helper.h"
@@ -192,6 +194,40 @@ bool CheckTimelineSemaphoreSupportAndInitState(VkRenderFramework *renderFramewor
         return false;
     }
     renderFramework->InitState(nullptr, &features2);
+    return true;
+}
+
+bool VkExtensionLayerTest::CheckDecompressionSupportAndInitState() {
+    bool decompressionExtensionFound = false;
+    if (DeviceExtensionSupported(VK_NV_MEMORY_DECOMPRESSION_EXTENSION_NAME, 1)) {
+        decompressionExtensionFound = true;
+        m_device_extension_names.push_back(VK_NV_MEMORY_DECOMPRESSION_EXTENSION_NAME);
+    }
+
+    auto decompress_features = LvlInitStruct<VkPhysicalDeviceMemoryDecompressionFeaturesNV>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&decompress_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+
+    VkPhysicalDeviceFeatures2 devFeatures = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+    VkPhysicalDeviceMemoryDecompressionFeaturesNV decompressionFeature = {
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV};
+    devFeatures.pNext = &decompressionFeature;
+    vk::GetPhysicalDeviceFeatures2(gpu(), &devFeatures);
+
+    // Unsupported when neither the driver supports it nor the layer is present
+    if (!decompressionFeature.memoryDecompression && !decompressionExtensionFound) {
+        return false;
+    }
+
+    InitState(nullptr, &features2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+
+    vk::QueueSubmit2KHR = reinterpret_cast<PFN_vkQueueSubmit2KHR>(vk::GetDeviceProcAddr(device(), "vkQueueSubmit2KHR"));
+
+    vk::CmdDecompressMemoryNV =
+        reinterpret_cast<PFN_vkCmdDecompressMemoryNV>(vk::GetDeviceProcAddr(device(), "vkCmdDecompressMemoryNV"));
+    vk::CmdDecompressMemoryIndirectCountNV = reinterpret_cast<PFN_vkCmdDecompressMemoryIndirectCountNV>(
+        vk::GetDeviceProcAddr(device(), "vkCmdDecompressMemoryIndirectCountNV"));
+
     return true;
 }
 

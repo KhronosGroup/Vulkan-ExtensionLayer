@@ -1,0 +1,36 @@
+{
+    "file_format_version": "1.2.0",
+    "layer": {
+        "name": "VK_LAYER_KHRONOS_memory_decompression",
+        "type": "GLOBAL",
+        "library_path": "@JSON_LIBRARY_PATH@",
+        "api_version": "@JSON_VERSION@",
+        "implementation_version": "1",
+        "description": "Khronos Memory Decompression layer",
+        "status": "STABLE",
+        "platforms": [ "WINDOWS", "LINUX", "MACOS", "ANDROID" ],
+        "instance_extensions": [],
+        "device_extensions": [
+            {
+                "name": "VK_NV_memory_decompression",
+                "spec_version": "1",
+                "entrypoints": [
+                    "vkCmdDecompressMemoryNV",
+                    "vkCmdDecompressMemoryIndirectCountNV"
+                ]
+            }
+        ],
+        "features": {
+            "settings": [
+                {
+                    "key": "force_enable",
+                    "env": "VK_MEMORY_DECOMPRESSION_FORCE_ENABLE",
+                    "label": "Force Enable",
+                    "description": "Force the layer to be active even if the underlying driver also implements the memory decompression extension.",
+                    "type": "BOOL",
+                    "default": false
+                }
+            ]
+        }
+    }
+}
