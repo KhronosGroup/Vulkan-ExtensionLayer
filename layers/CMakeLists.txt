@@ -22,6 +22,11 @@ else()
     set(TARGET_NAMES VkLayer_khronos_timeline_semaphore VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object)
 endif()
 
+# https://github.com/KhronosGroup/Vulkan-ExtensionLayer/issues/182
+if (CMAKE_SIZEOF_VOID_P EQUAL "4")
+    list(REMOVE_ITEM ${TARGET_NAMES} "VkLayer_khronos_shader_object")
+endif()
+
 # System-specific macros to create a library target.
 macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
     add_library(VkLayer_${target} MODULE ${ARGN})
