@@ -16,12 +16,6 @@
 # limitations under the License.
 # ~~~
 
-if(WIN32)
-    set(TARGET_NAMES VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object) # timeline_semaphore doesn't build on windows yet
-else()
-    set(TARGET_NAMES VkLayer_khronos_timeline_semaphore VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object)
-endif()
-
 # System-specific macros to create a library target.
 macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
     add_library(VkLayer_${target} MODULE ${ARGN})
@@ -83,6 +77,18 @@ set(SHADER_OBJECT_FILES
 
 AddVkLayer(khronos_shader_object ""
     ${SHADER_OBJECT_FILES})
+
+set(TARGET_NAMES VkLayer_khronos_timeline_semaphore VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object)
+
+# timeline_semaphore doesn't build on windows yet
+if (WIN32)
+    list(REMOVE_ITEM TARGET_NAMES "VkLayer_khronos_timeline_semaphore")
+endif()
+
+# The Vulkan SDK has deliberately chosen not to ship 32-bit VkLayer_khronos_shader_object files
+if (CMAKE_SIZEOF_VOID_P EQUAL "4")
+    list(REMOVE_ITEM TARGET_NAMES "VkLayer_khronos_shader_object")
+endif()
 
 foreach(TARGET_NAME ${TARGET_NAMES})
     set(INPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in")
