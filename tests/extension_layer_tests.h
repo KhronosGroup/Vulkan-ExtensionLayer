@@ -102,6 +102,8 @@ class VkExtensionLayerTest : public VkRenderFramework {
 
     bool CheckSynchronization2SupportAndInitState();
 
+    bool CheckDecompressionSupportAndInitState();
+
   protected:
     uint32_t m_instance_api_version = 0;
     uint32_t m_target_api_version = 0;

@@ -78,7 +78,13 @@ set(SHADER_OBJECT_FILES
 AddVkLayer(khronos_shader_object ""
     ${SHADER_OBJECT_FILES})
 
-set(TARGET_NAMES VkLayer_khronos_timeline_semaphore VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object)
+set(DECOMPRESSION_FILES
+    decompression.cpp)
+
+AddVkLayer(khronos_memory_decompression ""
+    ${DECOMPRESSION_FILES})
+
+set(TARGET_NAMES VkLayer_khronos_timeline_semaphore VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object VkLayer_khronos_memory_decompression)
 
 # timeline_semaphore doesn't build on windows yet
 if (WIN32)

@@ -11,6 +11,7 @@ There are some extensions and features in Vulkan that are not available everywhe
 | VK_LAYER_KHRONOS_timeline_semaphore | VK_KHR_timeline_semaphore | 1       | layers/timeline_semaphore.c | [@llandwerlin-intel](https://github.com/llandwerlin-intel) |
 | [VK_LAYER_KHRONOS_synchronization2](docs/synchronization2_layer.md)   | VK_KHR_synchronization2   | 1       | layers/synchronization2.cpp | [@jeremyg-lunarg](https://github.com/jeremyg-lunarg) |
 | [VK_LAYER_KHRONOS_shader_object](docs/shader_object_layer.md)      | VK_EXT_shader_object| 1       | layers/shader_object.cpp    | [@daniel-story](https://github.com/daniel-story) |
+| [VK_LAYER_KHRONOS_memory_decompression](docs/memory_decompression_layer.md)   | VK_NV_memory_decompression   | 1       | layers/decompression/decompression.cpp | [@vkushwaha-nv](https://github.com/vkushwaha-nv) |
 
 If you find a problem with one of the layers, please file an Issue and tag the Point of Contact listed in the table above.
 
