@@ -154,6 +154,14 @@ elseif(MSVC)
     add_compile_options("/w34245")
     # Warn zero sized arrays in structs or unions
     add_compile_options("/wd4200")
+
+    # PDBs aren't generated on Release builds by default.
+    add_compile_options("$<$<CONFIG:Release>:/Zi>")
+    add_link_options("$<$<CONFIG:Release>:/DEBUG:FULL>")
+    # Remove unreferenced code/data.
+    add_link_options("$<$<CONFIG:Release>:/OPT:REF>")
+    # Merge duplicate data/functions
+    add_link_options("$<$<CONFIG:Release>:/OPT:ICF>")
 endif()
 
 if(MAKE_C_COMPILER_ID MATCHES "Clang")
