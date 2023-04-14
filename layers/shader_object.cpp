@@ -32,6 +32,7 @@
 #include "log.h"
 #include "vk_safe_struct.h"
 #include "vk_api_hash.h"
+#include "vk_layer_config.h"
 
 // Required by vk_safe_struct
 std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
@@ -74,6 +75,37 @@ namespace shader_object {
 
 static const char* kLayerName = "VkLayer_khronos_shader_object";
 static const VkExtensionProperties kExtensionProperties = {VK_EXT_SHADER_OBJECT_EXTENSION_NAME, VK_EXT_SHADER_OBJECT_SPEC_VERSION};
+
+static const char* const kEnvarForceEnable =
+#if defined(__ANDROID__)
+    "debug.vulkan.shader_object.force_enable";
+#else
+    "VK_SHADER_OBJECT_FORCE_ENABLE";
+#endif
+static const char* const kLayerSettingsForceEnable = "khronos_synchronization2.force_enable";
+
+static void string_tolower(std::string &s) {
+    for (auto& c: s) {
+        c = tolower(c);
+    }
+}
+
+static bool GetForceEnable() {
+    bool result = false;
+    std::string setting = GetLayerEnvVar(kEnvarForceEnable);
+    if (setting.empty()) {
+        setting = getLayerOption(kLayerSettingsForceEnable);
+    }
+    if (!setting.empty()) {
+        string_tolower(setting);
+        if (setting == "true") {
+            result = true;
+        } else {
+            result = std::atoi(setting.c_str()) != 0;
+        }
+    }
+    return result;
+}
 
 static VKAPI_ATTR void* VKAPI_CALL DefaultAlloc(void*, size_t size, size_t alignment, VkSystemAllocationScope) {
     return std::malloc(size);
@@ -2717,11 +2749,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
     // only enable the layer if the application asked for the extension and feature AND the driver does not have a native
     // implementation (unless if the user specified to ignore the native implementation via environment variable)
     bool enable_layer = shader_object_feature_requested && shader_object_extension_requested;
-    bool ignore_native_implementation;
-    {
-        const char* setting = std::getenv("VK_SHADER_OBJECT_IGNORE_DRIVER_SUPPORT");
-        ignore_native_implementation = setting && (strcmp(setting, "true") == 0 || strcmp(setting, "TRUE") == 0 || strcmp(setting, "1") == 0);
-    }
+    bool ignore_native_implementation = GetForceEnable();
     if (ignore_native_implementation) {
         DEBUG_LOG("ignoring native driver implementation of shader object\n");
     }
