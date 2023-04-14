@@ -67,6 +67,18 @@
                     "vkGetShaderBinaryDataEXT"
                 ]
             }
-        ]
+        ],
+        "features": {
+            "settings": [
+                {
+                    "key": "force_enable",
+                    "env": "VK_SHADER_OBJECT_FORCE_ENABLE",
+                    "label": "Force Enable",
+                    "description": "Force the layer to be active even if the underlying driver also implements the shader object extension.",
+                    "type": "BOOL",
+                    "default": false
+                }
+            ]
+        }
     }
 }
