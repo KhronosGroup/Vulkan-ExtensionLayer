@@ -95,6 +95,9 @@ foreach(TARGET_NAME ${TARGET_NAMES})
     set(INTERMEDIATE_FILE "${CMAKE_CURRENT_BINARY_DIR}/json/intermediate-${TARGET_NAME}.json")
     set(OUTPUT_FILE_FINAL_NAME "${TARGET_NAME}.json")
     set(LAYER_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+    if (WIN32)
+        set(LAYER_INSTALL_DIR ${CMAKE_INSTALL_BINDIR}) # WIN32/MINGW expect the dll in the `bin` dir, this matches our WIN32 SDK process
+    endif()
 
     if (WIN32)
         set(JSON_LIBRARY_PATH ".\\\\${TARGET_NAME}.dll")
