@@ -13,3 +13,11 @@
 # synchonization2 extension.
 khronos_synchronization2.force_enable = false
 
+# VK_LAYER_KHRONOS_shader_object
+
+# Force Enable
+# =====================
+# <LayerIdentifier>.force_enable
+# Force the layer to be active even if the underlying driver also implements the
+# shader object extension.
+khronos_shader_object.force_enable = false
