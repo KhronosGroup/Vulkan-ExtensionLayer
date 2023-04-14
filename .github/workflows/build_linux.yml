@@ -63,8 +63,6 @@ jobs:
       - uses: lukka/get-cmake@latest
         with:
           cmakeVersion: 3.17.2
-      - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=$GITHUB_WORKSPACE/external/Vulkan-Headers/registry:$PYTHONPATH" >> $GITHUB_ENV
       - name: Install build dependencies
         run: |
           python3 -m pip install jsonschema pyparsing

@@ -49,8 +49,6 @@ jobs:
           winsdk-build-version: 17763
       - name: Install build dependencies
         run: python3 -m pip install jsonschema pyparsing
-      - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE\\external\\${{ matrix.config }}\\Vulkan-Headers\\registry;$env:PYTHONPATH" >> $env:GITHUB_ENV
       - name: Build Vulkan-ExtensionLayer
         run: python3 scripts/github_ci_build_desktop.py --config ${{ matrix.config }} --arch ${{ matrix.arch }}
         if: matrix.os != 'windows-2016'
