@@ -77,7 +77,7 @@ AddVkLayer(khronos_shader_object ""
     ${SHADER_OBJECT_FILES})
 
 set(DECOMPRESSION_FILES
-    decompression.cpp)
+    decompression/decompression.cpp)
 
 AddVkLayer(khronos_memory_decompression ""
     ${DECOMPRESSION_FILES})

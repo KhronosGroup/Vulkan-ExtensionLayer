@@ -25,41 +25,41 @@
 #include "vk_util.h"
 #include "decompression.h"
 
-#include "shaders/memory_decompression/spirv/copyCount_vk.h"
+#include "shaders/spirv/copyCount_vk.h"
 
-#include "shaders/memory_decompression/spirv/GInflate8_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate16_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate32_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate64_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate8_HAVE_INT16_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate16_HAVE_INT16_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate32_HAVE_INT16_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate64_HAVE_INT16_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate8_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate16_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate32_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate64_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate8_HAVE_INT16_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate16_HAVE_INT16_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate32_HAVE_INT16_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/GInflate64_HAVE_INT16_HAVE_INT64_vk.h"
+#include "shaders/spirv/GInflate8_vk.h"
+#include "shaders/spirv/GInflate16_vk.h"
+#include "shaders/spirv/GInflate32_vk.h"
+#include "shaders/spirv/GInflate64_vk.h"
+#include "shaders/spirv/GInflate8_HAVE_INT16_vk.h"
+#include "shaders/spirv/GInflate16_HAVE_INT16_vk.h"
+#include "shaders/spirv/GInflate32_HAVE_INT16_vk.h"
+#include "shaders/spirv/GInflate64_HAVE_INT16_vk.h"
+#include "shaders/spirv/GInflate8_HAVE_INT64_vk.h"
+#include "shaders/spirv/GInflate16_HAVE_INT64_vk.h"
+#include "shaders/spirv/GInflate32_HAVE_INT64_vk.h"
+#include "shaders/spirv/GInflate64_HAVE_INT64_vk.h"
+#include "shaders/spirv/GInflate8_HAVE_INT16_HAVE_INT64_vk.h"
+#include "shaders/spirv/GInflate16_HAVE_INT16_HAVE_INT64_vk.h"
+#include "shaders/spirv/GInflate32_HAVE_INT16_HAVE_INT64_vk.h"
+#include "shaders/spirv/GInflate64_HAVE_INT16_HAVE_INT64_vk.h"
 
-#include "shaders/memory_decompression/spirv/IndirectGInflate8_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate16_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate32_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate64_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate8_HAVE_INT16_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate16_HAVE_INT16_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate32_HAVE_INT16_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate64_HAVE_INT16_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate8_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate16_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate32_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate64_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate8_HAVE_INT16_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate16_HAVE_INT16_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate32_HAVE_INT16_HAVE_INT64_vk.h"
-#include "shaders/memory_decompression/spirv/IndirectGInflate64_HAVE_INT16_HAVE_INT64_vk.h"
+#include "shaders/spirv/IndirectGInflate8_vk.h"
+#include "shaders/spirv/IndirectGInflate16_vk.h"
+#include "shaders/spirv/IndirectGInflate32_vk.h"
+#include "shaders/spirv/IndirectGInflate64_vk.h"
+#include "shaders/spirv/IndirectGInflate8_HAVE_INT16_vk.h"
+#include "shaders/spirv/IndirectGInflate16_HAVE_INT16_vk.h"
+#include "shaders/spirv/IndirectGInflate32_HAVE_INT16_vk.h"
+#include "shaders/spirv/IndirectGInflate64_HAVE_INT16_vk.h"
+#include "shaders/spirv/IndirectGInflate8_HAVE_INT64_vk.h"
+#include "shaders/spirv/IndirectGInflate16_HAVE_INT64_vk.h"
+#include "shaders/spirv/IndirectGInflate32_HAVE_INT64_vk.h"
+#include "shaders/spirv/IndirectGInflate64_HAVE_INT64_vk.h"
+#include "shaders/spirv/IndirectGInflate8_HAVE_INT16_HAVE_INT64_vk.h"
+#include "shaders/spirv/IndirectGInflate16_HAVE_INT16_HAVE_INT64_vk.h"
+#include "shaders/spirv/IndirectGInflate32_HAVE_INT16_HAVE_INT64_vk.h"
+#include "shaders/spirv/IndirectGInflate64_HAVE_INT16_HAVE_INT64_vk.h"
 
 static const ByteCode kGInflateBytecode[] = {
     {(const uint8_t*)kGInflate8, sizeof(kGInflate8)},
@@ -128,8 +128,8 @@ static const char* const kEnvarForceEnable =
 #endif
 static const char* const kLayerSettingsForceEnable = "khronos_memory_decompression.force_enable";
 
-static vk_concurrent_unordered_map<uintptr_t, std::shared_ptr<InstanceData>> instance_data_map;
-static vk_concurrent_unordered_map<uintptr_t, std::shared_ptr<DeviceData>> device_data_map;
+static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<InstanceData>> instance_data_map;
+static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<DeviceData>> device_data_map;
 
 static void string_tolower(std::string& s) {
     for (auto& c : s) {
@@ -501,12 +501,12 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     }
     VkMemoryRequirements reqs;
     vtable.GetBufferMemoryRequirements(*pDevice, indirectDispatchBuffer, &reqs);
-    VkMemoryPropertyFlags property_flags =
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    VkMemoryPropertyFlags property_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
     uint32_t mem_type_index = 0;
     for (mem_type_index = 0; mem_type_index < pdd->memoryProperties.memoryTypeCount; ++mem_type_index) {
         if (property_flags == (property_flags & pdd->memoryProperties.memoryTypes[mem_type_index].propertyFlags)) break;
     }
+    indirectDispatchBufferMemory = 0;
     if (mem_type_index < pdd->memoryProperties.memoryTypeCount) {
         VkMemoryAllocateFlagsInfo memFlagsInfo = {VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO};
         memFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT;
@@ -532,7 +532,10 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
         *(dispatchData + 2) = 1;
         vtable.UnmapMemory(device, indirectDispatchBufferMemory);
     }
-
+    if (!indirectDispatchBufferMemory) {
+        // Could not find appropriate memory type
+        return VK_ERROR_OUT_OF_HOST_MEMORY;
+    }
     VkBufferDeviceAddressInfo buffer_info = {VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, NULL, indirectDispatchBuffer};
     indirectDispatchBufferAddress = vtable.GetBufferDeviceAddress(device, &buffer_info);
 
@@ -746,7 +749,9 @@ VKAPI_ATTR void VKAPI_CALL DestroyDevice(VkDevice device, const VkAllocationCall
 
         device_data->DestroyPipelineState();
         device_data->vtable.DestroyBuffer(device, device_data->indirectDispatchBuffer, pAllocator);
-        device_data->vtable.FreeMemory(device, device_data->indirectDispatchBufferMemory, pAllocator);
+        if (device_data->indirectDispatchBufferMemory) {
+            device_data->vtable.FreeMemory(device, device_data->indirectDispatchBufferMemory, pAllocator);
+        }
         device_data->vtable.DestroyDevice(device, pAllocator);
 
         device_data_map.erase(key);
