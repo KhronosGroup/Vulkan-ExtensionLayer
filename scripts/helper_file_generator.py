@@ -1183,7 +1183,7 @@ class HelperFileOutputGenerator(OutputGenerator):
         safe_struct_helper_source += '    uint32_t primitiveOffset;\n'
         safe_struct_helper_source += '    uint32_t primitiveCount;\n'
         safe_struct_helper_source += '};\n'
-        safe_struct_helper_source += 'vk_concurrent_unordered_map<const safe_VkAccelerationStructureGeometryKHR*, ASGeomKHRExtraData*, 4> as_geom_khr_host_alloc;\n'
+        safe_struct_helper_source += 'vl_concurrent_unordered_map<const safe_VkAccelerationStructureGeometryKHR*, ASGeomKHRExtraData*, 4> as_geom_khr_host_alloc;\n'
         safe_struct_helper_source += '\n'
         safe_struct_helper_source += self.GenerateSafeStructSource()
         safe_struct_helper_source += self.build_safe_struct_utility_funcs()

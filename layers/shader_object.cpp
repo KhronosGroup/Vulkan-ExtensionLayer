@@ -82,7 +82,7 @@ static const char* const kEnvarForceEnable =
 #else
     "VK_SHADER_OBJECT_FORCE_ENABLE";
 #endif
-static const char* const kLayerSettingsForceEnable = "khronos_synchronization2.force_enable";
+static const char* const kLayerSettingsForceEnable = "khronos_shader_object.force_enable";
 
 static void string_tolower(std::string &s) {
     for (auto& c: s) {

@@ -1,6 +1,7 @@
-/* Copyright (c) 2015-2017, 2019-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2017, 2019-2021 Valve Corporation
- * Copyright (c) 2015-2017, 2019-2021 LunarG, Inc.
+/* Copyright (c) 2015-2017, 2019-2023 The Khronos Group Inc.
+ * Copyright (c) 2015-2017, 2019-2023 Valve Corporation
+ * Copyright (c) 2015-2017, 2019-2023 LunarG, Inc.
+ * Modifications Copyright (C) 2022 RasterGrid Kft.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,60 +14,67 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Author: Mark Lobodzinski <mark@lunarg.com>
- * Author: Courtney Goeltzenleuchter <courtney@LunarG.com>
- * Author: Dave Houlton <daveh@lunarg.com>
  */
 
 #pragma once
-#include <vector>
+
+#include <cassert>
+#include <cstddef>
+#include <cstring>
 #include <functional>
 #include <unordered_map>
-
-// Minimum Visual Studio 2015 Update 2, or libc++ with C++17
-#if defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918 && NTDDI_VERSION > NTDDI_WIN10_RS2 && \
-    (!defined(_LIBCPP_VERSION) || __cplusplus >= 201703)
-#include <shared_mutex>
-#else
+#include <string>
+#include <vector>
+#include <bitset>
+#include <iomanip>
+#include <array>
 #include <mutex>
-#endif
+#include <memory>
 
-class ReadWriteLock {
-  private:
-#if defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918 && NTDDI_VERSION > NTDDI_WIN10_RS2 && \
-    (!defined(_LIBCPP_VERSION) || __cplusplus >= 201703)
-    typedef std::shared_mutex lock_t;
+#ifndef WIN32
+#include <strings.h>  // For ffs()
 #else
-    typedef std::mutex lock_t;
+#include <intrin.h>  // For __lzcnt()
 #endif
 
+#define STRINGIFY(s) STRINGIFY_HELPER(s)
+#define STRINGIFY_HELPER(s) #s
+
+#if defined __PRETTY_FUNCTION__
+#define VVL_PRETTY_FUNCTION __PRETTY_FUNCTION__
+#else
+// For MSVC
+#if defined(__FUNCSIG__)
+#define VVL_PRETTY_FUNCTION __FUNCSIG__
+#else
+#define VVL_PRETTY_FUNCTION __FILE__ ":" STRINGIFY(__LINE__)
+#endif
+#endif
+
+#ifdef __cplusplus
+#include <shared_mutex>
+
+// Aliases to avoid excessive typing. We can't easily auto these away because
+// there are virtual methods in ValidationObject which return lock guards
+// and those cannot use return type deduction.
+typedef std::shared_lock<std::shared_mutex> ReadLockGuard;
+typedef std::unique_lock<std::shared_mutex> WriteLockGuard;
+
+// helper class for the very common case of getting and then locking a command buffer (or other state object)
+template <typename T, typename Guard>
+class LockedSharedPtr : public std::shared_ptr<T> {
   public:
-    void lock() { m_lock.lock(); }
-    bool try_lock() { return m_lock.try_lock(); }
-    void unlock() { m_lock.unlock(); }
-#if defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918 && NTDDI_VERSION > NTDDI_WIN10_RS2 && \
-    (!defined(_LIBCPP_VERSION) || __cplusplus >= 201703)
-    void lock_shared() { m_lock.lock_shared(); }
-    bool try_lock_shared() { return m_lock.try_lock_shared(); }
-    void unlock_shared() { m_lock.unlock_shared(); }
-#else
-    void lock_shared() { lock(); }
-    bool try_lock_shared() { return try_lock(); }
-    void unlock_shared() { unlock(); }
-#endif
+    LockedSharedPtr(std::shared_ptr<T> &&ptr, Guard &&guard) : std::shared_ptr<T>(std::move(ptr)), guard_(std::move(guard)) {}
+    LockedSharedPtr() : std::shared_ptr<T>(), guard_() {}
+
   private:
-    lock_t m_lock;
+    Guard guard_;
 };
 
-#if defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918 && NTDDI_VERSION > NTDDI_WIN10_RS2 && \
-    (!defined(_LIBCPP_VERSION) || __cplusplus >= 201703)
-typedef std::shared_lock<ReadWriteLock> read_lock_guard_t;
-typedef std::unique_lock<ReadWriteLock> write_lock_guard_t;
-#else
-typedef std::unique_lock<ReadWriteLock> read_lock_guard_t;
-typedef std::unique_lock<ReadWriteLock> write_lock_guard_t;
-#endif
+// https://en.cppreference.com/w/cpp/thread/hardware_destructive_interference_size
+// https://en.wikipedia.org/wiki/False_sharing
+// TODO use C++20 to check for std::hardware_destructive_interference_size feature support.
+constexpr std::size_t get_hardware_destructive_interference_size() { return 64; }
 
 // Limited concurrent_unordered_map that supports internally-synchronized
 // insert/erase/access. Splits locking across N buckets and uses shared_mutex
@@ -93,31 +101,33 @@ typedef std::unique_lock<ReadWriteLock> write_lock_guard_t;
 // snapshot: Return an array of elements (key, value pairs) that satisfy an optional
 // predicate. This can be used as a substitute for iterators in exceptional cases.
 template <typename Key, typename T, int BUCKETSLOG2 = 2, typename Hash = std::hash<Key>>
-class vk_concurrent_unordered_map {
+class vl_concurrent_unordered_map {
   public:
-    void insert_or_assign(const Key &key, const T &value) {
+    template <typename... Args>
+    void insert_or_assign(const Key &key, Args &&...args) {
         uint32_t h = ConcurrentMapHashObject(key);
-        write_lock_guard_t lock(locks[h].lock);
-        maps[h][key] = value;
+        WriteLockGuard lock(locks[h].lock);
+        maps[h][key] = {std::forward<Args>(args)...};
     }
 
-    bool insert(const Key &key, const T &value) {
+    template <typename... Args>
+    bool insert(const Key &key, Args &&...args) {
         uint32_t h = ConcurrentMapHashObject(key);
-        write_lock_guard_t lock(locks[h].lock);
-        auto ret = maps[h].insert(typename std::unordered_map<Key, T>::value_type(key, value));
+        WriteLockGuard lock(locks[h].lock);
+        auto ret = maps[h].emplace(key, std::forward<Args>(args)...);
         return ret.second;
     }
 
     // returns size_type
     size_t erase(const Key &key) {
         uint32_t h = ConcurrentMapHashObject(key);
-        write_lock_guard_t lock(locks[h].lock);
+        WriteLockGuard lock(locks[h].lock);
         return maps[h].erase(key);
     }
 
     bool contains(const Key &key) const {
         uint32_t h = ConcurrentMapHashObject(key);
-        read_lock_guard_t lock(locks[h].lock);
+        ReadLockGuard lock(locks[h].lock);
         return maps[h].count(key) != 0;
     }
 
@@ -147,13 +157,14 @@ class vk_concurrent_unordered_map {
     // find()/end() return a FindResult containing a copy of the value. For end(),
     // return a default value.
     FindResult end() const { return FindResult(false, T()); }
+    FindResult cend() const { return end(); }
 
     FindResult find(const Key &key) const {
         uint32_t h = ConcurrentMapHashObject(key);
-        read_lock_guard_t lock(locks[h].lock);
+        ReadLockGuard lock(locks[h].lock);
 
         auto itr = maps[h].find(key);
-        bool found = itr != maps[h].end();
+        const bool found = itr != maps[h].end();
 
         if (found) {
             return FindResult(true, itr->second);
@@ -164,13 +175,13 @@ class vk_concurrent_unordered_map {
 
     FindResult pop(const Key &key) {
         uint32_t h = ConcurrentMapHashObject(key);
-        write_lock_guard_t lock(locks[h].lock);
+        WriteLockGuard lock(locks[h].lock);
 
         auto itr = maps[h].find(key);
-        bool found = itr != maps[h].end();
+        const bool found = itr != maps[h].end();
 
         if (found) {
-            auto ret = std::move(FindResult(true, itr->second));
+            auto ret = FindResult(true, itr->second);
             maps[h].erase(itr);
             return ret;
         } else {
@@ -181,25 +192,49 @@ class vk_concurrent_unordered_map {
     std::vector<std::pair<const Key, T>> snapshot(std::function<bool(T)> f = nullptr) const {
         std::vector<std::pair<const Key, T>> ret;
         for (int h = 0; h < BUCKETS; ++h) {
-            read_lock_guard_t lock(locks[h].lock);
-            for (auto j : maps[h]) {
+            ReadLockGuard lock(locks[h].lock);
+            for (const auto &j : maps[h]) {
                 if (!f || f(j.second)) {
-                    ret.push_back(j);
+                    ret.emplace_back(j.first, j.second);
                 }
             }
         }
         return ret;
     }
 
+    void clear() {
+        for (int h = 0; h < BUCKETS; ++h) {
+            WriteLockGuard lock(locks[h].lock);
+            maps[h].clear();
+        }
+    }
+
+    size_t size() const {
+        size_t result = 0;
+        for (int h = 0; h < BUCKETS; ++h) {
+            ReadLockGuard lock(locks[h].lock);
+            result += maps[h].size();
+        }
+        return result;
+    }
+
+    bool empty() const {
+        bool result = 0;
+        for (int h = 0; h < BUCKETS; ++h) {
+            ReadLockGuard lock(locks[h].lock);
+            result |= maps[h].empty();
+        }
+        return result;
+    }
+
   private:
     static const int BUCKETS = (1 << BUCKETSLOG2);
 
     std::unordered_map<Key, T, Hash> maps[BUCKETS];
-    struct {
-        mutable ReadWriteLock lock;
-        // Put each lock on its own cache line to avoid false cache line sharing.
-        char padding[(-int(sizeof(ReadWriteLock))) & 63];
-    } locks[BUCKETS];
+    struct alignas(get_hardware_destructive_interference_size()) AlignedSharedMutex {
+        std::shared_mutex lock;
+    };
+    mutable std::array<AlignedSharedMutex, BUCKETS> locks;
 
     uint32_t ConcurrentMapHashObject(const Key &object) const {
         uint64_t u64 = (uint64_t)(uintptr_t)object;
@@ -209,3 +244,4 @@ class vk_concurrent_unordered_map {
         return hash;
     }
 };
+#endif
