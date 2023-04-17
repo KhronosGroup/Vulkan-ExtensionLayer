@@ -170,7 +170,7 @@ struct InstanceData {
         DECLARE_HOOK(GetPhysicalDeviceProperties);
     } vtable;
 
-    vk_concurrent_unordered_map<VkPhysicalDevice, std::shared_ptr<PhysicalDeviceData>> physical_device_map;
+    vl_concurrent_unordered_map<VkPhysicalDevice, std::shared_ptr<PhysicalDeviceData>> physical_device_map;
 };
 
 // data stored per VkImage for ImageBarrier conversion
@@ -219,8 +219,8 @@ struct DeviceData {
     DeviceFeatures features;
     bool enable_layer;
     uint32_t api_version;
-    vk_concurrent_unordered_map<VkImage, ImageData> image_map;
-    vk_concurrent_unordered_map<VkSwapchainKHR, SwapchainData> swapchain_map;
+    vl_concurrent_unordered_map<VkImage, ImageData> image_map;
+    vl_concurrent_unordered_map<VkSwapchainKHR, SwapchainData> swapchain_map;
     struct DeviceDispatchTable {
         DECLARE_HOOK(GetDeviceProcAddr);
         DECLARE_HOOK(DestroyDevice);

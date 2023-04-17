@@ -66,8 +66,8 @@ static const char* const kEnvarCustomStypeList =
 #endif
 static const char* const kLayerSettingsCustomStypeList = "khronos_synchronization2.custom_stype_list";
 
-static vk_concurrent_unordered_map<uintptr_t, std::shared_ptr<InstanceData>> instance_data_map;
-static vk_concurrent_unordered_map<uintptr_t, std::shared_ptr<DeviceData>> device_data_map;
+static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<InstanceData>> instance_data_map;
+static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<DeviceData>> device_data_map;
 
 static void string_tolower(std::string &s) {
     for (auto& c: s) {

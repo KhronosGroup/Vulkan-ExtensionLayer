@@ -41,7 +41,7 @@ jobs:
         env:
           # Specify the minimum version of macOS on which the target binaries are to be deployed.
           # https://cmake.org/cmake/help/latest/envvar/MACOSX_DEPLOYMENT_TARGET.html
-          MACOSX_DEPLOYMENT_TARGET: 10.12
+          MACOSX_DEPLOYMENT_TARGET: 10.15
       - name: Build
         run: cmake --build build --parallel $(sysctl -n hw.logicalcpu) --config ${{matrix.config}}
       - name: Install
