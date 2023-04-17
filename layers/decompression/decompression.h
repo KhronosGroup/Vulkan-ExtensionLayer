@@ -89,7 +89,7 @@ struct InstanceData {
         DECLARE_HOOK(GetPhysicalDeviceMemoryProperties);
     } vtable;
 
-    vk_concurrent_unordered_map<VkPhysicalDevice, std::shared_ptr<PhysicalDeviceData>> physical_device_map;
+    vl_concurrent_unordered_map<VkPhysicalDevice, std::shared_ptr<PhysicalDeviceData>> physical_device_map;
 };
 
 struct DeviceFeatures {

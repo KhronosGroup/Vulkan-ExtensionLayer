@@ -345,12 +345,12 @@ PFN_vkCmdPipelineBarrier2KHR CmdPipelineBarrier2KHR;
 PFN_vkCmdWriteTimestamp2KHR CmdWriteTimestamp2KHR;
 PFN_vkQueueSubmit2KHR QueueSubmit2KHR;
 PFN_vkCmdWriteBufferMarker2AMD CmdWriteBufferMarker2AMD;
-PFN_vkCmdDecompressMemoryNV CmdDecompressMemoryNV;
-PFN_vkCmdDecompressMemoryIndirectCountNV CmdDecompressMemoryIndirectCountNV;
 PFN_vkGetQueueCheckpointData2NV GetQueueCheckpointData2NV;
 #ifdef VK_USE_PLATFORM_MACOS_MVK
 PFN_vkCreateMacOSSurfaceMVK CreateMacOSSurfaceMVK;
 #endif // VK_USE_PLATFORM_MACOS_MVK
+PFN_vkCmdDecompressMemoryNV CmdDecompressMemoryNV;
+PFN_vkCmdDecompressMemoryIndirectCountNV CmdDecompressMemoryIndirectCountNV;
 PFN_vkCreateShadersEXT CreateShadersEXT;
 PFN_vkDestroyShaderEXT DestroyShaderEXT;
 PFN_vkGetShaderBinaryDataEXT GetShaderBinaryDataEXT;
@@ -652,13 +652,12 @@ void InitDispatchTable() {
     CmdWriteTimestamp2KHR = reinterpret_cast<PFN_vkCmdWriteTimestamp2KHR>(get_proc_address(lib_handle, "vkCmdWriteTimestamp2KHR"));
     QueueSubmit2KHR = reinterpret_cast<PFN_vkQueueSubmit2KHR>(get_proc_address(lib_handle, "vkQueueSubmit2KHR"));
     CmdWriteBufferMarker2AMD = reinterpret_cast<PFN_vkCmdWriteBufferMarker2AMD>(get_proc_address(lib_handle, "vkCmdWriteBufferMarker2AMD"));
-    CmdDecompressMemoryNV = reinterpret_cast<PFN_vkCmdDecompressMemoryNV>(get_proc_address(lib_handle, "vkCmdDecompressMemoryNV"));
-    CmdDecompressMemoryIndirectCountNV = reinterpret_cast<PFN_vkCmdDecompressMemoryIndirectCountNV>(
-        get_proc_address(lib_handle, "vkCmdDecompressMemoryIndirectCountNV"));
     GetQueueCheckpointData2NV = reinterpret_cast<PFN_vkGetQueueCheckpointData2NV>(get_proc_address(lib_handle, "vkGetQueueCheckpointData2NV"));
 #ifdef VK_USE_PLATFORM_MACOS_MVK
     CreateMacOSSurfaceMVK = reinterpret_cast<PFN_vkCreateMacOSSurfaceMVK>(get_proc_address(lib_handle, "vkCreateMacOSSurfaceMVK"));
 #endif // VK_USE_PLATFORM_MACOS_MVK
+    CmdDecompressMemoryNV = reinterpret_cast<PFN_vkCmdDecompressMemoryNV>(get_proc_address(lib_handle, "vkCmdDecompressMemoryNV"));
+    CmdDecompressMemoryIndirectCountNV = reinterpret_cast<PFN_vkCmdDecompressMemoryIndirectCountNV>(get_proc_address(lib_handle, "vkCmdDecompressMemoryIndirectCountNV"));
     CreateShadersEXT = reinterpret_cast<PFN_vkCreateShadersEXT>(get_proc_address(lib_handle, "vkCreateShadersEXT"));
     DestroyShaderEXT = reinterpret_cast<PFN_vkDestroyShaderEXT>(get_proc_address(lib_handle, "vkDestroyShaderEXT"));
     GetShaderBinaryDataEXT = reinterpret_cast<PFN_vkGetShaderBinaryDataEXT>(get_proc_address(lib_handle, "vkGetShaderBinaryDataEXT"));
