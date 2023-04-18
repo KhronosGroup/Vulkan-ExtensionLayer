@@ -42,3 +42,15 @@ any new files need to have the Khronos license (Apache 2.0 style) and copyright 
 Please see an existing file in this repository for an example.
 
 You can include your individual copyright after any existing copyrights.
+
+### **Point of Contact **
+
+If you are adding a new layer, you must provide a point of contact and list them in the README.md.
+The Point of Contact handles Issues reported against the layer, as the repository maintainers most
+likely will not know the technical details of the extension(s) being emulated.
+
+### **Unit Tests**
+
+New layers must be accompanied by unit tests that demonstrate that basic functionality is working.
+At a minimum all API entry points defined in the extension must be called by at least 1 test case.
+But more thorough coverage would be appreciated.
