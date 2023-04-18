@@ -3085,9 +3085,11 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateShadersEXT(VkDevice device, uint32_t
 
     // First, create individual shaders
     bool are_graphics_shaders_linked = false;
+    uint32_t successfulCreateCount = createInfoCount;
     for (uint32_t i = 0; i < createInfoCount; ++i) {
         result = Shader::Create(device_data, pCreateInfos[i], allocator, &shaders[i]);
         if (result != VK_SUCCESS) {
+            successfulCreateCount = i;
             break;
         }
         if ((pCreateInfos[i].stage & VK_SHADER_STAGE_ALL_GRAPHICS) != 0 && (pCreateInfos[i].flags & VK_SHADER_CREATE_LINK_STAGE_BIT_EXT) != 0) {
@@ -3104,8 +3106,8 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateShadersEXT(VkDevice device, uint32_t
     // Create pipeline layout for pipeline creation
     Shader* vertex_or_mesh_shader = nullptr;
     Shader* fragment_shader = nullptr;
-    if (result == VK_SUCCESS) {
-        for (uint32_t i = 0; i < createInfoCount; ++i) {
+    if (result == VK_SUCCESS || result == VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT) {
+        for (uint32_t i = 0; i < successfulCreateCount; ++i) {
             switch (shaders[i]->stage) {
                 case VK_SHADER_STAGE_VERTEX_BIT:
                 case VK_SHADER_STAGE_MESH_BIT_EXT:
@@ -3119,13 +3121,13 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateShadersEXT(VkDevice device, uint32_t
             }
         }
     }
-    if (result == VK_SUCCESS && are_graphics_shaders_linked && (vertex_or_mesh_shader || fragment_shader)) {
+    if ((result == VK_SUCCESS || result == VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT) && are_graphics_shaders_linked && (vertex_or_mesh_shader || fragment_shader)) {
         Shader* shader_to_read_layout_from = vertex_or_mesh_shader ? vertex_or_mesh_shader : fragment_shader;
         result = CreatePipelineLayoutForShader(device_data, allocator, shader_to_read_layout_from);
     }
-    if (result == VK_SUCCESS && !are_graphics_shaders_linked && device_data.graphics_pipeline_library.graphicsPipelineLibrary == VK_TRUE) {
+    if ((result == VK_SUCCESS || result == VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT) && !are_graphics_shaders_linked && device_data.graphics_pipeline_library.graphicsPipelineLibrary == VK_TRUE) {
         // Create layout for unlinked shaders that can have partial pipelines created
-        for (uint32_t i = 0; i < createInfoCount; ++i) {
+        for (uint32_t i = 0; i < successfulCreateCount; ++i) {
             switch (shaders[i]->stage) {
                 case VK_SHADER_STAGE_VERTEX_BIT:
                 case VK_SHADER_STAGE_MESH_BIT_EXT:
@@ -3144,10 +3146,10 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateShadersEXT(VkDevice device, uint32_t
 
     // Generating pipelines to fill the cache is only relevant if codeType is not binary (i.e. SPIR-V) since the caches are
     // serialized in the shader binary
-    if (result == VK_SUCCESS && pCreateInfos[0].codeType != VK_SHADER_CODE_TYPE_BINARY_EXT) {
-        result = PopulateCachesForShaders(device_data, allocator, are_graphics_shaders_linked, createInfoCount, shaders);
+    if ((result == VK_SUCCESS || result == VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT) && pCreateInfos[0].codeType != VK_SHADER_CODE_TYPE_BINARY_EXT) {
+        result = PopulateCachesForShaders(device_data, allocator, are_graphics_shaders_linked, successfulCreateCount, shaders);
 
-        for (uint32_t i = 0; i < createInfoCount; ++i) {
+        for (uint32_t i = 0; i < successfulCreateCount; ++i) {
             Shader* shader = shaders[i];
             if (shader->cache == VK_NULL_HANDLE) {
                 continue;
@@ -3162,11 +3164,13 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateShadersEXT(VkDevice device, uint32_t
         }
     }
 
-    if (result != VK_SUCCESS) {
-        for (uint32_t i = 0; i < createInfoCount; ++i) {
+    if ((result != VK_SUCCESS && result != VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT)) {
+        for (uint32_t i = 0; i < successfulCreateCount; ++i) {
             Shader::Destroy(device_data, shaders[i], allocator);
         }
     }
+
+
     return result;
 }
 
