@@ -209,3 +209,12 @@ if (vertex_input_dynamic.vertexInputDynamicState == VK_TRUE && (strcmp("vkCmdSet
     DEBUG_LOG("not intercepting %s because real dynamic state exists (vertex_input_dynamic.vertexInputDynamicState == VK_TRUE)\n", pName);
     return nullptr;
 }
+if ((strcmp("vkCmdSetDiscardRectangleEnableEXT", pName) == 0)) {
+    return nullptr;
+}
+if ((strcmp("vkCmdSetDiscardRectangleModeEXT", pName) == 0)) {
+    return nullptr;
+}
+if ((strcmp("vkCmdSetDiscardRectangleEXT", pName) == 0)) {
+    return nullptr;
+}

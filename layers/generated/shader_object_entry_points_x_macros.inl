@@ -99,6 +99,9 @@
     ENTRY_POINT(CmdSetAlphaToCoverageEnableEXT)\
     ENTRY_POINT(CmdSetSampleMaskEXT)\
     ENTRY_POINT(CmdSetRasterizationStreamEXT)\
+    ENTRY_POINT(CmdSetDiscardRectangleEnableEXT)\
+    ENTRY_POINT(CmdSetDiscardRectangleModeEXT)\
+    ENTRY_POINT(CmdSetDiscardRectangleEXT)\
     ENTRY_POINT(CmdSetConservativeRasterizationModeEXT)\
     ENTRY_POINT(CmdSetExtraPrimitiveOverestimationSizeEXT)\
     ENTRY_POINT(CmdSetDepthClipEnableEXT)\

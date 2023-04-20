@@ -24,6 +24,7 @@
             sizeof(VkViewportSwizzleNV) * limits.max_viewports +
             sizeof(VkVertexInputAttributeDescription) * limits.max_vertex_input_attributes +
             sizeof(VkVertexInputBindingDescription) * limits.max_vertex_input_bindings +
+            sizeof(VkRect2D) * limits.max_discard_rectangles +
             sizeof(FullDrawStateData);
     }
 
@@ -45,4 +46,7 @@
 
         state->vertex_input_binding_descriptions_ = (VkVertexInputBindingDescription*)offset_ptr;
         offset_ptr += sizeof(VkVertexInputBindingDescription) * limits.max_vertex_input_bindings;
+
+        state->discard_rectangles_ = (VkRect2D*)offset_ptr;
+        offset_ptr += sizeof(VkRect2D) * limits.max_discard_rectangles;
     }
