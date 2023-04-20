@@ -799,6 +799,72 @@
             "feature_struct": "VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT",
             "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT",
             "dynamic_states": []
+        },
+        {
+            "name": "DISCARD_RECTANGLES",
+            "extension_name_macro": "VK_EXT_DISCARD_RECTANGLES_EXTENSION_NAME",
+            "dynamic_states": [
+                {
+                    "function_names": [
+                        "CmdSetDiscardRectangleEnableEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_DISCARD_RECTANGLE_ENABLE_EXT",
+                    "variables": [
+                        {
+                            "type": "VkBool32",
+                            "name": "discard_rectangle_enable"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "EXT_DISCARD_RECTANGLES"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetDiscardRectangleModeEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_DISCARD_RECTANGLE_MODE_EXT",
+                    "variables": [
+                        {
+                            "type": "VkDiscardRectangleModeEXT",
+                            "name": "discard_rectangle_mode"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "EXT_DISCARD_RECTANGLES"
+                        }
+                    ]
+                },
+                {
+                    "function_names": [
+                        "CmdSetDiscardRectangleEXT"
+                    ],
+                    "dynamic_state_enum": "VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT",
+                    "variables": [
+                        {
+                            "type": "uint32_t",
+                            "name": "first_discard_rectangle"
+                        },
+                        {
+                            "type": "uint32_t",
+                            "name": "discard_rectangle_count"
+                        },
+                        {
+                            "type": "VkRect2D",
+                            "name": "discard_rectangle",
+							"init_time_array_length": "max_discard_rectangles"
+                        }
+                    ],
+                    "required_additional_extensions": [
+                        {
+                            "name": "EXT_DISCARD_RECTANGLES"
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "optional_extensions": [
@@ -873,6 +939,10 @@
             "extension_name_macro": "VK_NV_REPRESENTATIVE_FRAGMENT_TEST_EXTENSION_NAME",
             "feature_struct": "VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV",
             "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV"
+        },
+        {
+            "name": "EXT_DISCARD_RECTANGLES",
+            "extension_name_macro": "VK_EXT_DISCARD_RECTANGLES_EXTENSION_NAME"
         }
     ],
     "static_draw_states": [
@@ -1111,6 +1181,15 @@
                 ],
                 [
                     "CmdSetRasterizationStreamEXT"
+                ],
+                [
+                    "CmdSetDiscardRectangleEnableEXT"
+                ],
+                [
+                    "CmdSetDiscardRectangleModeEXT"
+                ],
+                [
+                    "CmdSetDiscardRectangleEXT"
                 ],
                 [
                     "CmdSetConservativeRasterizationModeEXT"

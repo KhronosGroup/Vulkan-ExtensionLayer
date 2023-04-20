@@ -697,6 +697,10 @@ inline bool operator==(VkViewportSwizzleNV const& a, VkViewportSwizzleNV const& 
     return memcmp(&a, &b, sizeof(a)) == 0;
 }
 
+inline bool operator==(VkRect2D const& a, VkRect2D const& b) {
+    return memcmp(&a, &b, sizeof(a)) == 0;
+}
+
 class CommandBufferData;
 static void UpdateDrawState(CommandBufferData& data, VkCommandBuffer commandBuffer);
 
@@ -706,16 +710,18 @@ struct FullDrawStateData {
     struct Limits {
         Limits() {}
 
-        Limits(VkPhysicalDeviceProperties const& properties)
+        Limits(VkPhysicalDeviceProperties const& properties, VkPhysicalDeviceDiscardRectanglePropertiesEXT const& discardRectangleProperties)
             : max_color_attachments(properties.limits.maxColorAttachments),
               max_vertex_input_attributes(properties.limits.maxVertexInputAttributes),
               max_vertex_input_bindings(properties.limits.maxVertexInputBindings),
-              max_viewports(properties.limits.maxViewports) {}
+              max_viewports(properties.limits.maxViewports),
+              max_discard_rectangles(discardRectangleProperties.maxDiscardRectangles){}
 
         uint32_t max_color_attachments{};
         uint32_t max_vertex_input_attributes{};
         uint32_t max_vertex_input_bindings{};
         uint32_t max_viewports{};
+        uint32_t max_discard_rectangles{};
     };
 
     // Key wraps a FullDrawStateData pointer so that it may be used as a key in a HashMap
@@ -796,9 +802,9 @@ struct FullDrawStateData {
 #include "generated/shader_object_full_draw_state_utility_functions.inl"
 
     // memory must be at least GetSizeInBytes bytes
-    static void InitializeMemory(void* memory, VkPhysicalDeviceProperties const& properties) {
+    static void InitializeMemory(void* memory, VkPhysicalDeviceProperties const& properties, VkPhysicalDeviceDiscardRectanglePropertiesEXT const& discardRectangleProperties) {
         FullDrawStateData* state = new (memory) FullDrawStateData{};
-        Limits limits(properties);
+        Limits limits(properties, discardRectangleProperties);
         SetInternalArrayPointers(state, limits);
         state->limits_ = limits;
 
@@ -826,13 +832,13 @@ struct FullDrawStateData {
         state->SetStencilTestEnable(VK_TRUE);
     }
 
-    static FullDrawStateData* Create(VkPhysicalDeviceProperties const& properties, VkAllocationCallbacks const& allocator) {
-        size_t bytes_to_allocate = GetSizeInBytes(properties);
+    static FullDrawStateData* Create(VkPhysicalDeviceProperties const& properties, VkPhysicalDeviceDiscardRectanglePropertiesEXT const& discardRectangleProperties, VkAllocationCallbacks const& allocator) {
+        size_t bytes_to_allocate = GetSizeInBytes(Limits(properties, discardRectangleProperties));
         auto state = static_cast<FullDrawStateData*>(allocator.pfnAllocation(allocator.pUserData, bytes_to_allocate, 0, VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_DEVICE));
         if (!state) {
             return nullptr;
         }
-        InitializeMemory(state, properties);
+        InitializeMemory(state, properties, discardRectangleProperties);
         state->allocator_ = allocator;
         return state;
     }
@@ -1030,17 +1036,18 @@ struct DeviceData {
     void  AddDynamicState(VkDynamicState state);
     bool  HasDynamicState(VkDynamicState state) const;
 
-    VkDevice                   device;
-    Flags                      flags;
-    AdditionalExtensionFlags   enabled_extensions;
-    VkPhysicalDeviceProperties properties;
-    LayerDispatchDevice        vtable;
-    VkPrivateDataSlot          private_data_slot;
-    VkFormat                   supported_depth_stencil_format;
-    VkPipelineLayout           dummy_pipeline_layout;
-    VkDynamicState             dynamic_states[kMaxDynamicStates];
-    uint32_t                   dynamic_state_count;
-    uint32_t                   reserved_private_data_slot_count;
+    VkDevice                                        device;
+    Flags                                           flags;
+    AdditionalExtensionFlags                        enabled_extensions;
+    VkPhysicalDeviceProperties                      properties;
+    VkPhysicalDeviceDiscardRectanglePropertiesEXT   discardRectangleProperties;
+    LayerDispatchDevice                             vtable;
+    VkPrivateDataSlot                               private_data_slot;
+    VkFormat                                        supported_depth_stencil_format;
+    VkPipelineLayout                                dummy_pipeline_layout;
+    VkDynamicState                                  dynamic_states[kMaxDynamicStates];
+    uint32_t                                        dynamic_state_count;
+    uint32_t                                        reserved_private_data_slot_count;
 
     // In the future, this could be improved by utilizing private data if it's available on the device
     HashMap<VkImageView, VkFormat> image_view_format_map;
@@ -1050,7 +1057,7 @@ struct DeviceData {
 
 class CommandBufferData {
   public:
-    static size_t             GetSizeInBytes(VkPhysicalDeviceProperties const& properties);
+    static size_t             GetSizeInBytes(VkPhysicalDeviceProperties const& properties, VkPhysicalDeviceDiscardRectanglePropertiesEXT const& discardRectangleProperties);
     static CommandBufferData* Create(DeviceData* data, VkAllocationCallbacks allocator);
     static void               Destroy(CommandBufferData** data);
 
@@ -1126,12 +1133,12 @@ bool DeviceData::HasDynamicState(VkDynamicState state) const {
     return false;
 }
 
-size_t CommandBufferData::GetSizeInBytes(VkPhysicalDeviceProperties const& properties) {
-    return sizeof(CommandBufferData) + FullDrawStateData::GetSizeInBytes(properties);
+size_t CommandBufferData::GetSizeInBytes(VkPhysicalDeviceProperties const& properties, VkPhysicalDeviceDiscardRectanglePropertiesEXT const& discardRectangleProperties) {
+    return sizeof(CommandBufferData) + FullDrawStateData::GetSizeInBytes(FullDrawStateData::Limits(properties, discardRectangleProperties));
 }
 
 CommandBufferData* CommandBufferData::Create(DeviceData* data, VkAllocationCallbacks allocator) {
-    size_t bytes_to_allocate = GetSizeInBytes(data->properties);
+    size_t bytes_to_allocate = GetSizeInBytes(data->properties, data->discardRectangleProperties);
 
     auto cmd_data = static_cast<CommandBufferData*>(allocator.pfnAllocation(
         allocator.pUserData, bytes_to_allocate, 0, VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_OBJECT));
@@ -1143,7 +1150,7 @@ CommandBufferData* CommandBufferData::Create(DeviceData* data, VkAllocationCallb
     cmd_data->device_data      = data;
     cmd_data->allocator        = allocator;
     cmd_data->draw_state_data_ = reinterpret_cast<FullDrawStateData*>(cmd_data + 1);
-    FullDrawStateData::InitializeMemory(cmd_data->draw_state_data_, data->properties);
+    FullDrawStateData::InitializeMemory(cmd_data->draw_state_data_, data->properties, data->discardRectangleProperties);
     return cmd_data;
 }
 
@@ -2113,7 +2120,7 @@ PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, Vk
     }
     PartialPipeline partial_pipeline{
         VK_NULL_HANDLE,
-        FullDrawStateData::Create(deviceData.properties, allocator),
+        FullDrawStateData::Create(deviceData.properties, deviceData.discardRectangleProperties, allocator),
         pipelineLibraryFlags,
         shader_stage_flags
     };
@@ -2954,9 +2961,15 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
         // Get properties for this device so we can allocate according to device limits
         instance_vtable.GetPhysicalDeviceProperties(physicalDevice, &device_data->properties);
         if (device_data->properties.apiVersion >= VK_API_VERSION_1_1) {
+            VkPhysicalDeviceDiscardRectanglePropertiesEXT dr_properties{
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT
+            };
             VkPhysicalDeviceExtendedDynamicState3PropertiesEXT eds3_properties{
                 VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_PROPERTIES_EXT
             };
+            if (enabled_additional_extensions & EXT_DISCARD_RECTANGLES) {
+                eds3_properties.pNext = &dr_properties;
+            }
             VkPhysicalDeviceProperties2 properties2{
                 VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
                 &eds3_properties
@@ -3884,6 +3897,26 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetRepresentativeFragmentTestEnableNV(VkCom
     auto cmd_data = GetCommandBufferData(commandBuffer);
     ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3RepresentativeFragmentTestEnable);
     cmd_data->GetDrawStateData()->SetRepresentativeFragmentTestEnable(representativeFragmentTestEnable);
+}
+
+static VKAPI_ATTR void VKAPI_CALL CmdSetDiscardRectangleEnableEXT(VkCommandBuffer commandBuffer, VkBool32 discardRectangleEnable) {
+    auto cmd_data = GetCommandBufferData(commandBuffer);
+    cmd_data->GetDrawStateData()->SetDiscardRectangleEnable(discardRectangleEnable);
+}
+
+static VKAPI_ATTR void VKAPI_CALL CmdSetDiscardRectangleModeEXT(VkCommandBuffer commandBuffer, VkDiscardRectangleModeEXT discardRectangleMode) {
+    auto cmd_data = GetCommandBufferData(commandBuffer);
+    cmd_data->GetDrawStateData()->SetDiscardRectangleMode(discardRectangleMode);
+}
+
+static VKAPI_ATTR void VKAPI_CALL CmdSetDiscardRectangleEXT(VkCommandBuffer commandBuffer, uint32_t firstDiscardRectangle, uint32_t discardRectangleCount, const VkRect2D* pDiscardRectangles) {
+    auto cmd_data = GetCommandBufferData(commandBuffer);
+    auto draw_state          = cmd_data->GetDrawStateData();
+    cmd_data->GetDrawStateData()->SetFirstDiscardRectangle(firstDiscardRectangle);
+    cmd_data->GetDrawStateData()->SetDiscardRectangleCount(discardRectangleCount);
+    for (uint32_t i = 0; i < discardRectangleCount; ++i) {
+        draw_state->SetDiscardRectangle(firstDiscardRectangle + i, pDiscardRectangles[i]);
+    }
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdBindDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint,

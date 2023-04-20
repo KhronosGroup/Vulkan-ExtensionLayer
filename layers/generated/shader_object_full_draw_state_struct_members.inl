@@ -18,7 +18,7 @@
  */
 
 public:
-    enum StateGroup { MISC, EXTENDED_DYNAMIC_STATE_1, EXTENDED_DYNAMIC_STATE_2, EXTENDED_DYNAMIC_STATE_3, VERTEX_INPUT_DYNAMIC, NUM_STATE_GROUPS };
+    enum StateGroup { MISC, EXTENDED_DYNAMIC_STATE_1, EXTENDED_DYNAMIC_STATE_2, EXTENDED_DYNAMIC_STATE_3, VERTEX_INPUT_DYNAMIC, DISCARD_RECTANGLES, NUM_STATE_GROUPS };
 
     void SetDepthAttachmentFormat(VkFormat const& element) {
         if (element == depth_attachment_format_) {
@@ -716,6 +716,69 @@ public:
         return num_vertex_input_binding_descriptions_;
     }
     
+    void SetDiscardRectangleEnable(VkBool32 const& element) {
+        if (element == discard_rectangle_enable_) {
+            return;
+        }
+        dirty_hash_bits_.set(DISCARD_RECTANGLES);
+        MarkDirty();
+        discard_rectangle_enable_ = element;
+    }
+    VkBool32 const& GetDiscardRectangleEnable() const {
+        return discard_rectangle_enable_;
+    }
+    
+    void SetDiscardRectangleMode(VkDiscardRectangleModeEXT const& element) {
+        if (element == discard_rectangle_mode_) {
+            return;
+        }
+        dirty_hash_bits_.set(DISCARD_RECTANGLES);
+        MarkDirty();
+        discard_rectangle_mode_ = element;
+    }
+    VkDiscardRectangleModeEXT const& GetDiscardRectangleMode() const {
+        return discard_rectangle_mode_;
+    }
+    
+    void SetFirstDiscardRectangle(uint32_t const& element) {
+        if (element == first_discard_rectangle_) {
+            return;
+        }
+        dirty_hash_bits_.set(DISCARD_RECTANGLES);
+        MarkDirty();
+        first_discard_rectangle_ = element;
+    }
+    uint32_t const& GetFirstDiscardRectangle() const {
+        return first_discard_rectangle_;
+    }
+    
+    void SetDiscardRectangleCount(uint32_t const& element) {
+        if (element == discard_rectangle_count_) {
+            return;
+        }
+        dirty_hash_bits_.set(DISCARD_RECTANGLES);
+        MarkDirty();
+        discard_rectangle_count_ = element;
+    }
+    uint32_t const& GetDiscardRectangleCount() const {
+        return discard_rectangle_count_;
+    }
+    
+    void SetDiscardRectangle(uint32_t index, VkRect2D const& element) {
+        if (element == discard_rectangles_[index]) {
+            return;
+        }
+        dirty_hash_bits_.set(DISCARD_RECTANGLES);
+        MarkDirty();
+        discard_rectangles_[index] = element;
+    }
+    VkRect2D const& GetDiscardRectangle(uint32_t index) const {
+        return discard_rectangles_[index];
+    }
+    VkRect2D const* GetDiscardRectanglePtr() const {
+        return discard_rectangles_;
+    }
+    
     bool operator==(FullDrawStateData const& o) const {
         if (!(o.depth_attachment_format_ == depth_attachment_format_)) {
             return false;
@@ -972,6 +1035,31 @@ public:
             return false;
         }
 
+        if (!(o.discard_rectangle_enable_ == discard_rectangle_enable_)) {
+            return false;
+        }
+
+        if (!(o.discard_rectangle_mode_ == discard_rectangle_mode_)) {
+            return false;
+        }
+
+        if (!(o.first_discard_rectangle_ == first_discard_rectangle_)) {
+            return false;
+        }
+
+        if (!(o.discard_rectangle_count_ == discard_rectangle_count_)) {
+            return false;
+        }
+
+        if (o.limits_.max_discard_rectangles != limits_.max_discard_rectangles) {
+            return false;
+        }
+        for (uint32_t i = 0; i < limits_.max_discard_rectangles; ++i) {
+            if (!(o.discard_rectangles_[i] == discard_rectangles_[i])) {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -1152,6 +1240,16 @@ private:
                 res = res * 31 + std::hash<uint32_t>()(num_vertex_input_binding_descriptions_);
                 return res;
             }
+            case DISCARD_RECTANGLES:
+            {
+                size_t res = 17;
+                res = res * 31 + std::hash<VkBool32>()(discard_rectangle_enable_);
+                res = res * 31 + std::hash<VkDiscardRectangleModeEXT>()(discard_rectangle_mode_);
+                res = res * 31 + std::hash<uint32_t>()(first_discard_rectangle_);
+                res = res * 31 + std::hash<uint32_t>()(discard_rectangle_count_);
+                // TODO: array comparison
+                return res;
+            }
             case MISC:
             {
                 size_t res = 17;
@@ -1222,3 +1320,8 @@ private:
     VkVertexInputBindingDescription* vertex_input_binding_descriptions_{};
     uint32_t num_vertex_input_attribute_descriptions_{};
     uint32_t num_vertex_input_binding_descriptions_{};
+    VkBool32 discard_rectangle_enable_{};
+    VkDiscardRectangleModeEXT discard_rectangle_mode_{};
+    uint32_t first_discard_rectangle_{};
+    uint32_t discard_rectangle_count_{};
+    VkRect2D* discard_rectangles_{};

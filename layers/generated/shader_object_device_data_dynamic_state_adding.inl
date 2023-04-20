@@ -161,3 +161,12 @@ if (extended_dynamic_state_3_ptr && extended_dynamic_state_3_ptr->extendedDynami
 if (vertex_input_dynamic_ptr && vertex_input_dynamic_ptr->vertexInputDynamicState == VK_TRUE) {
     device_data->AddDynamicState(VK_DYNAMIC_STATE_VERTEX_INPUT_EXT);
 }
+if ((enabled_additional_extensions & EXT_DISCARD_RECTANGLES) != 0) {
+    device_data->AddDynamicState(VK_DYNAMIC_STATE_DISCARD_RECTANGLE_ENABLE_EXT);
+}
+if ((enabled_additional_extensions & EXT_DISCARD_RECTANGLES) != 0) {
+    device_data->AddDynamicState(VK_DYNAMIC_STATE_DISCARD_RECTANGLE_MODE_EXT);
+}
+if ((enabled_additional_extensions & EXT_DISCARD_RECTANGLES) != 0) {
+    device_data->AddDynamicState(VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT);
+}

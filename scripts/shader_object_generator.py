@@ -160,14 +160,21 @@ def generate_device_data_dynamic_state_adding(data):
 
         struct_name = extension['name'].lower()
         for dynamic_state in extension['dynamic_states']:
-            member = dynamic_state['required_feature_struct_member']
+            member = None
+            if ('required_feature_struct_member' in dynamic_state):
+                member = dynamic_state['required_feature_struct_member']
             enum = dynamic_state['dynamic_state_enum']
 
-            conditional = f'{struct_name}_ptr && {struct_name}_ptr->{member} == VK_TRUE'
+            conditional = ''
+            if (member):
+                conditional += f'{struct_name}_ptr && {struct_name}_ptr->{member} == VK_TRUE'
+
             if 'required_additional_extensions' in dynamic_state:
                 for additional_extension in dynamic_state['required_additional_extensions']:
                     additional_struct_name = additional_extension['name'].lower()
-                    conditional += ' && (enabled_additional_extensions & ' + additional_extension['name'] + ') != 0'
+                    if (conditional):
+                        conditional += ' && '
+                    conditional += '(enabled_additional_extensions & ' + additional_extension['name'] + ') != 0'
                     if 'member' in additional_extension:
                         additional_struct_member = additional_extension['member']
                         conditional += f' && {additional_struct_name}_ptr && {additional_struct_name}_ptr->{additional_struct_member} == VK_TRUE'
@@ -239,9 +246,14 @@ def generate_find_intercepted_dynamic_state_function_by_name(data):
 
         struct_name = extension['name'].lower()
         for dynamic_state in extension['dynamic_states']:
-            member = dynamic_state['required_feature_struct_member']
+            member = None
+            if ('required_feature_struct_member' in dynamic_state):
+                member = dynamic_state['required_feature_struct_member']
 
-            conditional = f'{struct_name}.{member} == VK_TRUE && ('
+            conditional = ''
+            if (member):
+                conditional += f'{struct_name}.{member} == VK_TRUE && '
+            conditional += f'('
             for idx, function_name in enumerate(dynamic_state['function_names']):
                 conditional = conditional + ('' if idx == 0 else ' || ') + f'strcmp("vk{function_name}", pName) == 0'
             conditional = conditional + ')'
@@ -250,7 +262,8 @@ def generate_find_intercepted_dynamic_state_function_by_name(data):
                 conditional = conditional + ' && ' + dynamic_state['additional_interception_requirement']
 
             out_file.write(f'if ({conditional}) {{\n')
-            out_file.write(f'    DEBUG_LOG("not intercepting %s because real dynamic state exists ({struct_name}.{member} == VK_TRUE)\\n", pName);\n')
+            if (member):
+                out_file.write(f'    DEBUG_LOG("not intercepting %s because real dynamic state exists ({struct_name}.{member} == VK_TRUE)\\n", pName);\n')
             out_file.write(f'    return nullptr;\n')
             out_file.write('}\n')
 
