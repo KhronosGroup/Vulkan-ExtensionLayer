@@ -24,6 +24,7 @@
 #include "decompression_data.h"
 
 void DecompressionTest::SetUp() {
+    SetEnvironment("VK_MEMORY_DECOMPRESSION_FORCE_ENABLE", "1");
     VkExtensionLayerTest::SetUp();
     SetTargetApiVersion(VK_API_VERSION_1_2);
     VkExtensionLayerTest::AddSurfaceInstanceExtension();

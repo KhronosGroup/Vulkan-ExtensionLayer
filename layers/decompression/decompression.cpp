@@ -17,6 +17,16 @@
  * Author: Vikram Kushwaha <vkushwaha@nvidia.com>
  */
 
+static bool logging_enabled = false;
+
+#define PRINT(...)                        \
+    {                                     \
+        if (logging_enabled) {            \
+            fprintf(stdout, __VA_ARGS__); \
+            fflush(stdout);               \
+        }                                 \
+    }
+
 #include <vulkan/vk_layer.h>
 #include "allocator.h"
 #include "log.h"
@@ -128,6 +138,14 @@ static const char* const kEnvarForceEnable =
 #endif
 static const char* const kLayerSettingsForceEnable = "khronos_memory_decompression.force_enable";
 
+static const char* const kEnvarLogging =
+#if defined(__ANDROID__)
+    "debug.vulkan.decompression.logging";
+#else
+    "VK_MEMORY_DECOMPRESSION_LOGGING";
+#endif
+static const char* const kLayerSettingsLogging = "khronos_memory_decompression.logging";
+
 static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<InstanceData>> instance_data_map;
 static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<DeviceData>> device_data_map;
 
@@ -139,9 +157,26 @@ static void string_tolower(std::string& s) {
 
 static bool GetForceEnable() {
     bool result = false;
-    std::string setting = GetLayerEnvVar(kEnvarForceEnable);
+    std::string setting = GetEnvironment(kEnvarForceEnable);
     if (setting.empty()) {
-        setting = getLayerOption(kLayerSettingsForceEnable);
+        setting = GetLayerOption(kLayerSettingsForceEnable);
+    }
+    if (!setting.empty()) {
+        string_tolower(setting);
+        if (setting == "true") {
+            result = true;
+        } else {
+            result = std::atoi(setting.c_str()) != 0;
+        }
+    }
+    return result;
+}
+
+static bool GetLoggingEnabled() {
+    bool result = false;
+    std::string setting = GetEnvironment(kEnvarLogging);
+    if (setting.empty()) {
+        setting = GetLayerOption(kLayerSettingsLogging);
     }
     if (!setting.empty()) {
         string_tolower(setting);
@@ -287,6 +322,8 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreat
         return VK_ERROR_INITIALIZATION_FAILED;
     }
 
+    logging_enabled = GetLoggingEnabled();
+
     // Advance the link info for the next element on the chain
     chain_info->u.pLayerInfo = chain_info->u.pLayerInfo->pNext;
 
@@ -357,6 +394,7 @@ DeviceData::DeviceData(VkDevice device, PFN_vkGetDeviceProcAddr gpa, const Devic
                        const VkAllocationCallbacks* alloc)
     : device(device), allocator(alloc), features(feat), enable_layer(enable) {
     vtable.GetDeviceProcAddr = gpa;
+
     if (enable_layer) {
         INIT_HOOK(vtable, device, DestroyDevice);
         INIT_HOOK(vtable, device, CreateBuffer);
@@ -480,8 +518,11 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
         subgroupSize = subgroupsizeProps.minSubgroupSize;
     }
 
+    PRINT("Info: subgroupSize %u\n", subgroupSize);
+
     if (subgroupSize != 8 && subgroupSize != 16 && subgroupSize != 32 && subgroupSize != 64) {
         // Only 8, 16, 32 and 64 are supported
+        PRINT("Error: Unsupported subgroupSize %u\n", subgroupSize);
         return VK_ERROR_INITIALIZATION_FAILED;
     }
 
@@ -489,7 +530,16 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     bytecodeIndex += findFirstSetBit(subgroupSize) - 3;
     bytecodeIndex += (devFeatures.features.shaderInt16 ? 4 : 0);
     bytecodeIndex += (devFeatures.features.shaderInt64 ? 8 : 0);
+    PRINT("Info: bytecodeIndex %u\n", bytecodeIndex);
 
+    size_t byteCodeArrLength = sizeof(kGInflateBytecode) / sizeof(kGInflateBytecode[0]);
+    size_t byteCodeIndirectArrLength = sizeof(kIndirectGInflateBytecode) / sizeof(kIndirectGInflateBytecode[0]);
+
+    // Must have all shaders for both direct/indirect mode
+    // byteCodeIndex must pick a valid shader
+    if ((byteCodeArrLength != byteCodeIndirectArrLength) && (bytecodeIndex >= byteCodeArrLength)) {
+        PRINT("Error: Unsupported bytecodeIndex %u\n", bytecodeIndex);
+    }
     // create indirect buffer with data {[indirectCommandsAddress], 1,1}
     VkBufferCreateInfo bufferInfo = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
     bufferInfo.size = 3 * sizeof(uint32_t);
@@ -497,8 +547,22 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
         VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
     result = vtable.CreateBuffer(device, &bufferInfo, 0, &indirectDispatchBuffer);
     if (result != VK_SUCCESS) {
+        PRINT("Error: CreateBuffer with error %u\n", result);
         return result;
     }
+
+    {
+        PRINT("Info: Memory Heaps/Types:\n");
+        for (uint32_t t = 0; t < pdd->memoryProperties.memoryHeapCount; t++) {
+            PRINT("    Heap %u: Size %llu, Flags %u\n", t, (unsigned long long)pdd->memoryProperties.memoryHeaps[t].size,
+                  pdd->memoryProperties.memoryHeaps[t].flags);
+        }
+        for (uint32_t t = 0; t < pdd->memoryProperties.memoryTypeCount; t++) {
+            PRINT("    Memory Type %u: HeapIndex %u, Flags %u\n", t, pdd->memoryProperties.memoryTypes[t].heapIndex,
+                  pdd->memoryProperties.memoryTypes[t].propertyFlags);
+        }
+    }
+
     VkMemoryRequirements reqs;
     vtable.GetBufferMemoryRequirements(*pDevice, indirectDispatchBuffer, &reqs);
     VkMemoryPropertyFlags property_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -508,6 +572,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     }
     indirectDispatchBufferMemory = 0;
     if (mem_type_index < pdd->memoryProperties.memoryTypeCount) {
+        PRINT("Info: Using memory index %u for indirectDispatch Buffer.\n", mem_type_index);
         VkMemoryAllocateFlagsInfo memFlagsInfo = {VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO};
         memFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT;
         VkMemoryAllocateInfo memInfo = {VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
@@ -534,6 +599,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     }
     if (!indirectDispatchBufferMemory) {
         // Could not find appropriate memory type
+        PRINT("Error: Could not create memory for indirect Buffer\n");
         return VK_ERROR_OUT_OF_HOST_MEMORY;
     }
     VkBufferDeviceAddressInfo buffer_info = {VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, NULL, indirectDispatchBuffer};
@@ -679,25 +745,30 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
     try {
         bool enable_layer = false;
         if (!decompressionFeature.memoryDecompression) {
+            PRINT("Memory decompression feature not available in the driver, enabling decompression layer.\n");
             enable_layer = true;
         } else {
             if (instance_data->force_enable) {
+                PRINT("Memory decompression feature available in the driver, but force enabling decompression layer.\n");
                 enable_layer = true;
+            } else {
+                PRINT("Memory decompression feature available in the driver, not using decompression layer.\n");
             }
-        }
-
-        // The layer requires 8-bit integer support,
-        // basic subgroup feature in the compute stage and
-        // bufferDeviceAddress feature
-        if (!computeStageSupport || !subgroupBasicSupport || !vulkan12Features.shaderInt8 ||
-            !vulkan12Features.bufferDeviceAddress) {
-            return VK_ERROR_FEATURE_NOT_PRESENT;
         }
 
         // Filter out our extension name and feature struct, in a copy of the create info.
         // Only enable device hooks if memory decompression extension is enabled AND
         // the physical device doesn't support it already or we are force enabled.
         if (enable_layer) {
+            // The layer requires 8-bit integer support,
+            // basic subgroup feature in the compute stage and
+            // bufferDeviceAddress feature
+            if (!computeStageSupport || !subgroupBasicSupport || !vulkan12Features.shaderInt8 ||
+                !vulkan12Features.bufferDeviceAddress) {
+                PRINT("Error: Required features not present to use decompression layer.\n");
+                return VK_ERROR_FEATURE_NOT_PRESENT;
+            }
+
             safe_VkDeviceCreateInfo create_info(pCreateInfo);
 
             RemoveExtensionString(const_cast<char**>(create_info.ppEnabledExtensionNames), &create_info.enabledExtensionCount,
@@ -710,6 +781,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
             result = create_device(physicalDevice, pCreateInfo, pAllocator, pDevice);
         }
         if (result != VK_SUCCESS) {
+            PRINT("Error: CreateDevice failed with error %u\n", result);
             return result;
         }
         auto alloccb = pAllocator ? pAllocator : instance_data->allocator;
@@ -797,12 +869,12 @@ VKAPI_ATTR void VKAPI_CALL CmdDecompressMemoryNV(VkCommandBuffer commandBuffer, 
                                                      VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(VkDecompressMemoryRegionNV),
                                                      (void*)&pDecompressMemoryRegions[t]);
                 device_data->vtable.CmdDispatch(commandBuffer, 1, 1, 1);
+                PRINT("Info: vkCmdDecompressMemoryNV: Using VK_LAYER_KHRONOS_memory_decompression layer\n");
             }
         }
     } catch (const std::bad_alloc& e) {
         // We don't have a way to return an error here.
-        LOG("bad_alloc: %s\n", e.what());
-        return;
+        PRINT("bad_alloc: %s\n", e.what());
     }
 }
 
@@ -829,9 +901,9 @@ VKAPI_ATTR void VKAPI_CALL CmdDecompressMemoryIndirectCountNV(VkCommandBuffer co
                 bufferBarrier.offset = 0;
                 bufferBarrier.size = VK_WHOLE_SIZE;
                 bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                bufferBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+                bufferBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
                 device_data->vtable.CmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                                                       VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, 0, 1, &bufferBarrier, 0, 0);
+                    VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, 0, 1, &bufferBarrier, 0, 0);
             }
 
             device_data->vtable.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
@@ -840,11 +912,11 @@ VKAPI_ATTR void VKAPI_CALL CmdDecompressMemoryIndirectCountNV(VkCommandBuffer co
                                                  VK_SHADER_STAGE_COMPUTE_BIT, 0,
                                                  sizeof(DeviceData::PushConstantDataDecompressMulti), &pushConstantData);
             device_data->vtable.CmdDispatchIndirect(commandBuffer, device_data->indirectDispatchBuffer, 0);
+            PRINT("Info: vkCmdDecompressMemoryIndirectCountNV: Using VK_LAYER_KHRONOS_memory_decompression layer\n");
         }
     } catch (const std::bad_alloc& e) {
         // We don't have a way to return an error here.
-        LOG("bad_alloc: %s\n", e.what());
-        return;
+        PRINT("bad_alloc: %s\n", e.what());
     }
 }
 
