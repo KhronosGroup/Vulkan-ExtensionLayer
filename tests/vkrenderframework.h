@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2022 The Khronos Group Inc.
- * Copyright (c) 2015-2022 Valve Corporation
- * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2023 The Khronos Group Inc.
+ * Copyright (c) 2015-2023 Valve Corporation
+ * Copyright (c) 2015-2023 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,8 @@ class VkImageObj;
 #include <unordered_map>
 #include <unordered_set>
 
+#include "vk_layer_config.h"
+
 using vk_testing::MakeVkHandles;
 
 template <class Dst, class Src>
@@ -80,14 +82,6 @@ class VkDeviceObj : public vk_testing::Device {
 
     VkQueue m_queue;
 };
-
-typedef enum {
-    kInformationBit = VK_DEBUG_REPORT_INFORMATION_BIT_EXT,
-    kWarningBit = VK_DEBUG_REPORT_WARNING_BIT_EXT,
-    kPerformanceWarningBit = VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT,
-    kErrorBit = VK_DEBUG_REPORT_ERROR_BIT_EXT,
-    kDebugBit = VK_DEBUG_REPORT_DEBUG_BIT_EXT,
-} LogMessageTypeBits;
 
 // ErrorMonitor Usage:
 //

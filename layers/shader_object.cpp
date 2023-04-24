@@ -92,9 +92,9 @@ static void string_tolower(std::string &s) {
 
 static bool GetForceEnable() {
     bool result = false;
-    std::string setting = GetLayerEnvVar(kEnvarForceEnable);
+    std::string setting = GetEnvironment(kEnvarForceEnable);
     if (setting.empty()) {
-        setting = getLayerOption(kLayerSettingsForceEnable);
+        setting = GetLayerOption(kLayerSettingsForceEnable);
     }
     if (!setting.empty()) {
         string_tolower(setting);
