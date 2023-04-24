@@ -33,10 +33,6 @@
 #define SECONDARY_VK_REGISTRY_HIVE_STR "HKEY_CURRENT_USER"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef enum {
     kVkConfig,
     kEnvVar,
@@ -92,18 +88,20 @@ const std::unordered_map<std::string, VkFlags> log_msg_type_option_definitions =
                                                                                   {std::string("error"), kErrorBit},
                                                                                   {std::string("debug"), kDebugBit}};
 
-const char *getLayerOption(const char *option);
-const char *GetLayerEnvVar(const char *option);
+const char *GetLayerOption(const char *option);
+void SetLayerOption(const char *option, const char *val);
+
+// Get an environment variable, returns "" if the variable is unset.
+std::string GetEnvironment(const char *name);
+
+// Set an environment variable, if it is not already set
+bool SetEnvironment(const char *name, const char *value);
+
 const SettingsFileInfo *GetLayerSettingsFileInfo();
 
-FILE *getLayerLogOutput(const char *option, const char *layer_name);
+FILE *GetLayerLogOutput(const char *option, const char *layer_name);
 VkFlags GetLayerOptionFlags(std::string option, std::unordered_map<std::string, VkFlags> const &enum_data, uint32_t option_default);
 
-void setLayerOption(const char *option, const char *val);
 void PrintMessageFlags(VkFlags vk_flags, char *msg_flags);
 void PrintMessageSeverity(VkFlags vk_flags, char *msg_flags);
 void PrintMessageType(VkFlags vk_flags, char *msg_flags);
-
-#ifdef __cplusplus
-}
-#endif

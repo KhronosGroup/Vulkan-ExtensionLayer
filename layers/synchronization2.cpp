@@ -77,9 +77,9 @@ static void string_tolower(std::string &s) {
 
 static bool GetForceEnable() {
     bool result = false;
-    std::string setting = GetLayerEnvVar(kEnvarForceEnable);
+    std::string setting = GetEnvironment(kEnvarForceEnable);
     if (setting.empty()) {
-        setting = getLayerOption(kLayerSettingsForceEnable);
+        setting = GetLayerOption(kLayerSettingsForceEnable);
     }
     if (!setting.empty()) {
         string_tolower(setting);
@@ -153,8 +153,8 @@ static void SetupCustomStypes() {
 #else
         ":";
 #endif
-    SetCustomStypeInfo(getLayerOption(kLayerSettingsCustomStypeList), ",");
-    SetCustomStypeInfo(GetLayerEnvVar(kEnvarCustomStypeList), kEnvDelim);
+    SetCustomStypeInfo(GetLayerOption(kLayerSettingsCustomStypeList), ",");
+    SetCustomStypeInfo(GetEnvironment(kEnvarCustomStypeList), kEnvDelim);
 }
 
 uintptr_t DispatchKey(const void* object) {

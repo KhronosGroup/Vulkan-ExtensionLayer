@@ -29,6 +29,7 @@
 #include <array>
 #include <iostream>
 #include <map>
+#include <mutex>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
@@ -45,29 +46,33 @@
 #define GetCurrentDir getcwd
 #endif
 
-using std::string;
-
 class ConfigFile {
   public:
     ConfigFile();
     ~ConfigFile(){};
 
-    const char *GetOption(const string &option);
-    void SetOption(const string &option, const string &value);
-    string vk_layer_disables_env_var;
+    const char *GetOption(const std::string &option);
+    void SetOption(const std::string &option, const std::string &value);
+    std::string vk_layer_disables_env_var;
     SettingsFileInfo settings_info{};
 
   private:
     bool file_is_parsed_;
-    std::map<string, string> value_map_;
+    std::map<std::string, std::string> value_map_;
 
-    string FindSettings();
+    std::string FindSettings();
     void ParseFile(const char *filename);
 };
 
 static ConfigFile layer_config;
 
-string GetEnvironment(const char *variable) {
+// On at least some platforms, environment functions are not reentrant.
+// It is possible to run test cases concurrently in multiple threads,
+// so guard the calls to these functions.
+static std::mutex layer_env_mutex;
+
+std::string GetEnvironment(const char *variable) {
+    const std::lock_guard<std::mutex> guard(layer_env_mutex);
 #if !defined(__ANDROID__) && !defined(_WIN32)
     const char *output = getenv(variable);
     return output == NULL ? "" : output;
@@ -78,11 +83,11 @@ string GetEnvironment(const char *variable) {
     }
     char *buffer = new char[size];
     GetEnvironmentVariable(variable, buffer, size);
-    string output = buffer;
+    std::string output = buffer;
     delete[] buffer;
     return output;
 #elif defined(__ANDROID__)
-    string command = "getprop " + string(variable);
+    std::string command = "getprop " + std::string(variable);
     FILE *pPipe = popen(command.c_str(), "r");
     if (pPipe != nullptr) {
         char value[256];
@@ -93,7 +98,7 @@ string GetEnvironment(const char *variable) {
         if (strcspn(value, "\r\n") == 0) {
             return "";
         } else {
-            return string(value);
+            return std::string(value);
         }
     } else {
         return "";
@@ -103,17 +108,32 @@ string GetEnvironment(const char *variable) {
 #endif
 }
 
-const char *getLayerOption(const char *option) { return layer_config.GetOption(option); }
-const char *GetLayerEnvVar(const char *option) {
-    layer_config.vk_layer_disables_env_var = GetEnvironment(option);
-    return layer_config.vk_layer_disables_env_var.c_str();
+bool SetEnvironment(const char *name, const char *value) {
+    const std::lock_guard<std::mutex> guard(layer_env_mutex);
+#if !defined(__ANDROID__) && !defined(_WIN32)
+    // don't overwrite if the variable is already set.
+    return (setenv(name, value, 0) == 0) ? true : false;
+#elif defined(_WIN32)
+    int size = GetEnvironmentVariable(name, NULL, 0);
+    if (size != 0) {
+        return static_cast<bool>(SetEnvironmentVariable(name, value));
+    }
+    return true;
+#elif defined(__ANDROID__)
+    // TODO: unclear if this is possible on android
+    return false;
+#else
+    return false;
+#endif
 }
+
+const char *GetLayerOption(const char *option) { return layer_config.GetOption(option); }
 
 const SettingsFileInfo *GetLayerSettingsFileInfo() { return &layer_config.settings_info; }
 
 // If option is NULL or stdout, return stdout, otherwise try to open option
 // as a filename. If successful, return file handle, otherwise stdout
-FILE *getLayerLogOutput(const char *option, const char *layer_name) {
+FILE *GetLayerLogOutput(const char *option, const char *layer_name) {
     FILE *log_output = NULL;
     if (!option || !strcmp("stdout", option)) {
         log_output = stdout;
@@ -133,9 +153,10 @@ FILE *getLayerLogOutput(const char *option, const char *layer_name) {
 }
 
 // Map option strings to flag enum values
-VkFlags GetLayerOptionFlags(string option, std::unordered_map<string, VkFlags> const &enum_data, uint32_t option_default) {
+VkFlags GetLayerOptionFlags(std::string option, std::unordered_map<std::string, VkFlags> const &enum_data,
+                            uint32_t option_default) {
     VkDebugReportFlagsEXT flags = option_default;
-    string option_list = layer_config.GetOption(option.c_str());
+    std::string option_list = layer_config.GetOption(option.c_str());
 
     while (option_list.length() != 0) {
         // Find length of option string
@@ -145,7 +166,7 @@ VkFlags GetLayerOptionFlags(string option, std::unordered_map<string, VkFlags> c
         }
 
         // Get first option item in list
-        const string option_item = option_list.substr(0, option_length);
+        const std::string option_item = option_list.substr(0, option_length);
 
         auto enum_value = enum_data.find(option_item);
         if (enum_value != enum_data.end()) {
@@ -168,17 +189,17 @@ VkFlags GetLayerOptionFlags(string option, std::unordered_map<string, VkFlags> c
     return flags;
 }
 
-void setLayerOption(const char *option, const char *value) { layer_config.SetOption(option, value); }
+void SetLayerOption(const char *option, const char *value) { layer_config.SetOption(option, value); }
 
 // Constructor for ConfigFile. Initialize layers to log error messages to stdout by default. If a vk_layer_settings file is present,
 // its settings will override the defaults.
 ConfigFile::ConfigFile() : file_is_parsed_(false) {
 }
 
-const char *ConfigFile::GetOption(const string &option) {
-    std::map<string, string>::const_iterator it;
+const char *ConfigFile::GetOption(const std::string &option) {
+    std::map<std::string, std::string>::const_iterator it;
     if (!file_is_parsed_) {
-        string settings_file = FindSettings();
+        std::string settings_file = FindSettings();
         ParseFile(settings_file.c_str());
     }
 
@@ -189,9 +210,9 @@ const char *ConfigFile::GetOption(const string &option) {
     }
 }
 
-void ConfigFile::SetOption(const string &option, const string &val) {
+void ConfigFile::SetOption(const std::string &option, const std::string &val) {
     if (!file_is_parsed_) {
-        string settings_file = FindSettings();
+        std::string settings_file = FindSettings();
         ParseFile(settings_file.c_str());
     }
 
@@ -223,7 +244,7 @@ static inline bool IsHighIntegrity() {
 }
 #endif
 
-string ConfigFile::FindSettings() {
+std::string ConfigFile::FindSettings() {
     struct stat info;
 
 #if defined(WIN32)
@@ -263,7 +284,7 @@ string ConfigFile::FindSettings() {
 
 #else
     // Look for VkConfig-specific settings location specified in a specific spot in the linux settings store
-    string search_path = GetEnvironment("XDG_DATA_HOME");
+    std::string search_path = GetEnvironment("XDG_DATA_HOME");
     if (search_path == "") {
         search_path = GetEnvironment("HOME");
         if (search_path != "") {
@@ -272,7 +293,7 @@ string ConfigFile::FindSettings() {
     }
     // Use the vk_layer_settings.txt file from here, if it is present
     if (search_path != "") {
-        string home_file = search_path + "/vulkan/settings.d/vk_layer_settings.txt";
+        std::string home_file = search_path + "/vulkan/settings.d/vk_layer_settings.txt";
         if (stat(home_file.c_str(), &info) == 0) {
             if (info.st_mode & S_IFREG) {
                 settings_info.source = kVkConfig;
@@ -284,7 +305,7 @@ string ConfigFile::FindSettings() {
 
 #endif
     // Look for an enviornment variable override for the settings file location
-    string env_path = GetEnvironment("VK_LAYER_SETTINGS_PATH");
+    std::string env_path = GetEnvironment("VK_LAYER_SETTINGS_PATH");
 
     // If the path exists use it, else use vk_layer_settings
     if (stat(env_path.c_str(), &info) == 0) {
@@ -315,15 +336,15 @@ void ConfigFile::ParseFile(const char *filename) {
     std::ifstream file(filename);
     if (file.good()) {
         settings_info.file_found = true;
-        for (string line; std::getline(file, line);) {
+        for (std::string line; std::getline(file, line);) {
             // discard comments, which start with '#'
             const auto comments_pos = line.find_first_of('#');
-            if (comments_pos != string::npos) line.erase(comments_pos);
+            if (comments_pos != std::string::npos) line.erase(comments_pos);
 
             const auto value_pos = line.find_first_of('=');
-            if (value_pos != string::npos) {
-                const string option = string_trim(line.substr(0, value_pos));
-                const string value = string_trim(line.substr(value_pos + 1));
+            if (value_pos != std::string::npos) {
+                const std::string option = string_trim(line.substr(0, value_pos));
+                const std::string value = string_trim(line.substr(value_pos + 1));
                 value_map_[option] = value;
             }
         }
