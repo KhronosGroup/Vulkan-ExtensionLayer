@@ -14,6 +14,8 @@ There are some extensions and features in Vulkan that are not available everywhe
 
 If you find a problem with one of the layers, please file an Issue and tag the Point of Contact listed in the table above.
 
+NOTE: Not all layers are supported on every platform, please read the documentation for the layer for details.
+
 ## Information for Developing or Contributing:
 
 Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file in this repository for more details.
