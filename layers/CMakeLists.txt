@@ -53,8 +53,6 @@ if(MSVC)
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpointer-arith -Wno-unused-function -Wno-sign-compare")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wpointer-arith -Wno-unused-function -Wno-sign-compare")
-    # Use of pthread_condattr_setclock requires a "recent" POSIX setting.
-    add_definitions(-D_POSIX_C_SOURCE=200112)
 endif()
 
 if(NOT WIN32)

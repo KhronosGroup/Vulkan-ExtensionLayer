@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+/* For glibc to expose pthread_condattr_setclock */
+#define _POSIX_C_SOURCE 200112
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
