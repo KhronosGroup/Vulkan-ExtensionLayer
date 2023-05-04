@@ -1,8 +1,8 @@
 #!/bin/bash
-# Update source for glslang, spirv-tools, shaderc
+# Update source for glslang and spirv-tools
 
 # Copyright 2016 The Android Open Source Project
-# Copyright (C) 2015 Valve Corporation
+# Copyright (C) 2015,2023 Valve Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -77,24 +77,9 @@ then
     echo Skipping build.
 fi
 
-function build_shaderc () {
-   echo "Building $BASEDIR/shaderc"
-   cd $BASEDIR/shaderc/android_test
-   if [[ $abi ]]; then
-      ndk-build NDK_APPLICATION_MK=../../../jni/shaderc/Application.mk THIRD_PARTY_PATH=../third_party APP_ABI=$abi -j $cores;
-   else
-      ndk-build NDK_APPLICATION_MK=../../../jni/shaderc/Application.mk THIRD_PARTY_PATH=../third_party -j $cores;
-   fi
-}
-
 # Pull down or update external dependencies
 echo "Update external dependencies based on the $ANDROIDBUILDDIR/known_good.json file"
 python3 ../scripts/update_deps.py --no-build --dir $BASEDIR --known_good_dir $BUILDDIR
-
-if [[ -z $nobuild ]]
-then
-build_shaderc
-fi
 
 echo ""
 echo "${0##*/} finished."
