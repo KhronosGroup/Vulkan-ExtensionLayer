@@ -60975,6 +60975,62 @@ void safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM::initialize(const
     }
 }
 
+safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT::safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT(const VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT* in_struct) :
+    sType(in_struct->sType),
+    attachmentFeedbackLoopDynamicState(in_struct->attachmentFeedbackLoopDynamicState)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT::safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT),
+    pNext(nullptr),
+    attachmentFeedbackLoopDynamicState()
+{}
+
+safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT::safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT(const safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT& copy_src)
+{
+    sType = copy_src.sType;
+    attachmentFeedbackLoopDynamicState = copy_src.attachmentFeedbackLoopDynamicState;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT& safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT::operator=(const safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    attachmentFeedbackLoopDynamicState = copy_src.attachmentFeedbackLoopDynamicState;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT::~safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT::initialize(const VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    attachmentFeedbackLoopDynamicState = in_struct->attachmentFeedbackLoopDynamicState;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT::initialize(const safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT* copy_src)
+{
+    sType = copy_src->sType;
+    attachmentFeedbackLoopDynamicState = copy_src->attachmentFeedbackLoopDynamicState;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
 safe_VkAccelerationStructureGeometryTrianglesDataKHR::safe_VkAccelerationStructureGeometryTrianglesDataKHR(const VkAccelerationStructureGeometryTrianglesDataKHR* in_struct) :
     sType(in_struct->sType),
     vertexFormat(in_struct->vertexFormat),
@@ -64574,6 +64630,9 @@ void *SafePnextCopy(const void *pNext) {
         case VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_RENDER_AREAS_RENDER_PASS_BEGIN_INFO_QCOM:
             safe_pNext = new safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM(reinterpret_cast<const VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM *>(pNext));
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT:
+            safe_pNext = new safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT(reinterpret_cast<const VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT *>(pNext));
+            break;
         case VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR:
             safe_pNext = new safe_VkWriteDescriptorSetAccelerationStructureKHR(reinterpret_cast<const VkWriteDescriptorSetAccelerationStructureKHR *>(pNext));
             break;
@@ -66060,6 +66119,9 @@ void FreePnextChain(const void *pNext) {
             break;
         case VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_RENDER_AREAS_RENDER_PASS_BEGIN_INFO_QCOM:
             delete reinterpret_cast<const safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT *>(header);
             break;
         case VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR:
             delete reinterpret_cast<const safe_VkWriteDescriptorSetAccelerationStructureKHR *>(header);
