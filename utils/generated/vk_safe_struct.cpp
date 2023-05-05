@@ -30605,6 +30605,62 @@ void safe_VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR::initialize(const sa
     pNext = SafePnextCopy(copy_src->pNext);
 }
 
+safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR::safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR(const VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR* in_struct) :
+    sType(in_struct->sType),
+    rayTracingPositionFetch(in_struct->rayTracingPositionFetch)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR::safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR),
+    pNext(nullptr),
+    rayTracingPositionFetch()
+{}
+
+safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR::safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR(const safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR& copy_src)
+{
+    sType = copy_src.sType;
+    rayTracingPositionFetch = copy_src.rayTracingPositionFetch;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR& safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR::operator=(const safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    rayTracingPositionFetch = copy_src.rayTracingPositionFetch;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR::~safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR::initialize(const VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    rayTracingPositionFetch = in_struct->rayTracingPositionFetch;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR::initialize(const safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR* copy_src)
+{
+    sType = copy_src->sType;
+    rayTracingPositionFetch = copy_src->rayTracingPositionFetch;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
 safe_VkDebugReportCallbackCreateInfoEXT::safe_VkDebugReportCallbackCreateInfoEXT(const VkDebugReportCallbackCreateInfoEXT* in_struct) :
     sType(in_struct->sType),
     flags(in_struct->flags),
@@ -63768,6 +63824,9 @@ void *SafePnextCopy(const void *pNext) {
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR:
             safe_pNext = new safe_VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR(reinterpret_cast<const VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR *>(pNext));
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR:
+            safe_pNext = new safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR(reinterpret_cast<const VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR *>(pNext));
+            break;
         case VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT:
             safe_pNext = new safe_VkDebugReportCallbackCreateInfoEXT(reinterpret_cast<const VkDebugReportCallbackCreateInfoEXT *>(pNext));
             break;
@@ -65251,6 +65310,9 @@ void FreePnextChain(const void *pNext) {
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR:
             delete reinterpret_cast<const safe_VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR *>(header);
             break;
         case VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT:
             delete reinterpret_cast<const safe_VkDebugReportCallbackCreateInfoEXT *>(header);
