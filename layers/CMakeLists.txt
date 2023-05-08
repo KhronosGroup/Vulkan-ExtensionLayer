@@ -94,6 +94,9 @@ if (CMAKE_SIZEOF_VOID_P EQUAL "4")
     list(REMOVE_ITEM TARGET_NAMES "VkLayer_khronos_shader_object")
 endif()
 
+# There are currently no plans to ship Memory Compression part of the Vulkan SDK
+list(REMOVE_ITEM TARGET_NAMES "VkLayer_khronos_memory_decompression")
+
 foreach(TARGET_NAME ${TARGET_NAMES})
     set(INPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in")
     set(INTERMEDIATE_FILE "${CMAKE_CURRENT_BINARY_DIR}/json/intermediate-${TARGET_NAME}.json")
