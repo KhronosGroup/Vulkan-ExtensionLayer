@@ -1597,8 +1597,8 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
 
     VkPipelineViewportStateCreateInfo viewport_state{};
     viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewport_state.viewportCount = state->GetNumViewports();
-    viewport_state.scissorCount = state->GetNumScissors();
+    viewport_state.viewportCount = cmd_data.device_data->HasDynamicState(VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT) ? 0u : state->GetNumViewports();
+    viewport_state.scissorCount = cmd_data.device_data->HasDynamicState(VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT) ? 0u : state->GetNumScissors();
     VkPipelineViewportDepthClipControlCreateInfoEXT depth_clip_control_state{
         VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT,
         nullptr,
