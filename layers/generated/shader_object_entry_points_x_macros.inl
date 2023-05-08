@@ -49,6 +49,7 @@
     ENTRY_POINT(CmdSetScissorWithCount)\
     ENTRY_POINT_ALIAS(CmdSetScissorWithCountEXT, CmdSetScissorWithCount)\
     ENTRY_POINT(CmdSetVertexInputEXT)\
+    ENTRY_POINT(CmdSetColorWriteEnableEXT)\
     ENTRY_POINT(CmdSetPrimitiveTopology)\
     ENTRY_POINT_ALIAS(CmdSetPrimitiveTopologyEXT, CmdSetPrimitiveTopology)\
     ENTRY_POINT(CmdSetPrimitiveRestartEnable)\

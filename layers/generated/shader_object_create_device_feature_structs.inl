@@ -92,6 +92,18 @@ if (vertex_input_dynamic_ptr == nullptr && (physical_device_data->supported_addi
         appended_features_chain_last = appended_features_chain_last->pNext;
     }
 }
+auto color_write_enable_ptr = reinterpret_cast<VkPhysicalDeviceColorWriteEnableFeaturesEXT*>(FindStructureInChain(device_next_chain, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT));
+VkPhysicalDeviceColorWriteEnableFeaturesEXT color_write_enable_local{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT};
+if (color_write_enable_ptr == nullptr && (physical_device_data->supported_additional_extensions & COLOR_WRITE_ENABLE) != 0) {
+    color_write_enable_ptr = &color_write_enable_local;
+    if (appended_features_chain_last == nullptr) {
+        appended_features_chain = (VkBaseOutStructure*)color_write_enable_ptr;
+        appended_features_chain_last = appended_features_chain;
+    } else {
+        appended_features_chain_last->pNext = (VkBaseOutStructure*)color_write_enable_ptr;
+        appended_features_chain_last = appended_features_chain_last->pNext;
+    }
+}
 auto graphics_pipeline_library_ptr = reinterpret_cast<VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT*>(FindStructureInChain(device_next_chain, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT));
 VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT graphics_pipeline_library_local{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT};
 if (graphics_pipeline_library_ptr == nullptr && (physical_device_data->supported_additional_extensions & GRAPHICS_PIPELINE_LIBRARY) != 0) {

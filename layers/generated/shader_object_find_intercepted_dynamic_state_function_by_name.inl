@@ -209,3 +209,7 @@ if (vertex_input_dynamic.vertexInputDynamicState == VK_TRUE && (strcmp("vkCmdSet
     DEBUG_LOG("not intercepting %s because real dynamic state exists (vertex_input_dynamic.vertexInputDynamicState == VK_TRUE)\n", pName);
     return nullptr;
 }
+if (color_write_enable.colorWriteEnable == VK_TRUE && (strcmp("vkCmdSetColorWriteEnableEXT", pName) == 0)) {
+    DEBUG_LOG("not intercepting %s because real dynamic state exists (color_write_enable.colorWriteEnable == VK_TRUE)\n", pName);
+    return nullptr;
+}

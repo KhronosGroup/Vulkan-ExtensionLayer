@@ -3439,6 +3439,14 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetVertexInputEXT(VkCommandBuffer commandBu
     }
 }
 
+static VKAPI_ATTR void VKAPI_CALL CmdSetColorWriteEnableEXT(VkCommandBuffer commandBuffer, uint32_t attachmentCount, const VkBool32* pColorWriteEnables) {
+    auto cmd_data = GetCommandBufferData(commandBuffer);
+    ASSERT_VK_FALSE(cmd_data->device_data->color_write_enable.colorWriteEnable);
+    for (uint32_t i = 0; i < attachmentCount; ++i) {
+        cmd_data->GetDrawStateData()->SetColorWriteEnable(i, pColorWriteEnables[i]);
+    }
+}
+
 static VKAPI_ATTR void VKAPI_CALL CmdSetPrimitiveTopology(VkCommandBuffer commandBuffer, VkPrimitiveTopology primitiveTopology) {
     auto cmd_data    = GetCommandBufferData(commandBuffer);
     auto device_data = cmd_data->device_data;

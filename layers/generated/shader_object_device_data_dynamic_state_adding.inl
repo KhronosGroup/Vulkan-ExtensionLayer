@@ -161,3 +161,6 @@ if (extended_dynamic_state_3_ptr && extended_dynamic_state_3_ptr->extendedDynami
 if (vertex_input_dynamic_ptr && vertex_input_dynamic_ptr->vertexInputDynamicState == VK_TRUE) {
     device_data->AddDynamicState(VK_DYNAMIC_STATE_VERTEX_INPUT_EXT);
 }
+if (color_write_enable_ptr && color_write_enable_ptr->colorWriteEnable == VK_TRUE) {
+    device_data->AddDynamicState(VK_DYNAMIC_STATE_COLOR_WRITE_ENABLE_EXT);
+}

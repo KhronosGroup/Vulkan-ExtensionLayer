@@ -18,7 +18,7 @@
  */
 
 public:
-    enum StateGroup { MISC, EXTENDED_DYNAMIC_STATE_1, EXTENDED_DYNAMIC_STATE_2, EXTENDED_DYNAMIC_STATE_3, VERTEX_INPUT_DYNAMIC, NUM_STATE_GROUPS };
+    enum StateGroup { MISC, EXTENDED_DYNAMIC_STATE_1, EXTENDED_DYNAMIC_STATE_2, EXTENDED_DYNAMIC_STATE_3, VERTEX_INPUT_DYNAMIC, COLOR_WRITE_ENABLE, NUM_STATE_GROUPS };
 
     void SetDepthAttachmentFormat(VkFormat const& element) {
         if (element == depth_attachment_format_) {
@@ -716,6 +716,21 @@ public:
         return num_vertex_input_binding_descriptions_;
     }
     
+    void SetColorWriteEnable(uint32_t index, VkBool32 const& element) {
+        if (element == color_write_enables_[index]) {
+            return;
+        }
+        dirty_hash_bits_.set(COLOR_WRITE_ENABLE);
+        MarkDirty();
+        color_write_enables_[index] = element;
+    }
+    VkBool32 const& GetColorWriteEnable(uint32_t index) const {
+        return color_write_enables_[index];
+    }
+    VkBool32 const* GetColorWriteEnablePtr() const {
+        return color_write_enables_;
+    }
+    
     bool operator==(FullDrawStateData const& o) const {
         if (!(o.depth_attachment_format_ == depth_attachment_format_)) {
             return false;
@@ -972,6 +987,15 @@ public:
             return false;
         }
 
+        if (o.limits_.max_color_attachments != limits_.max_color_attachments) {
+            return false;
+        }
+        for (uint32_t i = 0; i < limits_.max_color_attachments; ++i) {
+            if (!(o.color_write_enables_[i] == color_write_enables_[i])) {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -1152,6 +1176,12 @@ private:
                 res = res * 31 + std::hash<uint32_t>()(num_vertex_input_binding_descriptions_);
                 return res;
             }
+            case COLOR_WRITE_ENABLE:
+            {
+                size_t res = 17;
+                // TODO: array comparison
+                return res;
+            }
             case MISC:
             {
                 size_t res = 17;
@@ -1222,3 +1252,4 @@ private:
     VkVertexInputBindingDescription* vertex_input_binding_descriptions_{};
     uint32_t num_vertex_input_attribute_descriptions_{};
     uint32_t num_vertex_input_binding_descriptions_{};
+    VkBool32* color_write_enables_{};

@@ -24,6 +24,7 @@
             sizeof(VkViewportSwizzleNV) * limits.max_viewports +
             sizeof(VkVertexInputAttributeDescription) * limits.max_vertex_input_attributes +
             sizeof(VkVertexInputBindingDescription) * limits.max_vertex_input_bindings +
+            sizeof(VkBool32) * limits.max_color_attachments +
             sizeof(FullDrawStateData);
     }
 
@@ -45,4 +46,7 @@
 
         state->vertex_input_binding_descriptions_ = (VkVertexInputBindingDescription*)offset_ptr;
         offset_ptr += sizeof(VkVertexInputBindingDescription) * limits.max_vertex_input_bindings;
+
+        state->color_write_enables_ = (VkBool32*)offset_ptr;
+        offset_ptr += sizeof(VkBool32) * limits.max_color_attachments;
     }

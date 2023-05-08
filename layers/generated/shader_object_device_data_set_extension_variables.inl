@@ -23,6 +23,7 @@ device_data->extended_dynamic_state_1 = extended_dynamic_state_1_ptr ? *extended
 device_data->extended_dynamic_state_2 = extended_dynamic_state_2_ptr ? *extended_dynamic_state_2_ptr : extended_dynamic_state_2_local;
 device_data->extended_dynamic_state_3 = extended_dynamic_state_3_ptr ? *extended_dynamic_state_3_ptr : extended_dynamic_state_3_local;
 device_data->vertex_input_dynamic = vertex_input_dynamic_ptr ? *vertex_input_dynamic_ptr : vertex_input_dynamic_local;
+device_data->color_write_enable = color_write_enable_ptr ? *color_write_enable_ptr : color_write_enable_local;
 device_data->graphics_pipeline_library = graphics_pipeline_library_ptr ? *graphics_pipeline_library_ptr : graphics_pipeline_library_local;
 device_data->transform_feedback = transform_feedback_ptr ? *transform_feedback_ptr : transform_feedback_local;
 device_data->depth_clip_enable = depth_clip_enable_ptr ? *depth_clip_enable_ptr : depth_clip_enable_local;
