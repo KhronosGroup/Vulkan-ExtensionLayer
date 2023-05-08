@@ -230,32 +230,6 @@ def generate_create_device_feature_structs(data):
 
     out_file.close()
 
-def generate_find_intercepted_dynamic_state_function_by_name(data):
-    out_file = create_generated_file('../layers/generated/shader_object_find_intercepted_dynamic_state_function_by_name.inl')
-
-    for extension in data['extensions']:
-        if 'dynamic_states' not in extension:
-            continue
-
-        struct_name = extension['name'].lower()
-        for dynamic_state in extension['dynamic_states']:
-            member = dynamic_state['required_feature_struct_member']
-
-            conditional = f'{struct_name}.{member} == VK_TRUE && ('
-            for idx, function_name in enumerate(dynamic_state['function_names']):
-                conditional = conditional + ('' if idx == 0 else ' || ') + f'strcmp("vk{function_name}", pName) == 0'
-            conditional = conditional + ')'
-
-            if 'additional_interception_requirement' in dynamic_state:
-                conditional = conditional + ' && ' + dynamic_state['additional_interception_requirement']
-
-            out_file.write(f'if ({conditional}) {{\n')
-            out_file.write(f'    DEBUG_LOG("not intercepting %s because real dynamic state exists ({struct_name}.{member} == VK_TRUE)\\n", pName);\n')
-            out_file.write(f'    return nullptr;\n')
-            out_file.write('}\n')
-
-    out_file.close()
-
 def generate_full_draw_state_struct_members(data):
     getter_setter_section = ['']
     operator_equals_section = ['']
@@ -526,7 +500,6 @@ generate_device_data_declare_extension_variables(data)
 generate_device_data_set_extension_variables(data)
 generate_device_data_dynamic_state_adding(data)
 generate_create_device_feature_structs(data)
-generate_find_intercepted_dynamic_state_function_by_name(data)
 generate_full_draw_state_struct_members(data)
 generate_full_draw_state_utility_functions(data)
 generate_entry_points(data)
