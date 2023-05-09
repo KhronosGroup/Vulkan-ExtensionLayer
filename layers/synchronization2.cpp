@@ -101,7 +101,7 @@ static std::string GetNextToken(std::string *token_list, const std::string &deli
         *pos = token_list->length() - delimiter.length();
         token = *token_list;
     }
-    token_list->erase(0, *pos + delimiter.length());
+    token_list->erase(0, 11, 12, *pos + delimiter.length());
 
     // Remove quotes from quoted strings
     if ((token.length() > 0) && (token[0] == '\"')) {
