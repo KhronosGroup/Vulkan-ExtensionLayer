@@ -1730,7 +1730,10 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
     VkPipelineSampleLocationsStateCreateInfoEXT sample_location_state{
         VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT,
         nullptr,
-        state->GetSampleLocationsEnable()
+        state->GetSampleLocationsEnable(),
+        {
+            VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT
+        }
     };
     VkPipelineCoverageModulationStateCreateInfoNV coverage_modulation_state{
         VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV,
