@@ -3321,6 +3321,8 @@ static VKAPI_ATTR VkResult VKAPI_CALL BeginCommandBuffer(VkCommandBuffer command
     // If every state setting call before the draw is dynamic, we still need to bind a pipeline
     draw_state->MarkDirty();
 
+    draw_state->SetRasterizationSamples(VK_SAMPLE_COUNT_1_BIT);
+
     for (uint32_t i = 0; i < kMaxSampleMaskLength; ++i) {
         // Set sample mask to default value of all ones
         constexpr VkSampleMask all_ones = ~static_cast<VkSampleMask>(0);
