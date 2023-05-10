@@ -198,6 +198,19 @@ bool CheckTimelineSemaphoreSupportAndInitState(VkRenderFramework *renderFramewor
 }
 
 bool VkExtensionLayerTest::CheckDecompressionSupportAndInitState() {
+    uint32_t version = 0x0;
+    vk::EnumerateInstanceVersion(&version);
+    fprintf(stderr, "Info: VK Version 0x%x\n", version);
+    fprintf(stderr, "Info: VK major Version %u\n", VK_API_VERSION_MAJOR(version));
+    fprintf(stderr, "Info: VK minor Version %u\n", VK_API_VERSION_MINOR(version));
+    fprintf(stderr, "Info: VK patch Version %u\n", VK_API_VERSION_PATCH(version));
+    fflush(stderr);
+    bool isVersion12AndAbove = (VK_API_VERSION_MAJOR(version) >= 1 && VK_API_VERSION_MINOR(version) >= 2);
+    // Decompression tests need Vulkan 1.2
+    if (!isVersion12AndAbove) {
+        return false;
+    }
+
     bool decompressionExtensionFound = false;
     if (DeviceExtensionSupported(VK_NV_MEMORY_DECOMPRESSION_EXTENSION_NAME, 1)) {
         decompressionExtensionFound = true;
@@ -303,6 +316,23 @@ VkCommandBufferObj *VkExtensionLayerTest::CommandBuffer() { return m_commandBuff
 
 VkExtensionLayerTest::VkExtensionLayerTest() {
     m_enableWSI = false;
+
+    uint32_t count = 0;
+    VkResult result = vk::EnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
+    if (result != VK_SUCCESS) {
+        fprintf(stderr, "Info: EnumerateInstanceExtensionProperties1 failed with error %u\n", result);
+    } else {
+        std::vector<VkExtensionProperties> extensionProperties(count);
+        // Get the extensions
+        result = vk::EnumerateInstanceExtensionProperties(nullptr, &count, extensionProperties.data());
+        if (result != VK_SUCCESS) {
+            fprintf(stderr, "Info: EnumerateInstanceExtensionProperties2 failed with error %u\n", result);
+        } else {
+            for (uint32_t t = 0; t < count; t++) {
+                fprintf(stderr, "Info: Extension %u: %s\n", t, extensionProperties[t].extensionName);
+            }
+        }
+    }
 
     // Add default instance extensions to the list
     instance_extensions_.push_back(debug_reporter_.debug_extension_name);

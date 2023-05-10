@@ -1,5 +1,5 @@
-# Copyright 2015 The Android Open Source Project
-# Copyright (C) 2015 Valve Corporation
+# Copyright 2015, 2023 The Android Open Source Project
+# Copyright (C) 2015, 2023 Valve Corporation
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,6 +52,22 @@ LOCAL_LDFLAGS   += -Wl,--exclude-libs,ALL
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE := VkLayer_khronos_memory_decompression
+LOCAL_SRC_FILES += $(SRC_DIR)/layers/decompression/decompression.cpp
+LOCAL_C_INCLUDES += $(VULKAN_INCLUDE) \
+                    $(LOCAL_PATH)/$(SRC_DIR)/layers \
+                    $(LOCAL_PATH)/$(SRC_DIR)/utils \
+                    $(LOCAL_PATH)/$(SRC_DIR)/utils/generated \
+                    $(LOCAL_PATH)/$(THIRD_PARTY)/shaderc/third_party/spirv-tools/external/spirv-headers/include
+LOCAL_STATIC_LIBRARIES += extlayer_utils glslang SPIRV-Tools SPIRV-Tools-opt
+LOCAL_CPPFLAGS += -std=c++17 -Wall -Werror -Wno-unused-function -Wno-unused-const-variable -Wno-cast-calling-convention -fexceptions
+LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -DVK_PROTOTYPES -fvisibility=hidden
+LOCAL_LDLIBS    := -llog -landroid
+LOCAL_LDFLAGS   += -Wl,-Bsymbolic
+LOCAL_LDFLAGS   += -Wl,--exclude-libs,ALL
+include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE := VkLayer_khronos_timeline_semaphore
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/timeline_semaphore.c \
                    $(SRC_DIR)/layers/hash_table.cpp
@@ -68,6 +84,7 @@ LOCAL_MODULE := VkExtensionLayerTests
 LOCAL_SRC_FILES += $(SRC_DIR)/tests/extension_layer_tests.cpp \
                    $(SRC_DIR)/tests/vktestbinding.cpp \
                    $(SRC_DIR)/tests/synchronization2_tests.cpp \
+                   $(SRC_DIR)/tests/decompression_tests.cpp \
                    $(SRC_DIR)/tests/vkrenderframework.cpp \
                    $(SRC_DIR)/tests/vktestframeworkandroid.cpp \
                    $(SRC_DIR)/tests/test_environment.cpp
@@ -90,6 +107,7 @@ LOCAL_MODULE := VulkanExtensionLayerTests
 LOCAL_SRC_FILES += $(SRC_DIR)/tests/extension_layer_tests.cpp \
                    $(SRC_DIR)/tests/vktestbinding.cpp \
                    $(SRC_DIR)/tests/synchronization2_tests.cpp \
+                   $(SRC_DIR)/tests/decompression_tests.cpp \
                    $(SRC_DIR)/tests/vkrenderframework.cpp \
                    $(SRC_DIR)/tests/vktestframeworkandroid.cpp \
                    $(SRC_DIR)/tests/test_environment.cpp
@@ -109,3 +127,4 @@ include $(BUILD_SHARED_LIBRARY)
 $(call import-module,android/native_app_glue)
 $(call import-module,third_party/googletest)
 $(call import-module,third_party/shaderc)
+

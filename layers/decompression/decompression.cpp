@@ -17,13 +17,13 @@
  * Author: Vikram Kushwaha <vkushwaha@nvidia.com>
  */
 
-static bool logging_enabled = false;
+static bool logging_enabled = true;
 
 #define PRINT(...)                        \
     {                                     \
         if (logging_enabled) {            \
-            fprintf(stdout, __VA_ARGS__); \
-            fflush(stdout);               \
+            fprintf(stderr, __VA_ARGS__); \
+            fflush(stderr);               \
         }                                 \
     }
 
@@ -121,7 +121,7 @@ std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
 namespace memory_decompression {
 
 static const VkLayerProperties kGlobalLayer = {
-    "VK_LAYER_memory_decompression",
+    "VK_LAYER_KHRONOS_memory_decompression",
     VK_HEADER_VERSION_COMPLETE,
     1,
     "Default memory_decompression layer",
@@ -186,7 +186,7 @@ static bool GetLoggingEnabled() {
             result = std::atoi(setting.c_str()) != 0;
         }
     }
-    return result;
+    return logging_enabled || result;
 }
 
 uintptr_t DispatchKey(const void* object) {
@@ -539,6 +539,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     // byteCodeIndex must pick a valid shader
     if ((byteCodeArrLength != byteCodeIndirectArrLength) && (bytecodeIndex >= byteCodeArrLength)) {
         PRINT("Error: Unsupported bytecodeIndex %u\n", bytecodeIndex);
+        return VK_ERROR_INITIALIZATION_FAILED;
     }
     // create indirect buffer with data {[indirectCommandsAddress], 1,1}
     VkBufferCreateInfo bufferInfo = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
@@ -581,15 +582,18 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
         memInfo.memoryTypeIndex = mem_type_index;
         result = vtable.AllocateMemory(device, &memInfo, 0, &indirectDispatchBufferMemory);
         if (result != VK_SUCCESS) {
+            PRINT("Error: AllocateMemory with error %u\n", result);
             return result;
         }
         result = vtable.BindBufferMemory(device, indirectDispatchBuffer, indirectDispatchBufferMemory, 0);
         if (result != VK_SUCCESS) {
+            PRINT("Error: BindBufferMemory with error %u\n", result);
             return result;
         }
         uint32_t* dispatchData;
         result = vtable.MapMemory(device, indirectDispatchBufferMemory, 0, reqs.size, 0, (void**)&dispatchData);
         if (result != VK_SUCCESS) {
+            PRINT("Error: MapMemory with error %u\n", result);
             return result;
         }
         *(dispatchData) = 1;
@@ -616,6 +620,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     shaderModuleInfo.pCode = reinterpret_cast<const uint32_t*>(bytecode.code);
     result = vtable.CreateShaderModule(device, &shaderModuleInfo, 0, &decompressShaderModule);
     if (result != VK_SUCCESS) {
+        PRINT("Error: CreateShaderModule1 with error %u\n", result);
         return result;
     }
     // create pipeline
@@ -628,6 +633,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     pipelineLayoutCreateInfo.pPushConstantRanges = &pushConstantRange;
     result = vtable.CreatePipelineLayout(device, &pipelineLayoutCreateInfo, 0, &pipelineLayoutDecompressSingle);
     if (result != VK_SUCCESS) {
+        PRINT("Error: CreatePipelineLayout1 with error %u\n", result);
         return result;
     }
 
@@ -639,6 +645,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     pipelineInfo.stage.pName = "main";
     result = vtable.CreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, 0, &pipelineDecompressSingle);
     if (result != VK_SUCCESS) {
+        PRINT("Error: CreateComputePipelines1 with error %u\n", result);
         return result;
     }
     vtable.DestroyShaderModule(device, decompressShaderModule, 0);
@@ -649,6 +656,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     shaderModuleInfo.pCode = reinterpret_cast<const uint32_t*>(copyCountBytecode.code);
     result = vtable.CreateShaderModule(device, &shaderModuleInfo, 0, &copyCountModule);
     if (result != VK_SUCCESS) {
+        PRINT("Error: CreateShaderModule2 with error %u\n", result);
         return result;
     }
 
@@ -658,6 +666,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     pipelineLayoutCreateInfo.pPushConstantRanges = &pushConstantRange;
     result = vtable.CreatePipelineLayout(device, &pipelineLayoutCreateInfo, 0, &pipelineLayoutCopy);
     if (result != VK_SUCCESS) {
+        PRINT("Error: CreatePipelineLayout2 with error %u\n", result);
         return result;
     }
     pipelineInfo.layout = pipelineLayoutCopy;
@@ -667,6 +676,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     pipelineInfo.stage.pName = "main";
     result = vtable.CreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, 0, &pipelineCopy);
     if (result != VK_SUCCESS) {
+        PRINT("Error: CreateComputePipelines2 with error %u\n", result);
         return result;
     }
     vtable.DestroyShaderModule(device, copyCountModule, 0);
@@ -677,6 +687,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     shaderModuleInfo.pCode = reinterpret_cast<const uint32_t*>(bytecodeIndirect.code);
     result = vtable.CreateShaderModule(device, &shaderModuleInfo, 0, &indirectDecompressShaderModule);
     if (result != VK_SUCCESS) {
+        PRINT("Error: CreateShaderModule3 with error %u\n", result);
         return result;
     }
 
@@ -686,6 +697,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     pipelineLayoutCreateInfo.pPushConstantRanges = &pushConstantRange;
     result = vtable.CreatePipelineLayout(device, &pipelineLayoutCreateInfo, 0, &pipelineLayoutDecompressMulti);
     if (result != VK_SUCCESS) {
+        PRINT("Error: CreatePipelineLayout3 with error %u\n", result);
         return result;
     }
 
@@ -696,6 +708,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     pipelineInfo.stage.pName = "main";
     result = vtable.CreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, 0, &pipelineDecompressMulti);
     if (result != VK_SUCCESS) {
+        PRINT("Error: CreateComputePipelines3 with error %u\n", result);
         return result;
     }
     vtable.DestroyShaderModule(device, indirectDecompressShaderModule, 0);
@@ -741,6 +754,11 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
 
     const bool computeStageSupport = (subgroupProps.supportedStages & VK_SHADER_STAGE_COMPUTE_BIT);
     const bool subgroupBasicSupport = subgroupProps.supportedOperations & VK_SUBGROUP_FEATURE_BASIC_BIT;
+
+    PRINT("Info: computeStageSupport %u\n", computeStageSupport);
+    PRINT("Info: subgroupBasicSupport %u\n", subgroupBasicSupport);
+    PRINT("Info: vulkan12Features.shaderInt8 %u\n", vulkan12Features.shaderInt8);
+    PRINT("Info: vulkan12Features.bufferDeviceAddress %u\n", vulkan12Features.bufferDeviceAddress);
 
     try {
         bool enable_layer = false;
@@ -790,6 +808,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
         if (enable_layer) {
             result = device_data->CreatePipelineState(pDevice, physicalDevice);
             if (result != VK_SUCCESS) {
+                PRINT("Error: CreatePipelineState failed with error %u\n", result);
                 return result;
             }
         }
@@ -800,6 +819,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
         destroy_device(*pDevice, pAllocator);
         result = VK_ERROR_OUT_OF_HOST_MEMORY;
     }
+    PRINT("Info: CreateDevice Passed with value %u\n", result);
     return result;
 }
 
@@ -857,17 +877,24 @@ static VkPipelineStageFlags ConvertPipelineStageMask(VkPipelineStageFlags2KHR st
 VKAPI_ATTR void VKAPI_CALL CmdDecompressMemoryNV(VkCommandBuffer commandBuffer, uint32_t decompressRegionCount,
                                                  VkDecompressMemoryRegionNV const* pDecompressMemoryRegions) {
     try {
+        PRINT("Info: %s, %d\n", __FILE__, __LINE__);
         auto device_data = GetDeviceData(commandBuffer);
 
+        PRINT("Info: %s, %d\n", __FILE__, __LINE__);
         if (device_data->vtable.CmdDecompressMemoryNV) {
+            PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             device_data->vtable.CmdDecompressMemoryNV(commandBuffer, decompressRegionCount, pDecompressMemoryRegions);
         } else {
+            PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             device_data->vtable.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
                                                 device_data->pipelineDecompressSingle);
+            PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             for (uint32_t t = 0; t < decompressRegionCount; t++) {
+                PRINT("Info: %s, %d\n", __FILE__, __LINE__);
                 device_data->vtable.CmdPushConstants(commandBuffer, device_data->pipelineLayoutDecompressSingle,
                                                      VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(VkDecompressMemoryRegionNV),
                                                      (void*)&pDecompressMemoryRegions[t]);
+                PRINT("Info: %s, %d\n", __FILE__, __LINE__);
                 device_data->vtable.CmdDispatch(commandBuffer, 1, 1, 1);
                 PRINT("Info: vkCmdDecompressMemoryNV: Using VK_LAYER_KHRONOS_memory_decompression layer\n");
             }
@@ -876,6 +903,7 @@ VKAPI_ATTR void VKAPI_CALL CmdDecompressMemoryNV(VkCommandBuffer commandBuffer, 
         // We don't have a way to return an error here.
         PRINT("bad_alloc: %s\n", e.what());
     }
+    PRINT("Info: %s, %d\n", __FILE__, __LINE__);
 }
 
 VKAPI_ATTR void VKAPI_CALL CmdDecompressMemoryIndirectCountNV(VkCommandBuffer commandBuffer,
@@ -883,41 +911,55 @@ VKAPI_ATTR void VKAPI_CALL CmdDecompressMemoryIndirectCountNV(VkCommandBuffer co
                                                               VkDeviceAddress indirectCommandsCountAddress, uint32_t stride) {
     try {
         auto device_data = GetDeviceData(commandBuffer);
+        PRINT("Info: %s, %d\n", __FILE__, __LINE__);
         if (device_data->vtable.CmdDecompressMemoryIndirectCountNV) {
+            PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             device_data->vtable.CmdDecompressMemoryIndirectCountNV(commandBuffer, indirectCommandsAddress,
                                                                    indirectCommandsCountAddress, stride);
         } else {
+            PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             DeviceData::PushConstantDataCopy pushConstantDataCopy = {indirectCommandsCountAddress,
                                                                      device_data->indirectDispatchBufferAddress};
+            PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             device_data->vtable.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, device_data->pipelineCopy);
+            PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             device_data->vtable.CmdPushConstants(commandBuffer, device_data->pipelineLayoutCopy, VK_SHADER_STAGE_COMPUTE_BIT, 0,
                                                  sizeof(DeviceData::PushConstantDataCopy), &pushConstantDataCopy);
+            PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             device_data->vtable.CmdDispatch(commandBuffer, 1, 1, 1);
 
             DeviceData::PushConstantDataDecompressMulti pushConstantData = {indirectCommandsAddress, stride};
             {
+                PRINT("Info: %s, %d\n", __FILE__, __LINE__);
                 VkBufferMemoryBarrier bufferBarrier = {VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
                 bufferBarrier.buffer = device_data->indirectDispatchBuffer;
                 bufferBarrier.offset = 0;
                 bufferBarrier.size = VK_WHOLE_SIZE;
                 bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
                 bufferBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+                PRINT("Info: %s, %d\n", __FILE__, __LINE__);
                 device_data->vtable.CmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                     VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, 0, 1, &bufferBarrier, 0, 0);
+                PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             }
 
+            PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             device_data->vtable.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
                                                 device_data->pipelineDecompressMulti);
+            PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             device_data->vtable.CmdPushConstants(commandBuffer, device_data->pipelineLayoutDecompressMulti,
                                                  VK_SHADER_STAGE_COMPUTE_BIT, 0,
                                                  sizeof(DeviceData::PushConstantDataDecompressMulti), &pushConstantData);
+            PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             device_data->vtable.CmdDispatchIndirect(commandBuffer, device_data->indirectDispatchBuffer, 0);
+            PRINT("Info: %s, %d\n", __FILE__, __LINE__);
             PRINT("Info: vkCmdDecompressMemoryIndirectCountNV: Using VK_LAYER_KHRONOS_memory_decompression layer\n");
         }
     } catch (const std::bad_alloc& e) {
         // We don't have a way to return an error here.
         PRINT("bad_alloc: %s\n", e.what());
     }
+    PRINT("Info: %s, %d\n", __FILE__, __LINE__);
 }
 
 VKAPI_ATTR void VKAPI_CALL CmdPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStageMask,

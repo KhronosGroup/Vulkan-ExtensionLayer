@@ -43,30 +43,45 @@ TEST_F(DecompressionTest, DecompressMemory) {
     if (!CheckDecompressionSupportAndInitState()) {
         GTEST_SKIP() << kSkipPrefix << " decompression not supported, skipping test";
     }
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     VkConstantBufferObj srcBuffer1(m_device, COMPRESSED_SIZE1, compressedData1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     ASSERT_TRUE(srcBuffer1.initialized());
 
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     VkConstantBufferObj srcBuffer2(m_device, COMPRESSED_SIZE2, compressedData2, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     ASSERT_TRUE(srcBuffer2.initialized());
 
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     std::vector<uint8_t> decompressData(2 * DECOMPRESSED_SIZE_ALIGNED, 0xFF);
     VkConstantBufferObj dstBuffer(m_device, 2 * DECOMPRESSED_SIZE_ALIGNED, decompressData.data(), VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     ASSERT_TRUE(dstBuffer.initialized());
 
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     VkCommandPool command_pool;
     auto pool_create_info = LvlInitStruct<VkCommandPoolCreateInfo>();
     pool_create_info.queueFamilyIndex = m_device->graphics_queue_node_index_;
     pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
     result = vk::CreateCommandPool(m_device->device(), &pool_create_info, nullptr, &command_pool);
     ASSERT_TRUE(result == VK_SUCCESS);
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
 
     VkCommandBuffer command_buffer;
     auto command_buffer_allocate_info = LvlInitStruct<VkCommandBufferAllocateInfo>();
     command_buffer_allocate_info.commandPool = command_pool;
     command_buffer_allocate_info.commandBufferCount = 1;
     command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     result = vk::AllocateCommandBuffers(m_device->device(), &command_buffer_allocate_info, &command_buffer);
     ASSERT_TRUE(result == VK_SUCCESS);
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
 
     VkQueue queue = VK_NULL_HANDLE;
     vk::GetDeviceQueue(m_device->device(), m_device->graphics_queue_node_index_, 0, &queue);
@@ -77,40 +92,78 @@ TEST_F(DecompressionTest, DecompressMemory) {
         VkBufferDeviceAddressInfo dstBufferAddr = {VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, nullptr, dstBuffer.handle()};
 
         VkDecompressMemoryRegionNV region[2] = {};
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         region[0].compressedSize = COMPRESSED_SIZE1;
         region[0].decompressedSize = DECOMPRESSED_SIZE;
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         region[0].srcAddress = vk::GetBufferDeviceAddress(m_device->device(), &srcBufferAddr1);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         region[0].dstAddress = vk::GetBufferDeviceAddress(m_device->device(), &dstBufferAddr);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         region[0].decompressionMethod = VK_MEMORY_DECOMPRESSION_METHOD_GDEFLATE_1_0_BIT_NV;
         region[1].compressedSize = COMPRESSED_SIZE2;
         region[1].decompressedSize = DECOMPRESSED_SIZE;
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         region[1].srcAddress = vk::GetBufferDeviceAddress(m_device->device(), &srcBufferAddr2);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         region[1].dstAddress = vk::GetBufferDeviceAddress(m_device->device(), &dstBufferAddr) + DECOMPRESSED_SIZE_ALIGNED;
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         region[1].decompressionMethod = VK_MEMORY_DECOMPRESSION_METHOD_GDEFLATE_1_0_BIT_NV;
 
         auto begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         vk::BeginCommandBuffer(command_buffer, &begin_info);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         vk::CmdDecompressMemoryNV(command_buffer, 2, &region[0]);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         vk::EndCommandBuffer(command_buffer);
     }
     {
         auto submit_info = LvlInitStruct<VkSubmitInfo>();
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &command_buffer;
-
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         vk::QueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
     }
     vk::QueueWaitIdle(queue);
     {
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         void *decompressedDataResult = dstBuffer.memory().map();
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         int compareResult = memcmp(decompressedDataResult, decompressedData, DECOMPRESSED_SIZE);
+        fprintf(stderr, "Info: %s %d, compareResult %u\n", __FILE__, __LINE__, compareResult);
+        fflush(stderr);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         compareResult |= memcmp((uint8_t *)decompressedDataResult + DECOMPRESSED_SIZE_ALIGNED, decompressedData, DECOMPRESSED_SIZE);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         ASSERT_TRUE(compareResult == 0);
+        fprintf(stderr, "Info: %s %d, compareResult %u\n", __FILE__, __LINE__, compareResult);
+        fflush(stderr);
         dstBuffer.memory().unmap();
     }
-
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     vk::FreeCommandBuffers(m_device->device(), command_pool, 1, &command_buffer);
     vk::DestroyCommandPool(m_device->device(), command_pool, NULL);
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
 }
 
 TEST_F(DecompressionTest, DecompressMemoryIndirect) {
@@ -121,12 +174,18 @@ TEST_F(DecompressionTest, DecompressMemoryIndirect) {
     }
     VkResult result = VK_SUCCESS;
 
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     VkConstantBufferObj srcBuffer1(m_device, COMPRESSED_SIZE1, compressedData1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     ASSERT_TRUE(srcBuffer1.initialized());
 
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     VkConstantBufferObj srcBuffer2(m_device, COMPRESSED_SIZE2, compressedData2, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     ASSERT_TRUE(srcBuffer2.initialized());
 
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     std::vector<uint8_t> decompressData(2 * DECOMPRESSED_SIZE_ALIGNED, 0xFF);
     VkConstantBufferObj dstBuffer(m_device, 2 * DECOMPRESSED_SIZE_ALIGNED, decompressData.data(), VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     ASSERT_TRUE(dstBuffer.initialized());
@@ -136,31 +195,55 @@ TEST_F(DecompressionTest, DecompressMemoryIndirect) {
     VkBufferDeviceAddressInfo dstBufferAddr = {VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, nullptr, dstBuffer.handle()};
 
     const uint32_t count = 2;
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     VkDecompressMemoryRegionNV regions[count];
     regions[0].compressedSize = COMPRESSED_SIZE1;
     regions[0].decompressedSize = DECOMPRESSED_SIZE;
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     regions[0].srcAddress = vk::GetBufferDeviceAddress(m_device->device(), &srcBufferAddr1);
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     regions[0].dstAddress = vk::GetBufferDeviceAddress(m_device->device(), &dstBufferAddr);
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     regions[0].decompressionMethod = VK_MEMORY_DECOMPRESSION_METHOD_GDEFLATE_1_0_BIT_NV;
     regions[1].compressedSize = COMPRESSED_SIZE2;
     regions[1].decompressedSize = DECOMPRESSED_SIZE;
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     regions[1].srcAddress = vk::GetBufferDeviceAddress(m_device->device(), &srcBufferAddr2);
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     regions[1].dstAddress = vk::GetBufferDeviceAddress(m_device->device(), &dstBufferAddr) + DECOMPRESSED_SIZE_ALIGNED;
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     regions[1].decompressionMethod = VK_MEMORY_DECOMPRESSION_METHOD_GDEFLATE_1_0_BIT_NV;
 
     VkConstantBufferObj indirectBufferCount(m_device, sizeof(uint32_t), &count, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
     ASSERT_TRUE(dstBuffer.initialized());
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     VkConstantBufferObj indirectBufferDecompress(m_device, count * sizeof(VkDecompressMemoryRegionNV), &regions[0],
                                                  VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
     ASSERT_TRUE(dstBuffer.initialized());
 
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     VkBufferDeviceAddressInfo indirectCountAddrInfo = {VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, nullptr,
                                                        indirectBufferCount.handle()};
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     VkDeviceAddress indirectCountAddr = vk::GetBufferDeviceAddress(m_device->device(), &indirectCountAddrInfo);
     ASSERT_TRUE(indirectCountAddr != 0);
 
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     VkBufferDeviceAddressInfo decompressParamAddrInfo = {VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, nullptr,
                                                          indirectBufferDecompress.handle()};
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     VkDeviceAddress decompressParamAddr = vk::GetBufferDeviceAddress(m_device->device(), &decompressParamAddrInfo);
     ASSERT_TRUE(decompressParamAddr != 0);
 
@@ -168,43 +251,77 @@ TEST_F(DecompressionTest, DecompressMemoryIndirect) {
     auto pool_create_info = LvlInitStruct<VkCommandPoolCreateInfo>();
     pool_create_info.queueFamilyIndex = m_device->graphics_queue_node_index_;
     pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     result = vk::CreateCommandPool(m_device->device(), &pool_create_info, nullptr, &command_pool);
     ASSERT_TRUE(result == VK_SUCCESS);
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
 
     VkCommandBuffer command_buffer;
     auto command_buffer_allocate_info = LvlInitStruct<VkCommandBufferAllocateInfo>();
     command_buffer_allocate_info.commandPool = command_pool;
     command_buffer_allocate_info.commandBufferCount = 1;
     command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     result = vk::AllocateCommandBuffers(m_device->device(), &command_buffer_allocate_info, &command_buffer);
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     ASSERT_TRUE(result == VK_SUCCESS);
 
     VkQueue queue = VK_NULL_HANDLE;
     vk::GetDeviceQueue(m_device->device(), m_device->graphics_queue_node_index_, 0, &queue);
 
     {
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         auto begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
         vk::BeginCommandBuffer(command_buffer, &begin_info);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         vk::CmdDecompressMemoryIndirectCountNV(command_buffer, decompressParamAddr, indirectCountAddr,
                                                sizeof(VkDecompressMemoryRegionNV));
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         vk::EndCommandBuffer(command_buffer);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
     }
     {
         auto submit_info = LvlInitStruct<VkSubmitInfo>();
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &command_buffer;
-
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         vk::QueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
     }
     vk::QueueWaitIdle(queue);
     {
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         void *decompressedDataResult = dstBuffer.memory().map();
         int compareResult = memcmp(decompressedDataResult, decompressedData, DECOMPRESSED_SIZE);
+        fprintf(stderr, "Info: %s %d, compareResult %u\n", __FILE__, __LINE__, compareResult);
+        fflush(stderr);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         compareResult |= memcmp((uint8_t *)decompressedDataResult + DECOMPRESSED_SIZE_ALIGNED, decompressedData, DECOMPRESSED_SIZE);
+        fprintf(stderr, "Info: %s %d, compareResult %u\n", __FILE__, __LINE__, compareResult);
+        fflush(stderr);
         ASSERT_TRUE(compareResult == 0);
+        fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+        fflush(stderr);
         dstBuffer.memory().unmap();
     }
-
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
     vk::FreeCommandBuffers(m_device->device(), command_pool, 1, &command_buffer);
     vk::DestroyCommandPool(m_device->device(), command_pool, NULL);
+    fprintf(stderr, "Info: %s %d\n", __FILE__, __LINE__);
+    fflush(stderr);
 }
