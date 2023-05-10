@@ -89,11 +89,6 @@ if (WIN32)
     list(REMOVE_ITEM TARGET_NAMES "VkLayer_khronos_timeline_semaphore")
 endif()
 
-# The Vulkan SDK has deliberately chosen not to ship 32-bit VkLayer_khronos_shader_object files
-if (CMAKE_SIZEOF_VOID_P EQUAL "4")
-    list(REMOVE_ITEM TARGET_NAMES "VkLayer_khronos_shader_object")
-endif()
-
 # There are currently no plans to ship Memory Compression part of the Vulkan SDK
 list(REMOVE_ITEM TARGET_NAMES "VkLayer_khronos_memory_decompression")
 
