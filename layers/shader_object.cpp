@@ -2937,7 +2937,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
 #include "generated/shader_object_device_data_dynamic_state_adding.inl"
 
         // Handle special case dynamic states
-        if (extended_dynamic_state_1_ptr->extendedDynamicState == VK_FALSE) {
+        if (!extended_dynamic_state_1_ptr || extended_dynamic_state_1_ptr->extendedDynamicState == VK_FALSE) {
             // No VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT, so use VK_DYNAMIC_STATE_VIEWPORT instead
             device_data->AddDynamicState(VK_DYNAMIC_STATE_VIEWPORT);
             device_data->AddDynamicState(VK_DYNAMIC_STATE_SCISSOR);
