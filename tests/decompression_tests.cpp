@@ -32,9 +32,6 @@ void DecompressionTest::SetUp() {
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
     VkExtensionLayerTest::AddSwapchainDeviceExtension();
-    if (!CheckDecompressionSupportAndInitState()) {
-        GTEST_SKIP() << kSkipPrefix << " decompression not supported, skipping test";
-    }
 }
 
 void DecompressionTest::TearDown() {}
@@ -43,6 +40,9 @@ TEST_F(DecompressionTest, DecompressMemory) {
     TEST_DESCRIPTION("Test vkCmdDecompressMemoryNV.");
     VkResult result = VK_SUCCESS;
 
+    if (!CheckDecompressionSupportAndInitState()) {
+        GTEST_SKIP() << kSkipPrefix << " decompression not supported, skipping test";
+    }
     VkConstantBufferObj srcBuffer1(m_device, COMPRESSED_SIZE1, compressedData1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     ASSERT_TRUE(srcBuffer1.initialized());
 
@@ -116,6 +116,9 @@ TEST_F(DecompressionTest, DecompressMemory) {
 TEST_F(DecompressionTest, DecompressMemoryIndirect) {
     TEST_DESCRIPTION("Test vkCmdDecompressMemoryIndirectCountNV.");
 
+    if (!CheckDecompressionSupportAndInitState()) {
+        GTEST_SKIP() << kSkipPrefix << " decompression not supported, skipping test";
+    }
     VkResult result = VK_SUCCESS;
 
     VkConstantBufferObj srcBuffer1(m_device, COMPRESSED_SIZE1, compressedData1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
