@@ -186,7 +186,9 @@ VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysicalDevi
     }
 
     if (!pLayerName) {
+//#ifndef WIN32
         uint32_t count = 0;
+//#endif
         auto instance_data = GetInstanceData(physicalDevice);
         instance_data->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, &count, nullptr);
         if (!pProperties) {
