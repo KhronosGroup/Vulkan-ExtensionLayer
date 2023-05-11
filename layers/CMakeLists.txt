@@ -89,9 +89,6 @@ if (WIN32)
     list(REMOVE_ITEM TARGET_NAMES "VkLayer_khronos_timeline_semaphore")
 endif()
 
-# There are currently no plans to ship Memory Compression part of the Vulkan SDK
-list(REMOVE_ITEM TARGET_NAMES "VkLayer_khronos_memory_decompression")
-
 foreach(TARGET_NAME ${TARGET_NAMES})
     set(INPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in")
     set(INTERMEDIATE_FILE "${CMAKE_CURRENT_BINARY_DIR}/json/intermediate-${TARGET_NAME}.json")
@@ -116,6 +113,12 @@ foreach(TARGET_NAME ${TARGET_NAMES})
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${INTERMEDIATE_FILE} $<TARGET_FILE_DIR:${TARGET_NAME}>/${OUTPUT_FILE_FINAL_NAME}
     )
+
+    # Don't install VkLayer_khronos_memory_decompression. We don't plan to release this for the 1.3.250 SDK release.
+    if (${TARGET_NAME} STREQUAL "VkLayer_khronos_memory_decompression")
+        continue()
+    endif()
+
     if (UNIX)
         set(UNIX_INTERMEDIATE_FILE "${CMAKE_CURRENT_BINARY_DIR}/json/unix_install_${TARGET_NAME}.json")
 
