@@ -79,6 +79,7 @@ add_executable(vk_extension_layer_tests
                extension_layer_tests.cpp
                synchronization2_tests.cpp
                decompression_tests.cpp
+               shader_object_tests.cpp
                ${COMMON_CPP})
 add_test(NAME vk_extension_layer_tests COMMAND vk_extension_layer_tests)
 
@@ -108,6 +109,8 @@ target_link_libraries(vk_extension_layer_tests PRIVATE
     GTest::gtest_main
     ${GLSLANG_LIBRARIES}
 )
+
+target_compile_definitions(vk_extension_layer_tests PUBLIC SHADER_OBJECT_BINARY_PATH="$<TARGET_FILE_DIR:VkLayer_khronos_shader_object>")
 
 # Specify target_link_libraries
 if(NOT WIN32)
