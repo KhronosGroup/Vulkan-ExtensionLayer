@@ -198,6 +198,13 @@ bool CheckTimelineSemaphoreSupportAndInitState(VkRenderFramework *renderFramewor
 }
 
 bool VkExtensionLayerTest::CheckDecompressionSupportAndInitState() {
+    bool is_api_version_12_or_above =
+        VK_API_VERSION_MAJOR(m_instance_api_version) >= 1 && VK_API_VERSION_MINOR(m_instance_api_version) >= 2;
+    if (!is_api_version_12_or_above) {
+        // Decompression tests need Vulkan 1.2+
+        return false;
+    }
+
     bool decompressionExtensionFound = false;
     if (DeviceExtensionSupported(VK_NV_MEMORY_DECOMPRESSION_EXTENSION_NAME, 1)) {
         decompressionExtensionFound = true;
