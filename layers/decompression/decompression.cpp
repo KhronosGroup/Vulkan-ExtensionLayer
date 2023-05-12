@@ -121,7 +121,7 @@ std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
 namespace memory_decompression {
 
 static const VkLayerProperties kGlobalLayer = {
-    "VK_LAYER_memory_decompression",
+    "VK_LAYER_KHRONOS_memory_decompression",
     VK_HEADER_VERSION_COMPLETE,
     1,
     "Default memory_decompression layer",
@@ -539,6 +539,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     // byteCodeIndex must pick a valid shader
     if ((byteCodeArrLength != byteCodeIndirectArrLength) && (bytecodeIndex >= byteCodeArrLength)) {
         PRINT("Error: Unsupported bytecodeIndex %u\n", bytecodeIndex);
+        return VK_ERROR_INITIALIZATION_FAILED;
     }
     // create indirect buffer with data {[indirectCommandsAddress], 1,1}
     VkBufferCreateInfo bufferInfo = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
@@ -765,6 +766,10 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
             // bufferDeviceAddress feature
             if (!computeStageSupport || !subgroupBasicSupport || !vulkan12Features.shaderInt8 ||
                 !vulkan12Features.bufferDeviceAddress) {
+                PRINT("Info: computeStageSupport %u\n", computeStageSupport);
+                PRINT("Info: subgroupBasicSupport %u\n", subgroupBasicSupport);
+                PRINT("Info: vulkan12Features.shaderInt8 %u\n", vulkan12Features.shaderInt8);
+                PRINT("Info: vulkan12Features.bufferDeviceAddress %u\n", vulkan12Features.bufferDeviceAddress);
                 PRINT("Error: Required features not present to use decompression layer.\n");
                 return VK_ERROR_FEATURE_NOT_PRESENT;
             }
@@ -790,6 +795,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
         if (enable_layer) {
             result = device_data->CreatePipelineState(pDevice, physicalDevice);
             if (result != VK_SUCCESS) {
+                PRINT("Error: CreatePipelineState failed with error %u\n", result);
                 return result;
             }
         }
