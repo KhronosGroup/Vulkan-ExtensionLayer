@@ -242,6 +242,26 @@ bool VkExtensionLayerTest::CheckDecompressionSupportAndInitState() {
     return true;
 }
 
+bool VkExtensionLayerTest::CheckShaderObjectSupportAndInitState() {
+    if (DeviceExtensionSupported(VK_EXT_SHADER_OBJECT_EXTENSION_NAME, 0)) {
+        m_device_extension_names.push_back(VK_EXT_SHADER_OBJECT_EXTENSION_NAME);
+    }
+
+    auto shader_object_features = LvlInitStruct<VkPhysicalDeviceShaderObjectFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&shader_object_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (!shader_object_features.shaderObject) {
+        return false;
+    }
+    InitState(nullptr, &features2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+    vk::CmdBindShadersEXT = reinterpret_cast<PFN_vkCmdBindShadersEXT>(vk::GetDeviceProcAddr(device(), "vkCmdBindShadersEXT"));
+    vk::CreateShadersEXT = reinterpret_cast<PFN_vkCreateShadersEXT>(vk::GetDeviceProcAddr(device(), "vkCreateShadersEXT"));
+    vk::DestroyShaderEXT = reinterpret_cast<PFN_vkDestroyShaderEXT>(vk::GetDeviceProcAddr(device(), "vkDestroyShaderEXT"));
+    vk::GetShaderBinaryDataEXT = reinterpret_cast<PFN_vkGetShaderBinaryDataEXT>(vk::GetDeviceProcAddr(device(), "vkGetShaderBinaryDataEXT"));
+
+    return true;
+}
+
 bool VkExtensionLayerTest::CheckSynchronization2SupportAndInitState() {
     if (DeviceExtensionSupported(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME, 0)) {
         m_device_extension_names.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
