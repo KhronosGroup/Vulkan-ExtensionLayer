@@ -1,36 +1,36 @@
 {
-  "repos" : [
-    {
-      "name": "Vulkan-Headers",
-      "url": "https://github.com/KhronosGroup/Vulkan-Headers.git",
-      "sub_dir": "Vulkan-Headers",
-      "build_dir": "Vulkan-Headers/build",
-      "install_dir": "Vulkan-Headers/build/install",
-      "commit": "v1.3.250"
-    },
-    {
-      "name" : "glslang",
-      "url" : "https://github.com/KhronosGroup/glslang.git",
-      "sub_dir" : "glslang",
-      "build_dir" : "glslang/build",
-      "install_dir" : "glslang/build/install",
-      "commit" : "ca8d07d0bc1c6390b83915700439fa7719de6a2a",
-      "prebuild" : [
-        "{python} update_glslang_sources.py"
-      ]
-    },
-    {
-      "name": "SPIRV-Headers",
-      "url": "https://github.com/KhronosGroup/SPIRV-Headers.git",
-      "sub_dir": "SPIRV-Headers",
-      "build_dir": "SPIRV-Headers/build",
-      "install_dir": "SPIRV-Headers/build/install",
-      "commit": "d13b52222c39a7e9a401b44646f0ca3a640fbd47"
+    "repos": [
+        {
+            "name": "Vulkan-Headers",
+            "url": "https://github.com/KhronosGroup/Vulkan-Headers.git",
+            "sub_dir": "Vulkan-Headers",
+            "build_dir": "Vulkan-Headers/build",
+            "install_dir": "Vulkan-Headers/build/install",
+            "commit": "v1.3.250"
+        },
+        {
+            "name": "glslang",
+            "url": "https://github.com/KhronosGroup/glslang.git",
+            "sub_dir": "glslang",
+            "build_dir": "glslang/build",
+            "install_dir": "glslang/build/install",
+            "commit": "d1517d64cfca91f573af1bf7341dc3a5113349c0",
+            "prebuild": [
+                "{python} update_glslang_sources.py"
+            ]
+        },
+        {
+            "name": "SPIRV-Headers",
+            "url": "https://github.com/KhronosGroup/SPIRV-Headers.git",
+            "sub_dir": "SPIRV-Headers",
+            "build_dir": "SPIRV-Headers/build",
+            "install_dir": "SPIRV-Headers/build/install",
+            "commit": "268a061764ee69f09a477a695bf6a11ffe311b8d"
+        }
+    ],
+    "install_names": {
+        "Vulkan-Headers": "VULKAN_HEADERS_INSTALL_DIR",
+        "glslang": "GLSLANG_INSTALL_DIR",
+        "SPIRV-Headers": "SPIRV_HEADERS_INSTALL_DIR"
     }
-  ],
-  "install_names" : {
-      "Vulkan-Headers" : "VULKAN_HEADERS_INSTALL_DIR",
-      "glslang" : "GLSLANG_INSTALL_DIR",
-      "SPIRV-Headers" : "SPIRV_HEADERS_INSTALL_DIR"
-  }
 }
