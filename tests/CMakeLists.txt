@@ -15,6 +15,20 @@
 # limitations under the License.
 # ~~~
 
+# run the generator expression on the test_layer_location file
+file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h" INPUT "${CMAKE_CURRENT_LIST_DIR}/generator_source/test_layer_location.h")
+
+# copy $<BUILD>/test_layer_location_$<CONFIG> to $<BUILD>/test_layer_location.h
+add_custom_command(
+    PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} "-E" "copy_if_different" "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h" "${CMAKE_BINARY_DIR}/test_layer_location.h"
+    VERBATIM
+    DEPENDS  "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h"
+    OUTPUT   "${CMAKE_BINARY_DIR}/test_layer_location.h"
+    COMMENT  "creating test_layer_location.h file ({event: PRE_BUILD}, {filename: test_layer_location.h })"
+    )
+add_custom_target (generate_test_layer_location DEPENDS "${CMAKE_BINARY_DIR}/test_layer_location.h")
+
 # Needed to make structure definitions match with glslang libraries
 add_definitions(-DNV_EXTENSIONS -DAMD_EXTENSIONS)
 
@@ -72,7 +86,8 @@ if(MSVC_IDE)
     set_target_properties(vk_extension_layer_tests PROPERTIES VS_DEBUGGER_ENVIRONMENT "VK_LAYER_PATH=$<TARGET_FILE_DIR:VkLayer_khronos_synchronization2>")
 endif()
 
-add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_memory_decompression)
+add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_memory_decompression generate_test_layer_location)
+
 # Note that there is no need to add GTEST directories here due to googletest exporting them via the gtest target.
 target_include_directories(vk_extension_layer_tests
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}

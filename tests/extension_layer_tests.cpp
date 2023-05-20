@@ -28,6 +28,10 @@
 #include "extension_layer_tests.h"
 #include "vk_typemap_helper.h"
 
+#if !defined(ANDROID)
+#include "test_layer_location.h"
+#endif
+
 // Global list of sType,size identifiers
 std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
 
@@ -288,14 +292,11 @@ bool VkExtensionLayerTest::CheckSynchronization2SupportAndInitState() {
         vk::CreateRenderPass2 =
             reinterpret_cast<PFN_vkCreateRenderPass2>(vk::GetDeviceProcAddr(device(), "vkCreateRenderPass2KHR"));
     }
-    vk::CreateSwapchainKHR =
-            reinterpret_cast<PFN_vkCreateSwapchainKHR>(vk::GetDeviceProcAddr(device(), "vkCreateSwapchainKHR"));
+    vk::CreateSwapchainKHR = reinterpret_cast<PFN_vkCreateSwapchainKHR>(vk::GetDeviceProcAddr(device(), "vkCreateSwapchainKHR"));
     vk::GetSwapchainImagesKHR =
-            reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(vk::GetDeviceProcAddr(device(), "vkGetSwapchainImagesKHR"));
-    vk::DestroySwapchainKHR =
-            reinterpret_cast<PFN_vkDestroySwapchainKHR>(vk::GetDeviceProcAddr(device(), "vkDestroySwapchainKHR"));
-    vk::AcquireNextImageKHR=
-            reinterpret_cast<PFN_vkAcquireNextImageKHR>(vk::GetDeviceProcAddr(device(), "vkAcquireNextImageKHR"));
+        reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(vk::GetDeviceProcAddr(device(), "vkGetSwapchainImagesKHR"));
+    vk::DestroySwapchainKHR = reinterpret_cast<PFN_vkDestroySwapchainKHR>(vk::GetDeviceProcAddr(device(), "vkDestroySwapchainKHR"));
+    vk::AcquireNextImageKHR = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vk::GetDeviceProcAddr(device(), "vkAcquireNextImageKHR"));
 
     return true;
 }
@@ -614,6 +615,11 @@ int main(int argc, char **argv) {
     SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
     _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
     _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+#endif
+
+#if !defined(ANDROID)
+    // Set VK_LAYER_PATH so that the loader can find the layers
+    SetEnvironment("VK_LAYER_PATH", LAYER_BUILD_LOCATION);
 #endif
 
     ::testing::InitGoogleTest(&argc, argv);
