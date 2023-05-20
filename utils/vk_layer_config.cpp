@@ -115,7 +115,8 @@ bool SetEnvironment(const char *name, const char *value) {
     return (setenv(name, value, 0) == 0) ? true : false;
 #elif defined(_WIN32)
     int size = GetEnvironmentVariable(name, NULL, 0);
-    if (size != 0) {
+    // only overwrite if the variable isn't already set.
+    if (size == 0) {
         return static_cast<bool>(SetEnvironmentVariable(name, value));
     }
     return true;
