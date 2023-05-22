@@ -444,6 +444,11 @@ void VkRenderFramework::InitFramework(void * /*unused compatibility parameter*/,
     RemoveIf(instance_extensions_, ExtensionNotSupportedWithReporting);
 
     auto ici = GetInstanceCreateInfo();
+#ifdef VK_USE_PLATFORM_MACOS_MVK
+    ici.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+
+    instance_extensions_.push_back("VK_KHR_portability_enumeration");
+#endif
 
     // concatenate pNexts
     void *last_pnext = nullptr;
