@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
+ * Copyright (c) 2015-2023 Valve Corporation
+ * Copyright (c) 2015-2023 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,6 +85,10 @@ void Environment::SetUp() {
 #ifdef VK_USE_PLATFORM_XCB_KHR
     instance_extension_names.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
+#ifdef VK_USE_PLATFORM_MACOS_MVK
+    device_extension_names.push_back("VK_VK_KHR_portability_subset");
+    instance_extension_names.push_back("VK_KHR_portability_enumeration");
+#endif
 
     VkBool32 extFound;
 
@@ -104,6 +108,9 @@ void Environment::SetUp() {
     inst_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     inst_info.pNext = NULL;
     inst_info.pApplicationInfo = &app_;
+#ifdef VK_USE_PLATFORM_MACOS_MVK
+    inst_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
     inst_info.enabledExtensionCount = instance_extension_names.size();
     inst_info.ppEnabledExtensionNames = (instance_extension_names.size()) ? &instance_extension_names[0] : NULL;
     inst_info.enabledLayerCount = 0;
