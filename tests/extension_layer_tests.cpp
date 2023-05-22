@@ -417,6 +417,18 @@ bool VkExtensionLayerTest::AddSurfaceInstanceExtension() {
     }
 #endif
 
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+    if (!InstanceExtensionSupported(VK_MVK_MACOS_SURFACE_EXTENSION_NAME)) {
+        printf("%s %s extension not supported\n", kSkipPrefix, VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
+        return false;
+    }
+    if (InstanceExtensionSupported(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME))
+        instance_extensions_.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
+
+    instance_extensions_.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
+    bSupport = true;
+#endif
+
     if (bSupport) return true;
     printf("%s No platform's surface extension supported\n", kSkipPrefix);
     return false;
