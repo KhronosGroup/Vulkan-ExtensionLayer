@@ -801,6 +801,22 @@
             "dynamic_states": []
         },
         {
+            "name": "PIPELINE_LIBRARY",
+            "extension_name_macro": "VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME"
+        },
+        {
+            "name": "MULTIVIEW",
+            "extension_name_macro": "VK_KHR_MULTIVIEW_EXTENSION_NAME"
+        },
+        {
+            "name": "CREATE_RENDERPASS_2",
+            "extension_name_macro": "VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME"
+        },
+        {
+            "name": "DEPTH_STENCIL_RESOLVE",
+            "extension_name_macro": "VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME"
+        },
+        {
             "name": "DRIVER_PROPERTIES",
             "extension_name_macro": "VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME"
         }
