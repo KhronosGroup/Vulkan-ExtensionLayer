@@ -440,14 +440,19 @@ void VkRenderFramework::InitFramework(void * /*unused compatibility parameter*/,
         }
     };
 
+    // This has to be ahead of the GetInstanceCreateInfo() call, or it doesn't get registered
+#ifdef VK_USE_PLATFORM_MACOS_MVK
+    instance_extensions_.push_back("VK_KHR_portability_enumeration");
+#endif
+
     RemoveIf(instance_layers_, LayerNotSupportedWithReporting);
     RemoveIf(instance_extensions_, ExtensionNotSupportedWithReporting);
 
     auto ici = GetInstanceCreateInfo();
+
 #ifdef VK_USE_PLATFORM_MACOS_MVK
     ici.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
-    instance_extensions_.push_back("VK_KHR_portability_enumeration");
 #endif
 
     // concatenate pNexts
