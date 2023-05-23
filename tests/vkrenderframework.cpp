@@ -541,6 +541,10 @@ void VkRenderFramework::InitState(VkPhysicalDeviceFeatures *features, void *crea
 
     RemoveIf(m_device_extension_names, ExtensionNotSupportedWithReporting);
 
+#ifdef VK_USE_PLATFORM_MACOS_MVK
+    m_device_extension_names.push_back("VK_KHR_portability_subset");
+#endif
+
     m_device = new VkDeviceObj(0, gpu_, m_device_extension_names, features, create_device_pnext);
     m_device->SetDeviceQueue();
 
