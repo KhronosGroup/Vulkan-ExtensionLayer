@@ -973,6 +973,9 @@
                     "CmdBeginRenderingKHR"
                 ],
                 [
+                    "CmdBeginTransformFeedbackEXT"
+                ],
+                [
                     "GetShaderBinaryDataEXT"
                 ],
                 [

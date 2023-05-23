@@ -43,6 +43,7 @@
     ENTRY_POINT(BeginCommandBuffer)\
     ENTRY_POINT(CmdBeginRendering)\
     ENTRY_POINT_ALIAS(CmdBeginRenderingKHR, CmdBeginRendering)\
+    ENTRY_POINT(CmdBeginTransformFeedbackEXT)\
     ENTRY_POINT(GetShaderBinaryDataEXT)\
     ENTRY_POINT(CmdSetViewportWithCount)\
     ENTRY_POINT_ALIAS(CmdSetViewportWithCountEXT, CmdSetViewportWithCount)\

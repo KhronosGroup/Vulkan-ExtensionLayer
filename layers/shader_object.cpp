@@ -3376,6 +3376,12 @@ static VKAPI_ATTR void VKAPI_CALL CmdBeginRendering(VkCommandBuffer commandBuffe
     cmd_data->device_data->vtable.CmdBeginRendering(commandBuffer, pRenderingInfo);
 }
 
+static VKAPI_ATTR void VKAPI_CALL CmdBeginTransformFeedbackEXT(VkCommandBuffer commandBuffer, uint32_t firstCounterBuffer, uint32_t counterBufferCount, const VkBuffer* pCounterBuffers, const VkDeviceSize* pCounterBufferOffsets) {
+    auto cmd_data = GetCommandBufferData(commandBuffer);
+    UpdateDrawState(*cmd_data, commandBuffer);
+    cmd_data->device_data->vtable.CmdBeginTransformFeedbackEXT(commandBuffer, firstCounterBuffer, counterBufferCount, pCounterBuffers, pCounterBufferOffsets);
+}
+
 static VKAPI_ATTR void VKAPI_CALL CmdSetViewportWithCount(VkCommandBuffer commandBuffer, uint32_t viewportCount,
                                                           const VkViewport* pViewports) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
