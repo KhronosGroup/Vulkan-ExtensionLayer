@@ -799,6 +799,10 @@
             "feature_struct": "VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT",
             "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT",
             "dynamic_states": []
+        },
+        {
+            "name": "DRIVER_PROPERTIES",
+            "extension_name_macro": "VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME"
         }
     ],
     "optional_extensions": [
