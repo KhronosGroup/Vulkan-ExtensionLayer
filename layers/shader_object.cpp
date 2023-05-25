@@ -2927,6 +2927,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
         device_data->flags                            = enable_layer ? DeviceData::SHADER_OBJECT_LAYER_ENABLED : 0; 
         device_data->reserved_private_data_slot_count = total_private_data_slot_request_count;
         device_data->enabled_extensions               = enabled_additional_extensions;
+
 #include "generated/shader_object_device_data_set_extension_variables.inl"
 
         // Add dynamic states that are always available
@@ -2960,9 +2961,15 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
         // Get properties for this device so we can allocate according to device limits
         instance_vtable.GetPhysicalDeviceProperties(physicalDevice, &device_data->properties);
         if (device_data->properties.apiVersion >= VK_API_VERSION_1_1) {
+            VkPhysicalDeviceDriverPropertiesKHR driver_properties{
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR
+            };
             VkPhysicalDeviceExtendedDynamicState3PropertiesEXT eds3_properties{
                 VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_PROPERTIES_EXT
             };
+            if (device_data->enabled_extensions & DRIVER_PROPERTIES) {
+                eds3_properties.pNext = &driver_properties;
+            }
             VkPhysicalDeviceProperties2 properties2{
                 VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
                 &eds3_properties
@@ -2970,6 +2977,10 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
             instance_vtable.GetPhysicalDeviceProperties2(physicalDevice, &properties2);
             if (eds3_properties.dynamicPrimitiveTopologyUnrestricted == VK_TRUE) {
                 device_data->flags |= DeviceData::HAS_PRIMITIVE_TOPLOGY_UNRESTRICTED;
+            }
+            // Disable graphics pipeline libraries on drivers that have issues with them
+            if (driver_properties.driverID == VK_DRIVER_ID_MESA_RADV || driver_properties.driverID == VK_DRIVER_ID_MESA_LLVMPIPE) {
+                device_data->enabled_extensions &= ~GRAPHICS_PIPELINE_LIBRARY;
             }
         }
 
