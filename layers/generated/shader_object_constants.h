@@ -30,21 +30,22 @@ enum AdditionalExtensionFlagBits {
     EXTENDED_DYNAMIC_STATE_3        = 1u << 5,
     VERTEX_INPUT_DYNAMIC            = 1u << 6,
     GRAPHICS_PIPELINE_LIBRARY       = 1u << 7,
-    TRANSFORM_FEEDBACK              = 1u << 8,
-    CONSERVATIVE_RASTERIZATION      = 1u << 9,
-    DEPTH_CLIP_ENABLE               = 1u << 10,
-    SAMPLE_LOCATIONS                = 1u << 11,
-    PROVOKING_VERTEX                = 1u << 12,
-    LINE_RASTERIZATION              = 1u << 13,
-    DEPTH_CLIP_CONTROL              = 1u << 14,
-    NV_FRAMEBUFFER_MIXED_SAMPLES    = 1u << 15,
-    NV_COVERAGE_REDUCTION_MODE      = 1u << 16,
-    NV_FRAGMENT_COVERAGE_TO_COLOR   = 1u << 17,
-    NV_CLIP_SPACE_W_SCALING         = 1u << 18,
-    NV_VIEWPORT_SWIZZLE             = 1u << 19,
-    NV_SHADING_RATE_IMAGE           = 1u << 20,
-    NV_REPRESENTATIVE_FRAGMENT_TEST = 1u << 21,
-    SHADER_OBJECT                   = 1u << 22,
+    DRIVER_PROPERTIES               = 1u << 8,
+    TRANSFORM_FEEDBACK              = 1u << 9,
+    CONSERVATIVE_RASTERIZATION      = 1u << 10,
+    DEPTH_CLIP_ENABLE               = 1u << 11,
+    SAMPLE_LOCATIONS                = 1u << 12,
+    PROVOKING_VERTEX                = 1u << 13,
+    LINE_RASTERIZATION              = 1u << 14,
+    DEPTH_CLIP_CONTROL              = 1u << 15,
+    NV_FRAMEBUFFER_MIXED_SAMPLES    = 1u << 16,
+    NV_COVERAGE_REDUCTION_MODE      = 1u << 17,
+    NV_FRAGMENT_COVERAGE_TO_COLOR   = 1u << 18,
+    NV_CLIP_SPACE_W_SCALING         = 1u << 19,
+    NV_VIEWPORT_SWIZZLE             = 1u << 20,
+    NV_SHADING_RATE_IMAGE           = 1u << 21,
+    NV_REPRESENTATIVE_FRAGMENT_TEST = 1u << 22,
+    SHADER_OBJECT                   = 1u << 23,
 };
 using AdditionalExtensionFlags = uint32_t;
 
@@ -57,6 +58,7 @@ inline AdditionalExtensionFlags AdditionalExtensionStringToFlag(const char* pExt
     if (strncmp(pExtensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME,    VK_MAX_EXTENSION_NAME_SIZE) == 0) { return EXTENDED_DYNAMIC_STATE_3; }
     if (strncmp(pExtensionName, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME,  VK_MAX_EXTENSION_NAME_SIZE) == 0) { return VERTEX_INPUT_DYNAMIC; }
     if (strncmp(pExtensionName, VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME,   VK_MAX_EXTENSION_NAME_SIZE) == 0) { return GRAPHICS_PIPELINE_LIBRARY; }
+    if (strncmp(pExtensionName, VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,           VK_MAX_EXTENSION_NAME_SIZE) == 0) { return DRIVER_PROPERTIES; }
     if (strncmp(pExtensionName, VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME,          VK_MAX_EXTENSION_NAME_SIZE) == 0) { return TRANSFORM_FEEDBACK; }
     if (strncmp(pExtensionName, VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME,  VK_MAX_EXTENSION_NAME_SIZE) == 0) { return CONSERVATIVE_RASTERIZATION; }
     if (strncmp(pExtensionName, VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME,           VK_MAX_EXTENSION_NAME_SIZE) == 0) { return DEPTH_CLIP_ENABLE; }
@@ -89,6 +91,7 @@ constexpr ExtensionData kAdditionalExtensions[] = {
     { VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME,    EXTENDED_DYNAMIC_STATE_3 },
     { VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME,  VERTEX_INPUT_DYNAMIC },
     { VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME,   GRAPHICS_PIPELINE_LIBRARY },
+    { VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,           DRIVER_PROPERTIES },
 };
 
 constexpr uint32_t kMaxDynamicStates = 58;
