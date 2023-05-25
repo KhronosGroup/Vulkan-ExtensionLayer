@@ -1639,12 +1639,13 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
         viewport_chain = viewport_chain->pNext;
     }
 
+    // Set pointers to NULL when count is 0, workaround for a driver bug
     VkPipelineVertexInputStateCreateInfo vertex_input{};
     vertex_input.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertex_input.pVertexAttributeDescriptions = state->GetVertexInputAttributeDescriptionPtr();
-    vertex_input.vertexAttributeDescriptionCount = state->GetNumVertexInputAttributeDescriptions();
-    vertex_input.pVertexBindingDescriptions = state->GetVertexInputBindingDescriptionPtr();
     vertex_input.vertexBindingDescriptionCount = state->GetNumVertexInputBindingDescriptions();
+    vertex_input.pVertexBindingDescriptions = vertex_input.vertexBindingDescriptionCount > 0 ? state->GetVertexInputBindingDescriptionPtr() : nullptr;
+    vertex_input.vertexAttributeDescriptionCount = state->GetNumVertexInputAttributeDescriptions();
+    vertex_input.pVertexAttributeDescriptions = vertex_input.vertexAttributeDescriptionCount > 0 ? state->GetVertexInputAttributeDescriptionPtr() : nullptr;
 
     VkPipelineInputAssemblyStateCreateInfo input_assembly{};
     input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
