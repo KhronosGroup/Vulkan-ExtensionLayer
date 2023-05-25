@@ -11,7 +11,7 @@
         "device_extensions": [
             {
                 "name" : "VK_EXT_shader_object",
-                "spec_version" : 1,
+                "spec_version" : "1",
                 "entrypoints": [
                     "vkCmdBindShadersEXT",
                     "vkCmdBindVertexBuffers2EXT",
