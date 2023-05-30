@@ -8,5 +8,6 @@ class ShaderObjectTest : public VkExtensionLayerTest {
     void TearDown() override;
 
   protected:
-    void BindDefaultDynamicStates(VkBuffer buffer);
+    void BindDefaultDynamicStates(VkBuffer buffer, bool tessellation);
+    void SubmitAndWait();
 };

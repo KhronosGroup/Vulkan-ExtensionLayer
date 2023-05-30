@@ -260,9 +260,19 @@ bool VkExtensionLayerTest::CheckShaderObjectSupportAndInitState() {
     m_device_extension_names.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
     m_device_extension_names.push_back(VK_EXT_SHADER_OBJECT_EXTENSION_NAME);
 
+    auto mesh_shader_features = LvlInitStruct<VkPhysicalDeviceMeshShaderFeaturesEXT>();
+
     auto shader_object_features = LvlInitStruct<VkPhysicalDeviceShaderObjectFeaturesEXT>();
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>(&shader_object_features);
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&dynamic_rendering_features);
+
+    if (DeviceExtensionSupported(VK_EXT_MESH_SHADER_EXTENSION_NAME, 0)) {
+        m_device_extension_names.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_EXT_MESH_SHADER_EXTENSION_NAME);
+        shader_object_features.pNext = &mesh_shader_features;
+    }
+
     vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
     if (!shader_object_features.shaderObject || !dynamic_rendering_features.dynamicRendering) {
         return false;
