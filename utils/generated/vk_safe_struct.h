@@ -12709,6 +12709,21 @@ struct safe_VkPhysicalDeviceImageProcessingPropertiesQCOM {
     VkPhysicalDeviceImageProcessingPropertiesQCOM const *ptr() const { return reinterpret_cast<VkPhysicalDeviceImageProcessingPropertiesQCOM const *>(this); }
 };
 
+struct safe_VkExternalMemoryAcquireUnmodifiedEXT {
+    VkStructureType sType;
+    const void* pNext{};
+    VkBool32 acquireUnmodifiedMemory;
+    safe_VkExternalMemoryAcquireUnmodifiedEXT(const VkExternalMemoryAcquireUnmodifiedEXT* in_struct);
+    safe_VkExternalMemoryAcquireUnmodifiedEXT(const safe_VkExternalMemoryAcquireUnmodifiedEXT& copy_src);
+    safe_VkExternalMemoryAcquireUnmodifiedEXT& operator=(const safe_VkExternalMemoryAcquireUnmodifiedEXT& copy_src);
+    safe_VkExternalMemoryAcquireUnmodifiedEXT();
+    ~safe_VkExternalMemoryAcquireUnmodifiedEXT();
+    void initialize(const VkExternalMemoryAcquireUnmodifiedEXT* in_struct);
+    void initialize(const safe_VkExternalMemoryAcquireUnmodifiedEXT* copy_src);
+    VkExternalMemoryAcquireUnmodifiedEXT *ptr() { return reinterpret_cast<VkExternalMemoryAcquireUnmodifiedEXT *>(this); }
+    VkExternalMemoryAcquireUnmodifiedEXT const *ptr() const { return reinterpret_cast<VkExternalMemoryAcquireUnmodifiedEXT const *>(this); }
+};
+
 struct safe_VkPhysicalDeviceExtendedDynamicState3FeaturesEXT {
     VkStructureType sType;
     void* pNext{};
