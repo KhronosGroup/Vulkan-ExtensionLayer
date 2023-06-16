@@ -48233,6 +48233,210 @@ void safe_VkCommandBufferInheritanceRenderPassTransformInfoQCOM::initialize(cons
     pNext = SafePnextCopy(copy_src->pNext);
 }
 
+safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT::safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT(const VkPhysicalDeviceDepthBiasControlFeaturesEXT* in_struct) :
+    sType(in_struct->sType),
+    depthBiasControl(in_struct->depthBiasControl),
+    leastRepresentableValueForceUnormRepresentation(in_struct->leastRepresentableValueForceUnormRepresentation),
+    floatRepresentation(in_struct->floatRepresentation),
+    depthBiasExact(in_struct->depthBiasExact)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT::safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT),
+    pNext(nullptr),
+    depthBiasControl(),
+    leastRepresentableValueForceUnormRepresentation(),
+    floatRepresentation(),
+    depthBiasExact()
+{}
+
+safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT::safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT(const safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT& copy_src)
+{
+    sType = copy_src.sType;
+    depthBiasControl = copy_src.depthBiasControl;
+    leastRepresentableValueForceUnormRepresentation = copy_src.leastRepresentableValueForceUnormRepresentation;
+    floatRepresentation = copy_src.floatRepresentation;
+    depthBiasExact = copy_src.depthBiasExact;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT& safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT::operator=(const safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    depthBiasControl = copy_src.depthBiasControl;
+    leastRepresentableValueForceUnormRepresentation = copy_src.leastRepresentableValueForceUnormRepresentation;
+    floatRepresentation = copy_src.floatRepresentation;
+    depthBiasExact = copy_src.depthBiasExact;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT::~safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT::initialize(const VkPhysicalDeviceDepthBiasControlFeaturesEXT* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    depthBiasControl = in_struct->depthBiasControl;
+    leastRepresentableValueForceUnormRepresentation = in_struct->leastRepresentableValueForceUnormRepresentation;
+    floatRepresentation = in_struct->floatRepresentation;
+    depthBiasExact = in_struct->depthBiasExact;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT::initialize(const safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT* copy_src)
+{
+    sType = copy_src->sType;
+    depthBiasControl = copy_src->depthBiasControl;
+    leastRepresentableValueForceUnormRepresentation = copy_src->leastRepresentableValueForceUnormRepresentation;
+    floatRepresentation = copy_src->floatRepresentation;
+    depthBiasExact = copy_src->depthBiasExact;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
+safe_VkDepthBiasInfoEXT::safe_VkDepthBiasInfoEXT(const VkDepthBiasInfoEXT* in_struct) :
+    sType(in_struct->sType),
+    depthBiasConstantFactor(in_struct->depthBiasConstantFactor),
+    depthBiasClamp(in_struct->depthBiasClamp),
+    depthBiasSlopeFactor(in_struct->depthBiasSlopeFactor)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkDepthBiasInfoEXT::safe_VkDepthBiasInfoEXT() :
+    sType(VK_STRUCTURE_TYPE_DEPTH_BIAS_INFO_EXT),
+    pNext(nullptr),
+    depthBiasConstantFactor(),
+    depthBiasClamp(),
+    depthBiasSlopeFactor()
+{}
+
+safe_VkDepthBiasInfoEXT::safe_VkDepthBiasInfoEXT(const safe_VkDepthBiasInfoEXT& copy_src)
+{
+    sType = copy_src.sType;
+    depthBiasConstantFactor = copy_src.depthBiasConstantFactor;
+    depthBiasClamp = copy_src.depthBiasClamp;
+    depthBiasSlopeFactor = copy_src.depthBiasSlopeFactor;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkDepthBiasInfoEXT& safe_VkDepthBiasInfoEXT::operator=(const safe_VkDepthBiasInfoEXT& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    depthBiasConstantFactor = copy_src.depthBiasConstantFactor;
+    depthBiasClamp = copy_src.depthBiasClamp;
+    depthBiasSlopeFactor = copy_src.depthBiasSlopeFactor;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkDepthBiasInfoEXT::~safe_VkDepthBiasInfoEXT()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkDepthBiasInfoEXT::initialize(const VkDepthBiasInfoEXT* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    depthBiasConstantFactor = in_struct->depthBiasConstantFactor;
+    depthBiasClamp = in_struct->depthBiasClamp;
+    depthBiasSlopeFactor = in_struct->depthBiasSlopeFactor;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkDepthBiasInfoEXT::initialize(const safe_VkDepthBiasInfoEXT* copy_src)
+{
+    sType = copy_src->sType;
+    depthBiasConstantFactor = copy_src->depthBiasConstantFactor;
+    depthBiasClamp = copy_src->depthBiasClamp;
+    depthBiasSlopeFactor = copy_src->depthBiasSlopeFactor;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
+safe_VkDepthBiasRepresentationInfoEXT::safe_VkDepthBiasRepresentationInfoEXT(const VkDepthBiasRepresentationInfoEXT* in_struct) :
+    sType(in_struct->sType),
+    depthBiasRepresentation(in_struct->depthBiasRepresentation),
+    depthBiasExact(in_struct->depthBiasExact)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkDepthBiasRepresentationInfoEXT::safe_VkDepthBiasRepresentationInfoEXT() :
+    sType(VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT),
+    pNext(nullptr),
+    depthBiasRepresentation(),
+    depthBiasExact()
+{}
+
+safe_VkDepthBiasRepresentationInfoEXT::safe_VkDepthBiasRepresentationInfoEXT(const safe_VkDepthBiasRepresentationInfoEXT& copy_src)
+{
+    sType = copy_src.sType;
+    depthBiasRepresentation = copy_src.depthBiasRepresentation;
+    depthBiasExact = copy_src.depthBiasExact;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkDepthBiasRepresentationInfoEXT& safe_VkDepthBiasRepresentationInfoEXT::operator=(const safe_VkDepthBiasRepresentationInfoEXT& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    depthBiasRepresentation = copy_src.depthBiasRepresentation;
+    depthBiasExact = copy_src.depthBiasExact;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkDepthBiasRepresentationInfoEXT::~safe_VkDepthBiasRepresentationInfoEXT()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkDepthBiasRepresentationInfoEXT::initialize(const VkDepthBiasRepresentationInfoEXT* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    depthBiasRepresentation = in_struct->depthBiasRepresentation;
+    depthBiasExact = in_struct->depthBiasExact;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkDepthBiasRepresentationInfoEXT::initialize(const safe_VkDepthBiasRepresentationInfoEXT* copy_src)
+{
+    sType = copy_src->sType;
+    depthBiasRepresentation = copy_src->depthBiasRepresentation;
+    depthBiasExact = copy_src->depthBiasExact;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
 safe_VkPhysicalDeviceDeviceMemoryReportFeaturesEXT::safe_VkPhysicalDeviceDeviceMemoryReportFeaturesEXT(const VkPhysicalDeviceDeviceMemoryReportFeaturesEXT* in_struct) :
     sType(in_struct->sType),
     deviceMemoryReport(in_struct->deviceMemoryReport)
@@ -62148,6 +62352,381 @@ void safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT::initial
     attachmentFeedbackLoopDynamicState = copy_src->attachmentFeedbackLoopDynamicState;
     pNext = SafePnextCopy(copy_src->pNext);
 }
+#ifdef VK_USE_PLATFORM_SCREEN_QNX
+
+
+safe_VkScreenBufferPropertiesQNX::safe_VkScreenBufferPropertiesQNX(const VkScreenBufferPropertiesQNX* in_struct) :
+    sType(in_struct->sType),
+    allocationSize(in_struct->allocationSize),
+    memoryTypeBits(in_struct->memoryTypeBits)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkScreenBufferPropertiesQNX::safe_VkScreenBufferPropertiesQNX() :
+    sType(VK_STRUCTURE_TYPE_SCREEN_BUFFER_PROPERTIES_QNX),
+    pNext(nullptr),
+    allocationSize(),
+    memoryTypeBits()
+{}
+
+safe_VkScreenBufferPropertiesQNX::safe_VkScreenBufferPropertiesQNX(const safe_VkScreenBufferPropertiesQNX& copy_src)
+{
+    sType = copy_src.sType;
+    allocationSize = copy_src.allocationSize;
+    memoryTypeBits = copy_src.memoryTypeBits;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkScreenBufferPropertiesQNX& safe_VkScreenBufferPropertiesQNX::operator=(const safe_VkScreenBufferPropertiesQNX& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    allocationSize = copy_src.allocationSize;
+    memoryTypeBits = copy_src.memoryTypeBits;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkScreenBufferPropertiesQNX::~safe_VkScreenBufferPropertiesQNX()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkScreenBufferPropertiesQNX::initialize(const VkScreenBufferPropertiesQNX* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    allocationSize = in_struct->allocationSize;
+    memoryTypeBits = in_struct->memoryTypeBits;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkScreenBufferPropertiesQNX::initialize(const safe_VkScreenBufferPropertiesQNX* copy_src)
+{
+    sType = copy_src->sType;
+    allocationSize = copy_src->allocationSize;
+    memoryTypeBits = copy_src->memoryTypeBits;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+#endif // VK_USE_PLATFORM_SCREEN_QNX
+
+#ifdef VK_USE_PLATFORM_SCREEN_QNX
+
+
+safe_VkScreenBufferFormatPropertiesQNX::safe_VkScreenBufferFormatPropertiesQNX(const VkScreenBufferFormatPropertiesQNX* in_struct) :
+    sType(in_struct->sType),
+    format(in_struct->format),
+    externalFormat(in_struct->externalFormat),
+    screenUsage(in_struct->screenUsage),
+    formatFeatures(in_struct->formatFeatures),
+    samplerYcbcrConversionComponents(in_struct->samplerYcbcrConversionComponents),
+    suggestedYcbcrModel(in_struct->suggestedYcbcrModel),
+    suggestedYcbcrRange(in_struct->suggestedYcbcrRange),
+    suggestedXChromaOffset(in_struct->suggestedXChromaOffset),
+    suggestedYChromaOffset(in_struct->suggestedYChromaOffset)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkScreenBufferFormatPropertiesQNX::safe_VkScreenBufferFormatPropertiesQNX() :
+    sType(VK_STRUCTURE_TYPE_SCREEN_BUFFER_FORMAT_PROPERTIES_QNX),
+    pNext(nullptr),
+    format(),
+    externalFormat(),
+    screenUsage(),
+    formatFeatures(),
+    samplerYcbcrConversionComponents(),
+    suggestedYcbcrModel(),
+    suggestedYcbcrRange(),
+    suggestedXChromaOffset(),
+    suggestedYChromaOffset()
+{}
+
+safe_VkScreenBufferFormatPropertiesQNX::safe_VkScreenBufferFormatPropertiesQNX(const safe_VkScreenBufferFormatPropertiesQNX& copy_src)
+{
+    sType = copy_src.sType;
+    format = copy_src.format;
+    externalFormat = copy_src.externalFormat;
+    screenUsage = copy_src.screenUsage;
+    formatFeatures = copy_src.formatFeatures;
+    samplerYcbcrConversionComponents = copy_src.samplerYcbcrConversionComponents;
+    suggestedYcbcrModel = copy_src.suggestedYcbcrModel;
+    suggestedYcbcrRange = copy_src.suggestedYcbcrRange;
+    suggestedXChromaOffset = copy_src.suggestedXChromaOffset;
+    suggestedYChromaOffset = copy_src.suggestedYChromaOffset;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkScreenBufferFormatPropertiesQNX& safe_VkScreenBufferFormatPropertiesQNX::operator=(const safe_VkScreenBufferFormatPropertiesQNX& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    format = copy_src.format;
+    externalFormat = copy_src.externalFormat;
+    screenUsage = copy_src.screenUsage;
+    formatFeatures = copy_src.formatFeatures;
+    samplerYcbcrConversionComponents = copy_src.samplerYcbcrConversionComponents;
+    suggestedYcbcrModel = copy_src.suggestedYcbcrModel;
+    suggestedYcbcrRange = copy_src.suggestedYcbcrRange;
+    suggestedXChromaOffset = copy_src.suggestedXChromaOffset;
+    suggestedYChromaOffset = copy_src.suggestedYChromaOffset;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkScreenBufferFormatPropertiesQNX::~safe_VkScreenBufferFormatPropertiesQNX()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkScreenBufferFormatPropertiesQNX::initialize(const VkScreenBufferFormatPropertiesQNX* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    format = in_struct->format;
+    externalFormat = in_struct->externalFormat;
+    screenUsage = in_struct->screenUsage;
+    formatFeatures = in_struct->formatFeatures;
+    samplerYcbcrConversionComponents = in_struct->samplerYcbcrConversionComponents;
+    suggestedYcbcrModel = in_struct->suggestedYcbcrModel;
+    suggestedYcbcrRange = in_struct->suggestedYcbcrRange;
+    suggestedXChromaOffset = in_struct->suggestedXChromaOffset;
+    suggestedYChromaOffset = in_struct->suggestedYChromaOffset;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkScreenBufferFormatPropertiesQNX::initialize(const safe_VkScreenBufferFormatPropertiesQNX* copy_src)
+{
+    sType = copy_src->sType;
+    format = copy_src->format;
+    externalFormat = copy_src->externalFormat;
+    screenUsage = copy_src->screenUsage;
+    formatFeatures = copy_src->formatFeatures;
+    samplerYcbcrConversionComponents = copy_src->samplerYcbcrConversionComponents;
+    suggestedYcbcrModel = copy_src->suggestedYcbcrModel;
+    suggestedYcbcrRange = copy_src->suggestedYcbcrRange;
+    suggestedXChromaOffset = copy_src->suggestedXChromaOffset;
+    suggestedYChromaOffset = copy_src->suggestedYChromaOffset;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+#endif // VK_USE_PLATFORM_SCREEN_QNX
+
+#ifdef VK_USE_PLATFORM_SCREEN_QNX
+
+
+safe_VkImportScreenBufferInfoQNX::safe_VkImportScreenBufferInfoQNX(const VkImportScreenBufferInfoQNX* in_struct) :
+    sType(in_struct->sType),
+    buffer(nullptr)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+    if (in_struct->buffer) {
+        buffer = new _screen_buffer(*in_struct->buffer);
+    }
+}
+
+safe_VkImportScreenBufferInfoQNX::safe_VkImportScreenBufferInfoQNX() :
+    sType(VK_STRUCTURE_TYPE_IMPORT_SCREEN_BUFFER_INFO_QNX),
+    pNext(nullptr),
+    buffer(nullptr)
+{}
+
+safe_VkImportScreenBufferInfoQNX::safe_VkImportScreenBufferInfoQNX(const safe_VkImportScreenBufferInfoQNX& copy_src)
+{
+    sType = copy_src.sType;
+    buffer = nullptr;
+    pNext = SafePnextCopy(copy_src.pNext);
+    if (copy_src.buffer) {
+        buffer = new _screen_buffer(*copy_src.buffer);
+    }
+}
+
+safe_VkImportScreenBufferInfoQNX& safe_VkImportScreenBufferInfoQNX::operator=(const safe_VkImportScreenBufferInfoQNX& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (buffer)
+        delete buffer;
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    buffer = nullptr;
+    pNext = SafePnextCopy(copy_src.pNext);
+    if (copy_src.buffer) {
+        buffer = new _screen_buffer(*copy_src.buffer);
+    }
+
+    return *this;
+}
+
+safe_VkImportScreenBufferInfoQNX::~safe_VkImportScreenBufferInfoQNX()
+{
+    if (buffer)
+        delete buffer;
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkImportScreenBufferInfoQNX::initialize(const VkImportScreenBufferInfoQNX* in_struct)
+{
+    if (buffer)
+        delete buffer;
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    buffer = nullptr;
+    pNext = SafePnextCopy(in_struct->pNext);
+    if (in_struct->buffer) {
+        buffer = new _screen_buffer(*in_struct->buffer);
+    }
+}
+
+void safe_VkImportScreenBufferInfoQNX::initialize(const safe_VkImportScreenBufferInfoQNX* copy_src)
+{
+    sType = copy_src->sType;
+    buffer = nullptr;
+    pNext = SafePnextCopy(copy_src->pNext);
+    if (copy_src->buffer) {
+        buffer = new _screen_buffer(*copy_src->buffer);
+    }
+}
+#endif // VK_USE_PLATFORM_SCREEN_QNX
+
+#ifdef VK_USE_PLATFORM_SCREEN_QNX
+
+
+safe_VkExternalFormatQNX::safe_VkExternalFormatQNX(const VkExternalFormatQNX* in_struct) :
+    sType(in_struct->sType),
+    externalFormat(in_struct->externalFormat)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkExternalFormatQNX::safe_VkExternalFormatQNX() :
+    sType(VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_QNX),
+    pNext(nullptr),
+    externalFormat()
+{}
+
+safe_VkExternalFormatQNX::safe_VkExternalFormatQNX(const safe_VkExternalFormatQNX& copy_src)
+{
+    sType = copy_src.sType;
+    externalFormat = copy_src.externalFormat;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkExternalFormatQNX& safe_VkExternalFormatQNX::operator=(const safe_VkExternalFormatQNX& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    externalFormat = copy_src.externalFormat;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkExternalFormatQNX::~safe_VkExternalFormatQNX()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkExternalFormatQNX::initialize(const VkExternalFormatQNX* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    externalFormat = in_struct->externalFormat;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkExternalFormatQNX::initialize(const safe_VkExternalFormatQNX* copy_src)
+{
+    sType = copy_src->sType;
+    externalFormat = copy_src->externalFormat;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+#endif // VK_USE_PLATFORM_SCREEN_QNX
+
+#ifdef VK_USE_PLATFORM_SCREEN_QNX
+
+
+safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX::safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX(const VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX* in_struct) :
+    sType(in_struct->sType),
+    screenBufferImport(in_struct->screenBufferImport)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX::safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCREEN_BUFFER_FEATURES_QNX),
+    pNext(nullptr),
+    screenBufferImport()
+{}
+
+safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX::safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX(const safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX& copy_src)
+{
+    sType = copy_src.sType;
+    screenBufferImport = copy_src.screenBufferImport;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX& safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX::operator=(const safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    screenBufferImport = copy_src.screenBufferImport;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX::~safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX::initialize(const VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    screenBufferImport = in_struct->screenBufferImport;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX::initialize(const safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX* copy_src)
+{
+    sType = copy_src->sType;
+    screenBufferImport = copy_src->screenBufferImport;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+#endif // VK_USE_PLATFORM_SCREEN_QNX
+
 
 safe_VkAccelerationStructureGeometryTrianglesDataKHR::safe_VkAccelerationStructureGeometryTrianglesDataKHR(const VkAccelerationStructureGeometryTrianglesDataKHR* in_struct) :
     sType(in_struct->sType),
@@ -65376,6 +65955,12 @@ void *SafePnextCopy(const void *pNext) {
         case VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDER_PASS_TRANSFORM_INFO_QCOM:
             safe_pNext = new safe_VkCommandBufferInheritanceRenderPassTransformInfoQCOM(reinterpret_cast<const VkCommandBufferInheritanceRenderPassTransformInfoQCOM *>(pNext));
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT:
+            safe_pNext = new safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT(reinterpret_cast<const VkPhysicalDeviceDepthBiasControlFeaturesEXT *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT:
+            safe_pNext = new safe_VkDepthBiasRepresentationInfoEXT(reinterpret_cast<const VkDepthBiasRepresentationInfoEXT *>(pNext));
+            break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT:
             safe_pNext = new safe_VkPhysicalDeviceDeviceMemoryReportFeaturesEXT(reinterpret_cast<const VkPhysicalDeviceDeviceMemoryReportFeaturesEXT *>(pNext));
             break;
@@ -65962,6 +66547,20 @@ void *SafePnextCopy(const void *pNext) {
             safe_pNext = new safe_VkImportMetalSharedEventInfoEXT(reinterpret_cast<const VkImportMetalSharedEventInfoEXT *>(pNext));
             break;
 #endif // VK_USE_PLATFORM_METAL_EXT
+#ifdef VK_USE_PLATFORM_SCREEN_QNX
+        case VK_STRUCTURE_TYPE_SCREEN_BUFFER_FORMAT_PROPERTIES_QNX:
+            safe_pNext = new safe_VkScreenBufferFormatPropertiesQNX(reinterpret_cast<const VkScreenBufferFormatPropertiesQNX *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_IMPORT_SCREEN_BUFFER_INFO_QNX:
+            safe_pNext = new safe_VkImportScreenBufferInfoQNX(reinterpret_cast<const VkImportScreenBufferInfoQNX *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_QNX:
+            safe_pNext = new safe_VkExternalFormatQNX(reinterpret_cast<const VkExternalFormatQNX *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCREEN_BUFFER_FEATURES_QNX:
+            safe_pNext = new safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX(reinterpret_cast<const VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX *>(pNext));
+            break;
+#endif // VK_USE_PLATFORM_SCREEN_QNX
 #ifdef VK_USE_PLATFORM_WIN32_KHR
         case VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR:
             safe_pNext = new safe_VkImportMemoryWin32HandleInfoKHR(reinterpret_cast<const VkImportMemoryWin32HandleInfoKHR *>(pNext));
@@ -66902,6 +67501,12 @@ void FreePnextChain(const void *pNext) {
         case VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDER_PASS_TRANSFORM_INFO_QCOM:
             delete reinterpret_cast<const safe_VkCommandBufferInheritanceRenderPassTransformInfoQCOM *>(header);
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceDepthBiasControlFeaturesEXT *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT:
+            delete reinterpret_cast<const safe_VkDepthBiasRepresentationInfoEXT *>(header);
+            break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT:
             delete reinterpret_cast<const safe_VkPhysicalDeviceDeviceMemoryReportFeaturesEXT *>(header);
             break;
@@ -67488,6 +68093,20 @@ void FreePnextChain(const void *pNext) {
             delete reinterpret_cast<const safe_VkImportMetalSharedEventInfoEXT *>(header);
             break;
 #endif // VK_USE_PLATFORM_METAL_EXT
+#ifdef VK_USE_PLATFORM_SCREEN_QNX
+        case VK_STRUCTURE_TYPE_SCREEN_BUFFER_FORMAT_PROPERTIES_QNX:
+            delete reinterpret_cast<const safe_VkScreenBufferFormatPropertiesQNX *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_IMPORT_SCREEN_BUFFER_INFO_QNX:
+            delete reinterpret_cast<const safe_VkImportScreenBufferInfoQNX *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_QNX:
+            delete reinterpret_cast<const safe_VkExternalFormatQNX *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCREEN_BUFFER_FEATURES_QNX:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX *>(header);
+            break;
+#endif // VK_USE_PLATFORM_SCREEN_QNX
 #ifdef VK_USE_PLATFORM_WIN32_KHR
         case VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR:
             delete reinterpret_cast<const safe_VkImportMemoryWin32HandleInfoKHR *>(header);
