@@ -263,10 +263,14 @@ then be regenerated using `scripts/generate_source.py`:
     // Example
     python3 scripts/generate_source.py external/Vulkan-Headers/registry/
 
-A helper CMake target `VulkanEL_generated_source` is also provided to simplify
-the invocation of `scripts/generate_source.py` from the build directory:
+A helper CMake target `vel_codegen` is also provided to simplify the invocation of `scripts/generate_source.py` from the build directory:
 
-    cmake --build . --target VulkanEL_generated_source
+```bash
+cmake -S . -B build -D VEL_CODEGEN=ON
+cmake --build build --target vel_codegen
+```
+
+NOTE: `VEL_CODEGEN` is `OFF` by default to allow users to build `VEL` via `add_subdirectory` and to avoid potential issues for system/language package managers.
 
 ### Build Options
 
@@ -279,8 +283,7 @@ on/off options currently supported by this repository:
 | ------ | -------- | ------- | ----------- |
 | BUILD_LAYERS | All | `ON` | Controls whether or not the Extension layers are built. |
 | BUILD_LAYER_SUPPORT_FILES | All | `OFF` | Controls whether or not layer support files are installed. |
-| BUILD_TESTS | All | `???` | Controls whether or not the Extension layer tests are built. The default is `ON` |
-| INSTALL_TESTS | All | `OFF` | Controls whether or not the Extension layer tests are installed. This option is only available when a copy of Google Test is available
+| BUILD_TESTS | All | `OFF` | Controls whether or not the Extension layer tests are built. |
 | BUILD_WERROR | All | `ON` | Controls whether or not to treat compiler warnings as errors. |
 | BUILD_WSI_XCB_SUPPORT | Linux | `ON` | Build the components with XCB support. |
 | BUILD_WSI_XLIB_SUPPORT | Linux | `ON` | Build the components with Xlib support. |

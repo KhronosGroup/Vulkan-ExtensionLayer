@@ -15,8 +15,8 @@
             "build_dir": "glslang/build",
             "install_dir": "glslang/build/install",
             "commit": "d1517d64cfca91f573af1bf7341dc3a5113349c0",
-            "prebuild": [
-                "{python} update_glslang_sources.py"
+            "optional": [
+                "tests"
             ]
         },
         {
@@ -25,7 +25,27 @@
             "sub_dir": "SPIRV-Headers",
             "build_dir": "SPIRV-Headers/build",
             "install_dir": "SPIRV-Headers/build/install",
-            "commit": "268a061764ee69f09a477a695bf6a11ffe311b8d"
+            "commit": "8e2ad27488ed2f87c068c01a8f5e8979f7086405",
+            "optional": [
+                "tests"
+            ]
+        },
+        {
+            "name": "SPIRV-Tools",
+            "url": "https://github.com/KhronosGroup/SPIRV-Tools.git",
+            "sub_dir": "SPIRV-Tools",
+            "build_dir": "SPIRV-Tools/build",
+            "install_dir": "SPIRV-Tools/build/install",
+            "cmake_options": [
+                "-DSPIRV-Headers_SOURCE_DIR={repo_dir}/../SPIRV-Headers",
+                "-DSPIRV_WERROR=OFF",
+                "-DSPIRV_SKIP_TESTS=ON",
+                "-DSPIRV_SKIP_EXECUTABLES=ON"
+            ],
+            "commit": "d33bea584707c3509065010c45d9b79c54c8376b",
+            "optional": [
+                "tests"
+            ]
         },
         {
             "name": "googletest",
@@ -48,6 +68,7 @@
         "Vulkan-Headers": "VULKAN_HEADERS_INSTALL_DIR",
         "glslang": "GLSLANG_INSTALL_DIR",
         "SPIRV-Headers": "SPIRV_HEADERS_INSTALL_DIR",
+        "SPIRV-Tools": "SPIRV_TOOLS_INSTALL_DIR",
         "googletest": "GOOGLETEST_INSTALL_DIR"
     }
 }

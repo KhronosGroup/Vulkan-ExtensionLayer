@@ -64,7 +64,7 @@ def IsWindows(): return 'windows' == platform.system().lower()
 # Verify consistency of generated source code
 def CheckVELCodegenConsistency():
     print("Check Generated Source Code Consistency")
-    gen_check_cmd = 'python3 scripts/generate_source.py --verify %s/Vulkan-Headers/registry' % EXTERNAL_DIR
+    gen_check_cmd = f'python scripts/generate_source.py --verify {EXTERNAL_DIR}/Release/Vulkan-Headers/registry'
     RunShellCmd(gen_check_cmd)
 
 # Utility for creating a directory if it does not exist. Behaves similarly to 'mkdir -p'
@@ -94,6 +94,7 @@ def BuildVEL(args):
     cmake_cmd = f'cmake -DUPDATE_DEPS=ON -DCMAKE_BUILD_TYPE={args.configuration.capitalize()} {args.cmake} ..'
     # By default BUILD_WERROR is OFF, CI should always enable it.
     cmake_cmd = cmake_cmd + ' -DBUILD_WERROR=ON'
+    cmake_cmd = cmake_cmd + ' -DBUILD_TESTS=ON'
     if IsWindows(): cmake_cmd = cmake_cmd + f' -A {args.arch}'
     RunShellCmd(cmake_cmd, VEL_BUILD_DIR)
 
