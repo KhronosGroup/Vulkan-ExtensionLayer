@@ -352,7 +352,7 @@ VKAPI_ATTR VkResult VKAPI_CALL EnumeratePhysicalDevices(VkInstance instance, uin
     auto instance_data = GetInstanceData(instance);
     VkResult result =
         instance_data->vtable.EnumeratePhysicalDevices(instance_data->instance, pPhysicalDeviceCount, pPhysicalDevices);
-    if (result == VK_SUCCESS && pPhysicalDevices != nullptr) {
+    if ((result == VK_SUCCESS || result == VK_INCOMPLETE) && pPhysicalDevices != nullptr) {
         for (uint32_t i = 0; i < *pPhysicalDeviceCount; i++) {
             VkPhysicalDeviceProperties properties{};
             auto physical_device = pPhysicalDevices[i];
@@ -909,7 +909,7 @@ VKAPI_ATTR void VKAPI_CALL CmdDecompressMemoryIndirectCountNV(VkCommandBuffer co
                 bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
                 bufferBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
                 device_data->vtable.CmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                    VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, 0, 1, &bufferBarrier, 0, 0);
+                                                       VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, 0, 1, &bufferBarrier, 0, 0);
             }
 
             device_data->vtable.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
