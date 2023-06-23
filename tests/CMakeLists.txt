@@ -29,9 +29,6 @@ add_custom_command(
     )
 add_custom_target (generate_test_layer_location DEPENDS "${CMAKE_BINARY_DIR}/test_layer_location.h")
 
-# Needed to make structure definitions match with glslang libraries
-add_definitions(-DNV_EXTENSIONS -DAMD_EXTENSIONS)
-
 if(ANNOTATED_SPEC_LINK)
     add_definitions(-DANNOTATED_SPEC_LINK=${ANNOTATED_SPEC_LINK})
 endif()
@@ -94,20 +91,50 @@ target_include_directories(vk_extension_layer_tests
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                   ${PROJECT_SOURCE_DIR}/utils
                                   ${PROJECT_SOURCE_DIR}/utils/generated
-                                  ${GLSLANG_SPIRV_INCLUDE_DIR}
-                                  ${SPIRV_TOOLS_INCLUDE_DIR}
-                                  ${SPIRV_HEADERS_INCLUDE_DIR}
                                   ${CMAKE_CURRENT_BINARY_DIR}
                                   ${CMAKE_BINARY_DIR}
                                   ${PROJECT_BINARY_DIR}
                                   ${PROJECT_BINARY_DIR}/layers)
 add_dependencies(vk_extension_layer_tests VkExtLayer_utils)
+
+find_package(SPIRV-Headers REQUIRED CONFIG QUIET)
+target_link_libraries(vk_extension_layer_tests PRIVATE SPIRV-Headers::SPIRV-Headers)
+
+find_package(SPIRV-Tools-opt REQUIRED CONFIG QUIET)
+target_link_libraries(vk_extension_layer_tests PRIVATE SPIRV-Tools-opt)
+
+find_package(SPIRV-Tools REQUIRED CONFIG QUIET)
+
+# See https://github.com/KhronosGroup/SPIRV-Tools/issues/3909 for background on this.
+# The targets available from SPIRV-Tools change depending on how SPIRV_TOOLS_BUILD_STATIC is set.
+# Try to handle all possible combinations so that we work with externally built packages.
+if (TARGET SPIRV-Tools)
+    target_link_libraries(vk_extension_layer_tests PRIVATE SPIRV-Tools)
+elseif(TARGET SPIRV-Tools-static)
+    target_link_libraries(vk_extension_layer_tests PRIVATE SPIRV-Tools-static)
+elseif(TARGET SPIRV-Tools-shared)
+    target_link_libraries(vk_extension_layer_tests PRIVATE SPIRV-Tools-shared)
+else()
+    message(FATAL_ERROR "Cannot determine SPIRV-Tools target name")
+endif()
+
+find_package(GTest REQUIRED CONFIG QUIET)
+
+find_package(glslang REQUIRED CONFIG QUIET)
+
 target_link_libraries(vk_extension_layer_tests PRIVATE
     VkExtLayer_utils
     Vulkan::Headers
     GTest::gtest
     GTest::gtest_main
-    ${GLSLANG_LIBRARIES}
+    glslang::glslang
+    glslang::OGLCompiler
+    glslang::OSDependent
+    glslang::MachineIndependent
+    glslang::GenericCodeGen
+    glslang::HLSL
+    glslang::SPIRV
+    glslang::SPVRemapper
 )
 
 target_compile_definitions(vk_extension_layer_tests PUBLIC SHADER_OBJECT_BINARY_PATH="$<TARGET_FILE_DIR:VkLayer_khronos_shader_object>")
@@ -129,6 +156,4 @@ if(NOT WIN32)
     endif()
 endif()
 
-if(INSTALL_TESTS)
-    install(TARGETS vk_extension_layer_tests DESTINATION ${CMAKE_INSTALL_BINDIR})
-endif()
+install(TARGETS vk_extension_layer_tests)

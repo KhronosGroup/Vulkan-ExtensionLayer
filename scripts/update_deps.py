@@ -1,8 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright 2017 The Glslang Authors. All rights reserved.
-# Copyright (c) 2018 Valve Corporation
+# Copyright (c) 2018-2023 Valve Corporation
 # Copyright (c) 2018-2023 LunarG, Inc.
+# Copyright (c) 2023-2023 RasterGrid Kft.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,11 +31,6 @@ This program is intended to assist a developer of this repository
 this home repository depend on.  It also checks out each dependent
 repository at a "known-good" commit in order to provide stability in
 the dependent repositories.
-
-Python Compatibility
---------------------
-
-This program can be used with Python 2.7 and Python 3.
 
 Known-Good JSON Database
 ------------------------
@@ -117,6 +113,10 @@ examples of all of these elements.
 The name of the dependent repository.  This field can be referenced
 by the "deps.repo_name" structure to record a dependency.
 
+- api
+
+The name of the API the dependency is specific to (e.g. "vulkan").
+
 - url
 
 Specifies the URL of the repository.
@@ -176,11 +176,6 @@ googletest.
 The commands listed in "prebuild" are executed first, and then the
 commands for the specific platform are executed.
 
-Note that an execution of Python should be encoded as "{python}"
-in the command string.  This will be replaced with Python's
-sys.executable, to ensure that the same version of Python runs
-the prebuild command as is running the current script.
-
 - custom_build (optional)
 
 A list of commands to execute as a custom build instead of using
@@ -211,11 +206,6 @@ A list of options to pass to CMake during the generation phase.
 A list of environment variables where one must be set to "true"
 (case-insensitive) in order for this repo to be fetched and built.
 This list can be used to specify repos that should be built only in CI.
-Typically, this list might contain "TRAVIS" and/or "APPVEYOR" because
-each of these CI systems sets an environment variable with its own
-name to "true".  Note that this could also be (ab)used to control
-the processing of the repo with any environment variable.  The default
-is an empty list, which means that the repo is always processed.
 
 - build_step (optional)
 
@@ -230,6 +220,7 @@ Legal options include:
 "windows"
 "linux"
 "darwin"
+"android"
 
 Builds on all platforms by default.
 
@@ -243,18 +234,16 @@ option can be a relative or absolute path.
 
 """
 
-from __future__ import print_function
-
 import argparse
 import json
 import os.path
 import subprocess
+import sys
 import platform
 import multiprocessing
 import shlex
 import shutil
 import stat
-import sys
 import time
 
 KNOWN_GOOD_FILE_NAME = 'known_good.json'
@@ -274,7 +263,7 @@ DEVNULL = open(os.devnull, 'wb')
 def on_rm_error( func, path, exc_info):
     """Error handler for recursively removing a directory. The
     shutil.rmtree function can fail on Windows due to read-only files.
-    This handler will change the permissions for tha file and continue.
+    This handler will change the permissions for the file and continue.
     """
     os.chmod( path, stat.S_IWRITE )
     os.unlink( path )
@@ -307,27 +296,6 @@ def command_output(cmd, directory, fail_ok=False):
 
 def escape(path):
     return path.replace('\\', '/')
-
-def split_command(command, **kwargs):
-    """Given a command string, format any recognized "{reference}" fields, and
-    use shlex.split() to split the command into separate words.  Return the list
-    of command words.
-
-    References can be:
-        "{python}" - expands to Python's sys.executable, to ensure that the same
-            version of Python is used as is being used by the running script
-        kwargs - any var=value passed in to this function as a keyword argument
-            can also be used for the expansion
-    """
-
-    # Substitute each command word separately, to ensure that an expansion
-    # with spaces (e.g. "C:\Program Files\Python37\python.exe") doesn't split
-    # incorrectly because of the extra spaces.
-    command_list = shlex.split(command)
-
-    # Create a new list by substituting expansions in each word, and
-    # return it to the caller.
-    return [x.format(python=sys.executable, **kwargs) for x in command_list]
 
 class GoodRepo(object):
     """Represents a repository at a known-good commit."""
@@ -366,6 +334,7 @@ class GoodRepo(object):
         self.build_step = json['build_step'] if ('build_step' in json) else 'build'
         self.build_platforms = json['build_platforms'] if ('build_platforms' in json) else []
         self.optional = set(json.get('optional', []))
+        self.api = json['api'] if ('api' in json) else None
         # Absolute paths for a repo's directories
         dir_top = os.path.abspath(args.dir)
         self.repo_dir = os.path.join(dir_top, self.sub_dir)
@@ -373,9 +342,16 @@ class GoodRepo(object):
             self.build_dir = os.path.join(dir_top, self.build_dir)
         if self.install_dir:
             self.install_dir = os.path.join(dir_top, self.install_dir)
-	    # Check if platform is one to build on
+
+        # By default the target platform is the host platform.
+        target_platform = platform.system().lower()
+        # However, we need to account for cross-compiling.
+        for cmake_var in self._args.cmake_var:
+            if "android.toolchain.cmake" in cmake_var:
+                target_platform = 'android'
+
         self.on_build_platform = False
-        if self.build_platforms == [] or platform.system().lower() in self.build_platforms:
+        if self.build_platforms == [] or target_platform in self.build_platforms:
             self.on_build_platform = True
 
     def Clone(self, retries=10, retry_seconds=60):
@@ -439,26 +415,28 @@ class GoodRepo(object):
     def PreBuild(self):
         """Execute any prebuild steps from the repo root"""
         for p in self.prebuild:
-            command_output(split_command(p), self.repo_dir)
+            command_output(shlex.split(p), self.repo_dir)
         if platform.system() == 'Linux' or platform.system() == 'Darwin':
             for p in self.prebuild_linux:
-                command_output(split_command(p), self.repo_dir)
+                command_output(shlex.split(p), self.repo_dir)
         if platform.system() == 'Windows':
             for p in self.prebuild_windows:
-                command_output(split_command(p), self.repo_dir)
+                command_output(shlex.split(p), self.repo_dir)
 
     def CustomBuild(self, repo_dict):
         """Execute any custom_build steps from the repo root"""
         for p in self.custom_build:
             cmd = self.CustomPreProcess(p, repo_dict)
-            command_output(split_command(cmd), self.repo_dir)
+            command_output(shlex.split(cmd), self.repo_dir)
 
     def CMakeConfig(self, repos):
         """Build CMake command for the configuration phase and execute it"""
         if self._args.do_clean_build:
-            shutil.rmtree(self.build_dir)
+            if os.path.isdir(self.build_dir):
+                shutil.rmtree(self.build_dir, onerror=on_rm_error)
         if self._args.do_clean_install:
-            shutil.rmtree(self.install_dir)
+            if os.path.isdir(self.install_dir):
+                shutil.rmtree(self.install_dir, onerror=on_rm_error)
 
         # Create and change to build directory
         make_or_exist_dirs(self.build_dir)
@@ -468,6 +446,11 @@ class GoodRepo(object):
             'cmake', self.repo_dir,
             '-DCMAKE_INSTALL_PREFIX=' + self.install_dir
         ]
+
+        # Allow users to pass in arbitrary cache variables
+        for cmake_var in self._args.cmake_var:
+            pieces = cmake_var.split('=', 1)
+            cmake_cmd.append('-D{}={}'.format(pieces[0], pieces[1]))
 
         # For each repo this repo depends on, generate a CMake variable
         # definitions for "...INSTALL_DIR" that points to that dependent
@@ -483,10 +466,8 @@ class GoodRepo(object):
         for option in self.cmake_options:
             cmake_cmd.append(escape(option.format(**self.__dict__)))
 
-        # Set build config for single-configuration generators
-        if platform.system() == 'Linux' or platform.system() == 'Darwin':
-            cmake_cmd.append('-DCMAKE_BUILD_TYPE={config}'.format(
-                config=CONFIG_MAP[self._args.config]))
+        # Set build config for single-configuration generators (this is a no-op on multi-config generators)
+        cmake_cmd.append(f'-D CMAKE_BUILD_TYPE={CONFIG_MAP[self._args.config]}')
 
         # Use the CMake -A option to select the platform architecture
         # without needing a Visual Studio generator.
@@ -513,29 +494,14 @@ class GoodRepo(object):
 
     def CMakeBuild(self):
         """Build CMake command for the build phase and execute it"""
-        cmake_cmd = ['cmake', '--build', self.build_dir, '--target', 'install']
+        cmake_cmd = ['cmake', '--build', self.build_dir, '--target', 'install', '--config', CONFIG_MAP[self._args.config]]
         if self._args.do_clean:
             cmake_cmd.append('--clean-first')
 
-        if platform.system() == 'Windows':
-            cmake_cmd.append('--config')
-            cmake_cmd.append(CONFIG_MAP[self._args.config])
-
-        # Speed up the build.
-        if platform.system() == 'Linux' or platform.system() == 'Darwin':
-            cmake_cmd.append('--')
-            num_make_jobs = multiprocessing.cpu_count()
-            env_make_jobs = os.environ.get('MAKE_JOBS', None)
-            if env_make_jobs is not None:
-                try:
-                    num_make_jobs = min(num_make_jobs, int(env_make_jobs))
-                except ValueError:
-                    print('warning: environment variable MAKE_JOBS has non-numeric value "{}".  '
-                          'Using {} (CPU count) instead.'.format(env_make_jobs, num_make_jobs))
-            cmake_cmd.append('-j{}'.format(num_make_jobs))
-        if platform.system() == 'Windows' and self._args.generator != "Ninja":
-            cmake_cmd.append('--')
-            cmake_cmd.append('/maxcpucount')
+        # Ninja is parallel by default
+        if self._args.generator != "Ninja":
+            cmake_cmd.append('--parallel')
+            cmake_cmd.append(format(multiprocessing.cpu_count()))
 
         if VERBOSE:
             print("CMake command: " + " ".join(cmake_cmd))
@@ -622,6 +588,10 @@ def CreateHelper(args, repos, filename):
     install_names = GetInstallNames(args)
     with open(filename, 'w') as helper_file:
         for repo in repos:
+            # If the repo has an API tag and that does not match
+            # the target API then skip it
+            if repo.api is not None and repo.api != args.api:
+                continue
             if install_names and repo.name in install_names and repo.on_build_platform:
                 helper_file.write('set({var} "{dir}" CACHE STRING "" FORCE)\n'
                                   .format(
@@ -688,7 +658,7 @@ def main():
         dest='arch',
         choices=['32', '64', 'x86', 'x64', 'win32', 'win64'],
         type=str.lower,
-        help="Set build files architecture (Windows)",
+        help="Set build files architecture (Visual Studio Generator Only)",
         default='64')
     parser.add_argument(
         '--config',
@@ -697,6 +667,12 @@ def main():
         type=str.lower,
         help="Set build files configuration",
         default='debug')
+    parser.add_argument(
+        '--api',
+        dest='api',
+        default='vulkan',
+        choices=['vulkan'],
+        help="Target API")
     parser.add_argument(
         '--generator',
         dest='generator',
@@ -708,6 +684,13 @@ def main():
         type=lambda a: set(a.lower().split(',')),
         help="Comma-separated list of 'optional' resources that may be skipped. Only 'tests' is currently supported as 'optional'",
         default=set())
+    parser.add_argument(
+        '--cmake_var',
+        dest='cmake_var',
+        action='append',
+        metavar='VAR[=VALUE]',
+        help="Add CMake command line option -D'VAR'='VALUE' to the CMake generation command line; may be used multiple times",
+        default=[])
 
     args = parser.parse_args()
     save_cwd = os.getcwd()
@@ -721,6 +704,11 @@ def main():
 
     print('Starting builds in {d}'.format(d=abs_top_dir))
     for repo in repos:
+        # If the repo has an API tag and that does not match
+        # the target API then skip it
+        if repo.api is not None and repo.api != args.api:
+            continue
+
         # If the repo has a platform whitelist, skip the repo
         # unless we are building on a whitelisted platform.
         if not repo.on_build_platform:

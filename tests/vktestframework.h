@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2022 The Khronos Group Inc.
- * Copyright (c) 2015-2022 Valve Corporation
- * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2023 The Khronos Group Inc.
+ * Copyright (c) 2015-2023 Valve Corporation
+ * Copyright (c) 2015-2023 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@
  * Author: Tony Barbour <tony@LunarG.com>
  */
 
-#ifndef VKTESTFRAMEWORK_H
-#define VKTESTFRAMEWORK_H
+#pragma once
 
-#include "SPIRV/GLSL.std.450.h"
+#include "glslang/SPIRV/GlslangToSpv.h"
+#include "glslang/SPIRV/SPVRemapper.h"
 #include "spirv-tools/libspirv.h"
 #include "glslang/Public/ShaderLang.h"
 #include "test_common.h"
@@ -92,5 +92,3 @@ class TestEnvironment : public ::testing::Environment {
 
     void TearDown();
 };
-
-#endif  // VKTESTFRAMEWORK_H

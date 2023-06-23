@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2022 The Khronos Group Inc.
- * Copyright (c) 2015-2022 Valve Corporation
- * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2023 The Khronos Group Inc.
+ * Copyright (c) 2015-2023 Valve Corporation
+ * Copyright (c) 2015-2023 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,20 +23,9 @@
 #include "vktestframework.h"
 #include "vkrenderframework.h"
 
-// For versions prior to VS 2015, suppress the warning
-// caused by the inconsistent redefinition of snprintf
-// between a vulkan header and a glslang header.
-#if (defined(_MSC_VER) && _MSC_VER < 1900 /*vs2015*/)
-#pragma warning(push)
-#pragma warning(disable : 4005)
-#endif
-// TODO FIXME remove this once glslang doesn't define this
-#undef BadValue
-#include "SPIRV/GlslangToSpv.h"
-#include "SPIRV/SPVRemapper.h"
-#if (defined(_MSC_VER) && _MSC_VER < 1900 /*vs2015*/)
-#pragma warning(pop)
-#endif
+#include "glslang/SPIRV/GLSL.std.450.h"
+#include "glslang/SPIRV/SPVRemapper.h"
+
 #include <limits.h>
 #include <cmath>
 
