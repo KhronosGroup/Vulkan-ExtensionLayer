@@ -36,6 +36,10 @@ enum ImageAspect { kColorOnly, kDepthAndStencil, kDepthOnly, kStencilOnly };
 struct DeviceData;
 struct DeviceFeatures;
 
+struct LayerSettings {
+    bool force_enable{false};
+};
+
 // helper struct definitions to convert synchronization2 barriers
 
 struct BufferMemoryBarrier : public VkBufferMemoryBarrier {
@@ -156,7 +160,7 @@ struct InstanceData {
 
     VkInstance instance;
     uint32_t api_version;
-    bool force_enable;
+    LayerSettings layer_settings;
     const VkAllocationCallbacks* allocator;
     struct InstanceDispatchTable {
         DECLARE_HOOK(GetInstanceProcAddr);

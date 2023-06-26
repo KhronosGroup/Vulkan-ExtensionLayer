@@ -71,6 +71,8 @@ class VkTestFramework : public ::testing::Test {
     char **ReadFileData(const char *fileName);
     void FreeFileData(char **data);
 
+    static void setEnvironmentSetting(std::string setting, const char *val);
+
   protected:
     VkTestFramework();
     virtual ~VkTestFramework() = 0;

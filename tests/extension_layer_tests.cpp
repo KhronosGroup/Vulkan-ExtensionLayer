@@ -675,7 +675,7 @@ int main(int argc, char **argv) {
 #endif
 
     // Set VK_LAYER_PATH so that the loader can find the layers
-    SetEnvironment("VK_LAYER_PATH", LAYER_BUILD_LOCATION);
+    VkTestFramework::setEnvironmentSetting("VK_LAYER_PATH", LAYER_BUILD_LOCATION);
 
     ::testing::InitGoogleTest(&argc, argv);
     VkTestFramework::InitArgs(&argc, argv);
