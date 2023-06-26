@@ -1208,10 +1208,18 @@ TEST_F(Sync2CompatTest, Vulkan10) {
     };
     static const char *layer_name = "VK_LAYER_KHRONOS_synchronization2";
     static const char *ext_name = "VK_KHR_synchronization2";
-    static const VkInstanceCreateInfo inst_info = {
+    static  VkInstanceCreateInfo inst_info = {
         VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, NULL, 0, &app_info, 1, &layer_name, 0, NULL,
     };
 
+    std::vector<const char *> extNames;
+    if (InstanceExtensionSupported(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME)) {
+        extNames.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+        inst_info.enabledExtensionCount = (int)extNames.size();
+        inst_info.ppEnabledExtensionNames = extNames.data();
+        inst_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+        }
+    
     VkInstance instance;
 
     ASSERT_VK_SUCCESS(vk::CreateInstance(&inst_info, NULL, &instance));
