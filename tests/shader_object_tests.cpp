@@ -20,17 +20,23 @@
 
 #include "extension_layer_tests.h"
 #include "shader_object_tests.h"
-#include "vk_layer_config.h"
 
 void ShaderObjectTest::SetUp() {
-    SetEnvironment("VK_SHADER_OBJECT_FORCE_ENABLE", "1");
-    const std::string layer_path = std::string(SHADER_OBJECT_BINARY_PATH);
-    SetEnvironment("VK_LAYER_PATH", layer_path.c_str());
+    VkBool32 force_enable = VK_TRUE;
+
+    VkLayerSettingEXT settings[] = {
+        {"VK_LAYER_KHRONOS_shader_object", "force_enable", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &force_enable}
+    };
+
+    VkLayerSettingsCreateInfoEXT layer_settings_create_info{
+        VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT, nullptr,
+        static_cast<uint32_t>(std::size(settings)), &settings[0]};
+
     VkExtensionLayerTest::SetUp();
     SetTargetApiVersion(VK_API_VERSION_1_1);
     VkExtensionLayerTest::AddSurfaceInstanceExtension();
     instance_layers_.push_back("VK_LAYER_KHRONOS_shader_object");
-    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor, &layer_settings_create_info));
 
     VkExtensionLayerTest::AddSwapchainDeviceExtension();
 }

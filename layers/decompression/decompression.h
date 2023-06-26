@@ -36,6 +36,11 @@ enum class SynchronizationScope { kFirst, kSecond };
 struct DeviceData;
 struct DeviceFeatures;
 
+struct LayerSettings {
+    bool force_enable{false};
+    bool logging{false};
+};
+
 template <typename T>
 using CmdVector = std::vector<T, extension_layer::CmdAlloc<T>>;
 
@@ -74,7 +79,7 @@ struct InstanceData {
 
     VkInstance instance;
     uint32_t api_version;
-    bool force_enable;
+    LayerSettings layer_settings;
     const VkAllocationCallbacks* allocator;
     struct InstanceDispatchTable {
         DECLARE_HOOK(GetInstanceProcAddr);

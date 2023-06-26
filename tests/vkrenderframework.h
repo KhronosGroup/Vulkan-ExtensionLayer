@@ -39,8 +39,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "vk_layer_config.h"
-
 using vk_testing::MakeVkHandles;
 
 template <class Dst, class Src>
@@ -124,7 +122,7 @@ class ErrorMonitor {
     // Helpers
 
     // ExpectSuccess now takes an optional argument allowing a custom combination of debug flags
-    void ExpectSuccess(VkDebugReportFlagsEXT const message_flag_mask = kErrorBit);
+    void ExpectSuccess(VkDebugReportFlagsEXT const message_flag_mask = VK_DEBUG_REPORT_ERROR_BIT_EXT);
 
     void VerifyFound();
     void VerifyNotFound();

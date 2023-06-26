@@ -28,6 +28,7 @@
 #define VKLAYERTEST_H
 
 #include <vulkan/vulkan.h>
+#include <vulkan/layer/vk_layer_settings.hpp>
 
 #if defined(ANDROID)
 #include <android/log.h>

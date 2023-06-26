@@ -59,7 +59,7 @@ target_sources(vk_extension_layer_tests PRIVATE
 
 set_target_properties(vk_extension_layer_tests PROPERTIES VS_DEBUGGER_ENVIRONMENT "VK_LAYER_PATH=$<TARGET_FILE_DIR:VkLayer_khronos_synchronization2>")
 
-add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_memory_decompression)
+add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object VkLayer_khronos_memory_decompression)
 
 target_include_directories(vk_extension_layer_tests PRIVATE .)
 
@@ -90,6 +90,7 @@ find_package(glslang REQUIRED CONFIG QUIET)
 
 target_link_libraries(vk_extension_layer_tests PRIVATE
     VkExtLayer_utils
+    Vulkan::LayerSettings
     Vulkan::Headers
     GTest::gtest
     GTest::gtest_main
