@@ -51,6 +51,9 @@ TEST_F(DecompressionTest, DecompressMemory) {
     VkConstantBufferObj srcBuffer1(m_device, COMPRESSED_SIZE1, compressedData1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     ASSERT_TRUE(srcBuffer1.initialized());
 
+    VkConstantBufferObj srcBuffer2(m_device, COMPRESSED_SIZE2, compressedData2, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    ASSERT_TRUE(srcBuffer2.initialized());
+
     std::vector<uint8_t> decompressData(2 * DECOMPRESSED_SIZE_ALIGNED, 0xFF);
     VkConstantBufferObj dstBuffer(m_device, 2 * DECOMPRESSED_SIZE_ALIGNED, decompressData.data(), VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     ASSERT_TRUE(dstBuffer.initialized());
