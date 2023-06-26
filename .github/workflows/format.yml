@@ -1,5 +1,5 @@
-# Copyright (c) 2021-2023 Valve Corporation
-# Copyright (c) 2021-2023 LunarG, Inc.
+# Copyright (c) 2023 Valve Corporation
+# Copyright (c) 2023 LunarG, Inc.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Author: Lenny Komow <lenny@lunarg.com>
-# Author: Nathaniel Cesario <nathaniel@lunarg.com>
-# Author: Mark Lobodzinski <mark@lunarg.com>
 
-name: Android
+name: format
 
 on:
     push:
@@ -25,18 +21,22 @@ on:
         branches:
             - main
 
+permissions:
+    contents: read
+
 jobs:
-  android:
-    runs-on: ubuntu-20.04
+  code-format:
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
-      matrix:
-        abi: [ arm64-v8a, armeabi-v7a ]
-
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
       - uses: actions/setup-python@v4
         with:
           python-version: '3.8'
-      - name: Build ExtensionLayer
-        run: python3 scripts/github_ci_android.py --abi ${{ matrix.abi }}
+      - name: clang-format version
+        run: clang-format --version
+      - name: Execute Source Code Format Checking Script
+        run: python3 scripts/check_code_format.py --fetch-main --target-refspec=FETCH_HEAD
