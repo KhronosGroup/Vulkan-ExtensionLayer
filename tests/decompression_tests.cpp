@@ -44,7 +44,6 @@ TEST_F(DecompressionTest, DecompressMemory) {
         GTEST_SKIP() << "VK_KHR_portability_subset enabled, skipping.\n";
     }
 
-
     if (!CheckDecompressionSupportAndInitState()) {
         GTEST_SKIP() << kSkipPrefix << " decompression not supported, skipping test";
     }
