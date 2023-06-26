@@ -281,8 +281,6 @@ on/off options currently supported by this repository:
 
 | Option | Platform | Default | Description |
 | ------ | -------- | ------- | ----------- |
-| BUILD_LAYERS | All | `ON` | Controls whether or not the Extension layers are built. |
-| BUILD_LAYER_SUPPORT_FILES | All | `OFF` | Controls whether or not layer support files are installed. |
 | BUILD_TESTS | All | `OFF` | Controls whether or not the Extension layer tests are built. |
 | BUILD_WERROR | All | `ON` | Controls whether or not to treat compiler warnings as errors. |
 | BUILD_WSI_XCB_SUPPORT | Linux | `ON` | Build the components with XCB support. |

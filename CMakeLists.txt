@@ -111,9 +111,6 @@ if(MAKE_C_COMPILER_ID MATCHES "Clang")
 
 endif()
 
-option(BUILD_LAYERS "Build layers" ON)
-option(BUILD_LAYER_SUPPORT_FILES "Generate layer files" OFF) # For generating files when not building layers
-
 option(BUILD_TESTS "Build tests")
 if(BUILD_TESTS)
     # Options for Linux only
