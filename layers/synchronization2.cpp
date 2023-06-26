@@ -18,6 +18,7 @@
  * Author: Jeremy Gebben <jeremyg@lunarg.com>
  */
 #include <vulkan/vk_layer.h>
+#include <vulkan/layer/vk_layer_settings.hpp>
 #include <ctype.h>
 #include <cstring>
 #include <algorithm>
@@ -29,9 +30,11 @@
 #include "allocator.h"
 #include "log.h"
 #include "vk_format_utils.h"
-#include "vk_layer_config.h"
 #include "vk_safe_struct.h"
 #include "vk_util.h"
+
+#define kLayerSettingsForceEnable "force_device"
+#define kLayerSettingsCustomSTypeInfo "custom_stype_list"
 
 // required by vk_safe_struct
 std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
@@ -48,137 +51,8 @@ static const VkLayerProperties kGlobalLayer = {
 static const VkExtensionProperties kDeviceExtension = {VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
                                                        VK_KHR_SYNCHRONIZATION_2_SPEC_VERSION};
 
-static const char* const kEnvarForceEnableRemoved =
-#if defined(__ANDROID__)
-    "debug.vulkan.sync2.force_enable";
-#else
-    "VK_SYNC2_FORCE_ENABLE";
-#endif
-static const char* const kEnvarForceEnable =
-#if defined(__ANDROID__)
-    "debug.vulkan.synchronization2.force_enable";
-#else
-    "VK_SYNCHRONIZATION2_FORCE_ENABLE";
-#endif
-static const char* const kLayerSettingsForceEnable = "khronos_synchronization2.force_enable";
-
-// TODO: should we try to use the same fields as ValidationLayers, so that list only needs
-// to be defined once?
-static const char* const kEnvarCustomStypeListRemoved =
-#if defined(__ANDROID__)
-    "debug.vulkan.sync2.custom_stype_list";
-#else
-    "VK_LAYER_SYNC2_CUSTOM_STYPE_LIST";
-#endif
-static const char* const kEnvarCustomStypeList =
-#if defined(__ANDROID__)
-    "debug.vulkan.synchronization2.custom_stype_list";
-#else
-    "VK_SYNCHRONIZATION2_CUSTOM_STYPE_LIST";
-#endif
-static const char* const kLayerSettingsCustomStypeList = "khronos_synchronization2.custom_stype_list";
-
 static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<InstanceData>> instance_data_map;
 static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<DeviceData>> device_data_map;
-
-static void string_tolower(std::string &s) {
-    for (auto& c: s) {
-        c = tolower(c);
-    }
-}
-
-static bool GetForceEnable() {
-    bool result = false;
-    std::string setting_removed = GetEnvironment(kEnvarForceEnableRemoved);
-    if (!setting_removed.empty()) {
-        LOG("%s was renamed into %s, please update your developer environment.\n", kEnvarForceEnableRemoved, kEnvarForceEnable);
-    }
-
-    std::string setting = GetEnvironment(kEnvarForceEnable);
-    if (setting.empty()) {
-        setting = GetLayerOption(kLayerSettingsForceEnable);
-    }
-    if (!setting.empty()) {
-        string_tolower(setting);
-        if (setting == "true") {
-            result = true;
-        } else {
-            result = std::atoi(setting.c_str()) != 0;
-        }
-    }
-    return result;
-}
-
-static std::string GetNextToken(std::string *token_list, const std::string &delimiter, size_t *pos) {
-    std::string token;
-    *pos = token_list->find(delimiter);
-    if (*pos != std::string::npos) {
-        token = token_list->substr(0, *pos);
-    } else {
-        *pos = token_list->length() - delimiter.length();
-        token = *token_list;
-    }
-    token_list->erase(0, *pos + delimiter.length());
-
-    // Remove quotes from quoted strings
-    if ((token.length() > 0) && (token[0] == '\"')) {
-        token.erase(token.begin());
-        if ((token.length() > 0) && (token[token.length() - 1] == '\"')) {
-            token.erase(--token.end());
-        }
-    }
-    return token;
-}
-
-static uint32_t TokenToUint(const std::string &token) {
-    uint32_t int_id = 0;
-    if ((token.find("0x") == 0) || token.find("0X") == 0) {  // Handle hex format
-        int_id = static_cast<uint32_t>(std::strtoul(token.c_str(), nullptr, 16));
-    } else {
-        int_id = static_cast<uint32_t>(std::strtoul(token.c_str(), nullptr, 10));  // Decimal format
-    }
-    return int_id;
-}
-
-static void SetCustomStypeInfo(std::string raw_id_list, const std::string &delimiter) {
-    size_t pos = 0;
-    std::string token;
-    // List format is a list of integer pairs
-    while (raw_id_list.length() != 0) {
-        token = GetNextToken(&raw_id_list, delimiter, &pos);
-        uint32_t stype_id = TokenToUint(token);
-        token = GetNextToken(&raw_id_list, delimiter, &pos);
-        uint32_t struct_size_in_bytes = TokenToUint(token);
-        if ((stype_id != 0) && (struct_size_in_bytes != 0)) {
-            bool found = false;
-            // Prevent duplicate entries
-            for (auto item : custom_stype_info) {
-                if (item.first == stype_id) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) custom_stype_info.push_back(std::make_pair(stype_id, struct_size_in_bytes));
-        }
-    }
-}
-
-static void SetupCustomStypes() {
-    std::string setting_removed = GetEnvironment(kEnvarCustomStypeListRemoved);
-    if (!setting_removed.empty()) {
-        LOG("%s was renamed into %s, please update your developer environment.\n", kEnvarCustomStypeListRemoved,
-            kEnvarCustomStypeList);
-    }
-
-    const std::string kEnvDelim =
-#if defined(_WIN32)
-        ";";
-#else
-        ":";
-#endif
-    SetCustomStypeInfo(GetLayerOption(kLayerSettingsCustomStypeList), ",");
-    SetCustomStypeInfo(GetEnvironment(kEnvarCustomStypeList), kEnvDelim);
-}
 
 uintptr_t DispatchKey(const void* object) {
     auto tmp = reinterpret_cast<const struct VkLayerDispatchTable_ * const *>(object);
@@ -293,18 +167,21 @@ static VkLayerInstanceCreateInfo* GetChainInfo(const VkInstanceCreateInfo* pCrea
     return chain_info;
 }
 
-// Get all elements from a vkEnumerate*() lambda into a std::vector.
-template <typename T>
-VkResult EnumerateAll(std::vector<T>* vect, std::function<VkResult(uint32_t*, T*)> func) {
-    VkResult result = VK_INCOMPLETE;
-    do {
-        uint32_t count = 0;
-        result = func(&count, nullptr);
-        ASSERT(result == VK_SUCCESS);
-        vect->resize(count);
-        result = func(&count, vect->data());
-    } while (result == VK_INCOMPLETE);
-    return result;
+void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, LayerSettings* layer_settings) {
+    assert(layer_settings != nullptr);
+
+    VlLayerSettingSet layerSettingSet = VK_NULL_HANDLE;
+    vlCreateLayerSettingSet(kGlobalLayer.layerName, vlFindLayerSettingsCreateInfo(pCreateInfo), pAllocator, nullptr, &layerSettingSet);
+
+    if (vlHasLayerSetting(layerSettingSet, kLayerSettingsForceEnable)) {
+        vlGetLayerSettingValue(layerSettingSet, kLayerSettingsForceEnable, layer_settings->force_enable);
+    }
+
+    if (vlHasLayerSetting(layerSettingSet, kLayerSettingsCustomSTypeInfo)) {
+        vlGetLayerSettingValues(layerSettingSet, kLayerSettingsCustomSTypeInfo, custom_stype_info);
+    }
+
+    vlDestroyLayerSettingSet(layerSettingSet, pAllocator);
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkInstance* pInstance) {
@@ -329,10 +206,10 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreat
                                                             pAllocator ? pAllocator : &extension_layer::kDefaultAllocator);
 
         instance_data_map.insert(DispatchKey(*pInstance), instance_data);
-
-        instance_data->force_enable = GetForceEnable();
+        
         instance_data->api_version = pCreateInfo->pApplicationInfo ? pCreateInfo->pApplicationInfo->apiVersion : 0;
-        SetupCustomStypes();
+
+        InitLayerSettings(pCreateInfo, pAllocator, &instance_data->layer_settings);
     } catch (const std::bad_alloc&) {
         auto destroy_instance = reinterpret_cast<PFN_vkDestroyInstance>(gpa(NULL, "vkDestroyInstance"));
         destroy_instance(*pInstance, pAllocator);
@@ -533,7 +410,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
     chain_info->u.pLayerInfo = chain_info->u.pLayerInfo->pNext;
 
     try {
-        bool enable_layer = (features.sync2 && (!pdd->lower_has_sync2 || instance_data->force_enable));
+        bool enable_layer = (features.sync2 && (!pdd->lower_has_sync2 || instance_data->layer_settings.force_enable));
         // Filter out our extension name and feature struct, in a copy of the create info.
         // Only enable device hooks if synchronization2 extension is enabled AND
         // the physical device doesn't support it already or we are force enabled.

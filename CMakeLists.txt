@@ -66,6 +66,10 @@ else()
     endif()
 endif()
 
+find_package(VulkanUtilityLibraries CONFIG REQUIRED QUIET)
+
+target_compile_definitions(Vulkan::LayerSettings INTERFACE VK_ENABLE_BETA_EXTENSIONS) # Enable beta Vulkan extensions
+
 option(BUILD_WERROR "Treat compiler warnings as errors")
 if (BUILD_WERROR)
     add_compile_options("$<IF:$<CXX_COMPILER_ID:MSVC>,/WX,-Werror>")

@@ -28,9 +28,9 @@ static bool logging_enabled = false;
     }
 
 #include <vulkan/vk_layer.h>
+#include <vulkan/layer/vk_layer_settings.hpp>
 #include "allocator.h"
 #include "log.h"
-#include "vk_layer_config.h"
 #include "vk_safe_struct.h"
 #include "vk_util.h"
 #include "decompression.h"
@@ -115,13 +115,17 @@ static const ByteCode kIndirectGInflateBytecode[] = {
     {(const uint8_t*)kIndirectGInflate64_HAVE_INT16_HAVE_INT64, sizeof(kIndirectGInflate64_HAVE_INT16_HAVE_INT64)},
 };
 
+#define kLayerSettingsForceEnable "force_device"
+#define kLayerSettingsCustomSTypeInfo "custom_stype_list"
+#define kLayerSettingsLogging "logging"
+
 // required by vk_safe_struct
 std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
 
 namespace memory_decompression {
 
 static const VkLayerProperties kGlobalLayer = {
-    "VK_LAYER_KHRONOS_memory_decompression",
+    "VK_LAYER_KHRONOS_decompression",
     VK_HEADER_VERSION_COMPLETE,
     1,
     "Default memory decompression layer",
@@ -130,64 +134,8 @@ static const VkLayerProperties kGlobalLayer = {
 static const VkExtensionProperties kDeviceExtension = {VK_NV_MEMORY_DECOMPRESSION_EXTENSION_NAME,
                                                        VK_NV_MEMORY_DECOMPRESSION_SPEC_VERSION};
 
-static const char* const kEnvarForceEnable =
-#if defined(__ANDROID__)
-    "debug.vulkan.memory_decompression.force_enable";
-#else
-    "VK_MEMORY_DECOMPRESSION_FORCE_ENABLE";
-#endif
-static const char* const kLayerSettingsForceEnable = "khronos_memory_decompression.force_enable";
-
-static const char* const kEnvarLogging =
-#if defined(__ANDROID__)
-    "debug.vulkan.memory_decompression.logging";
-#else
-    "VK_MEMORY_DECOMPRESSION_LOGGING";
-#endif
-static const char* const kLayerSettingsLogging = "khronos_memory_decompression.logging";
-
 static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<InstanceData>> instance_data_map;
 static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<DeviceData>> device_data_map;
-
-static void string_tolower(std::string& s) {
-    for (auto& c : s) {
-        c = tolower(c);
-    }
-}
-
-static bool GetForceEnable() {
-    bool result = false;
-    std::string setting = GetEnvironment(kEnvarForceEnable);
-    if (setting.empty()) {
-        setting = GetLayerOption(kLayerSettingsForceEnable);
-    }
-    if (!setting.empty()) {
-        string_tolower(setting);
-        if (setting == "true") {
-            result = true;
-        } else {
-            result = std::atoi(setting.c_str()) != 0;
-        }
-    }
-    return result;
-}
-
-static bool GetLoggingEnabled() {
-    bool result = false;
-    std::string setting = GetEnvironment(kEnvarLogging);
-    if (setting.empty()) {
-        setting = GetLayerOption(kLayerSettingsLogging);
-    }
-    if (!setting.empty()) {
-        string_tolower(setting);
-        if (setting == "true") {
-            result = true;
-        } else {
-            result = std::atoi(setting.c_str()) != 0;
-        }
-    }
-    return result;
-}
 
 uintptr_t DispatchKey(const void* object) {
     auto tmp = reinterpret_cast<const struct VkLayerDispatchTable_* const*>(object);
@@ -274,7 +222,7 @@ VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceFeatures2(VkPhysicalDevice physicalD
 
 #define INIT_HOOK(_vt, _inst, fn) _vt.fn = reinterpret_cast<PFN_vk##fn>(vtable.GetInstanceProcAddr(_inst, "vk" #fn))
 InstanceData::InstanceData(VkInstance inst, PFN_vkGetInstanceProcAddr gpa, const VkAllocationCallbacks* alloc)
-    : instance(inst), api_version(0), force_enable(false), allocator(alloc) {
+    : instance(inst), api_version(0), allocator(alloc) {
     vtable.GetInstanceProcAddr = gpa;
     INIT_HOOK(vtable, instance, CreateInstance);
     INIT_HOOK(vtable, instance, DestroyInstance);
@@ -297,18 +245,25 @@ static VkLayerInstanceCreateInfo* GetChainInfo(const VkInstanceCreateInfo* pCrea
     return chain_info;
 }
 
-// Get all elements from a vkEnumerate*() lambda into a std::vector.
-template <typename T>
-VkResult EnumerateAll(std::vector<T>* vect, std::function<VkResult(uint32_t*, T*)> func) {
-    VkResult result = VK_INCOMPLETE;
-    do {
-        uint32_t count = 0;
-        result = func(&count, nullptr);
-        ASSERT(result == VK_SUCCESS);
-        vect->resize(count);
-        result = func(&count, vect->data());
-    } while (result == VK_INCOMPLETE);
-    return result;
+void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, LayerSettings* layer_settings) {
+    assert(layer_settings != nullptr);
+
+    VlLayerSettingSet layerSettingSet = VK_NULL_HANDLE;
+    vlCreateLayerSettingSet(kGlobalLayer.layerName, vlFindLayerSettingsCreateInfo(pCreateInfo), pAllocator, nullptr, &layerSettingSet);
+
+    if (vlHasLayerSetting(layerSettingSet, kLayerSettingsForceEnable)) {
+        vlGetLayerSettingValue(layerSettingSet, kLayerSettingsForceEnable, layer_settings->force_enable);
+    }
+
+    if (vlHasLayerSetting(layerSettingSet, kLayerSettingsLogging)) {
+        vlGetLayerSettingValue(layerSettingSet, kLayerSettingsLogging, layer_settings->logging);
+    }
+
+    if (vlHasLayerSetting(layerSettingSet, kLayerSettingsCustomSTypeInfo)) {
+        vlGetLayerSettingValues(layerSettingSet, kLayerSettingsCustomSTypeInfo, custom_stype_info);
+    }
+
+    vlDestroyLayerSettingSet(layerSettingSet, pAllocator);
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator,
@@ -321,8 +276,6 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreat
     if (create_instance == NULL) {
         return VK_ERROR_INITIALIZATION_FAILED;
     }
-
-    logging_enabled = GetLoggingEnabled();
 
     // Advance the link info for the next element on the chain
     chain_info->u.pLayerInfo = chain_info->u.pLayerInfo->pNext;
@@ -337,8 +290,10 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreat
 
         instance_data_map.insert(DispatchKey(*pInstance), instance_data);
 
-        instance_data->force_enable = GetForceEnable();
         instance_data->api_version = pCreateInfo->pApplicationInfo ? pCreateInfo->pApplicationInfo->apiVersion : 0;
+
+        InitLayerSettings(pCreateInfo, pAllocator, &instance_data->layer_settings);
+        logging_enabled = instance_data->layer_settings.logging;
     } catch (const std::bad_alloc&) {
         auto destroy_instance = reinterpret_cast<PFN_vkDestroyInstance>(gpa(NULL, "vkDestroyInstance"));
         destroy_instance(*pInstance, pAllocator);
@@ -749,7 +704,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
             PRINT("Memory decompression feature not available in the driver, enabling decompression layer.\n");
             enable_layer = true;
         } else {
-            if (instance_data->force_enable) {
+            if (instance_data->layer_settings.force_enable) {
                 PRINT("Memory decompression feature available in the driver, but force enabling decompression layer.\n");
                 enable_layer = true;
             } else {

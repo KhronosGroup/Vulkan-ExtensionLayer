@@ -32,11 +32,14 @@
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_layer.h>
+#include <vulkan/layer/vk_layer_settings.hpp>
 
 #include "log.h"
 #include "vk_safe_struct.h"
 #include "vk_api_hash.h"
-#include "vk_layer_config.h"
+
+#define kLayerSettingsForceEnable "force_device"
+#define kLayerSettingsCustomSTypeInfo "custom_stype_list"
 
 // Required by vk_safe_struct
 std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
@@ -79,37 +82,6 @@ namespace shader_object {
 
 static const char* kLayerName = "VK_LAYER_KHRONOS_shader_object";
 static const VkExtensionProperties kExtensionProperties = {VK_EXT_SHADER_OBJECT_EXTENSION_NAME, VK_EXT_SHADER_OBJECT_SPEC_VERSION};
-
-static const char* const kEnvarForceEnable =
-#if defined(__ANDROID__)
-    "debug.vulkan.shader_object.force_enable";
-#else
-    "VK_SHADER_OBJECT_FORCE_ENABLE";
-#endif
-static const char* const kLayerSettingsForceEnable = "khronos_shader_object.force_enable";
-
-static void string_tolower(std::string &s) {
-    for (auto& c: s) {
-        c = tolower(c);
-    }
-}
-
-static bool GetForceEnable() {
-    bool result = false;
-    std::string setting = GetEnvironment(kEnvarForceEnable);
-    if (setting.empty()) {
-        setting = GetLayerOption(kLayerSettingsForceEnable);
-    }
-    if (!setting.empty()) {
-        string_tolower(setting);
-        if (setting == "true") {
-            result = true;
-        } else {
-            result = std::atoi(setting.c_str()) != 0;
-        }
-    }
-    return result;
-}
 
 class AlignedMemory {
   public:
@@ -1219,11 +1191,16 @@ class CommandBufferData {
     FullDrawStateData* draw_state_data_;
 };
 
+struct LayerSettings {
+    bool force_enable{false};
+};
+
 struct InstanceData {
     LayerDispatchInstance vtable;
     VkInstance            instance;
     VkPhysicalDevice*     physical_devices;
     uint32_t              physical_device_count;
+    LayerSettings         layer_settings;
 };
 
 struct PhysicalDeviceData {
@@ -2610,6 +2587,23 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetInstanceProcAddr(VkInstance i
 
 static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetDeviceProcAddr(VkDevice device, const char* pName);
 
+void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, LayerSettings* layer_settings) {
+    assert(layer_settings != nullptr);
+
+    VlLayerSettingSet layerSettingSet = VK_NULL_HANDLE;
+    vlCreateLayerSettingSet(kLayerName, vlFindLayerSettingsCreateInfo(pCreateInfo), pAllocator, nullptr, &layerSettingSet);
+
+    if (vlHasLayerSetting(layerSettingSet, kLayerSettingsForceEnable)) {
+        vlGetLayerSettingValue(layerSettingSet, kLayerSettingsForceEnable, layer_settings->force_enable);
+    }
+
+    if (vlHasLayerSetting(layerSettingSet, kLayerSettingsCustomSTypeInfo)) {
+        vlGetLayerSettingValues(layerSettingSet, kLayerSettingsCustomSTypeInfo, custom_stype_info);
+    }
+
+    vlDestroyLayerSettingSet(layerSettingSet, pAllocator);
+}
+
 static VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreateInfo,
                                                      const VkAllocationCallbacks* pAllocator, VkInstance* pInstance) {
     auto allocator = pAllocator ? *pAllocator : kDefaultAllocator;
@@ -2652,6 +2646,8 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo*
     instance_data->physical_devices = reinterpret_cast<VkPhysicalDevice*>(instance_data + 1);
     instance_data->physical_device_count = physical_device_count;
     instance_data->vtable.Initialize(*pInstance, fpGetInstanceProcAddr);
+
+    InitLayerSettings(pCreateInfo, pAllocator, &instance_data->layer_settings);
 
     result = fpEnumeratePhysicalDevices(*pInstance, &instance_data->physical_device_count, instance_data->physical_devices);
     ASSERT(result == VK_SUCCESS);
@@ -2917,7 +2913,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
     // only enable the layer if the application asked for the extension and feature AND the driver does not have a native
     // implementation (unless if the user specified to ignore the native implementation via environment variable)
     bool enable_layer = shader_object_feature_requested && shader_object_extension_requested;
-    bool ignore_native_implementation = GetForceEnable();
+    bool ignore_native_implementation = instance_data->layer_settings.force_enable;
     if (ignore_native_implementation) {
         DEBUG_LOG("ignoring native driver implementation of shader object\n");
     }

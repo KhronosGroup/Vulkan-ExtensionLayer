@@ -47,7 +47,7 @@ endif()
 foreach(extension_layer ${EXTENSION_LAYERS})
     target_include_directories(${extension_layer} PRIVATE .)
 
-    target_link_libraries(${extension_layer} PRIVATE VkExtLayer_utils)
+    target_link_libraries(${extension_layer} PRIVATE VkExtLayer_utils Vulkan::LayerSettings)
 
     if(MSVC)
         target_link_options(${extension_layer} PRIVATE /DEF:${CMAKE_CURRENT_SOURCE_DIR}/${extension_layer}.def)
