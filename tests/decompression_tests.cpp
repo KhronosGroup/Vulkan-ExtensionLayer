@@ -40,10 +40,6 @@ TEST_F(DecompressionTest, DecompressMemory) {
     TEST_DESCRIPTION("Test vkCmdDecompressMemoryNV.");
     VkResult result = VK_SUCCESS;
 
-    if (InstanceExtensionSupported(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME)) {
-        GTEST_SKIP() << "VK_KHR_portability_subset enabled, skipping.\n";
-    }
-
     if (!CheckDecompressionSupportAndInitState()) {
         GTEST_SKIP() << kSkipPrefix << " decompression not supported, skipping test";
     }
