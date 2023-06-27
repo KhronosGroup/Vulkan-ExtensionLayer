@@ -40,9 +40,14 @@ TEST_F(DecompressionTest, DecompressMemory) {
     TEST_DESCRIPTION("Test vkCmdDecompressMemoryNV.");
     VkResult result = VK_SUCCESS;
 
+    if (InstanceExtensionSupported(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME)) {
+        GTEST_SKIP() << "VK_KHR_portability_subset enabled, skipping.\n";
+    }
+
     if (!CheckDecompressionSupportAndInitState()) {
         GTEST_SKIP() << kSkipPrefix << " decompression not supported, skipping test";
     }
+
     VkConstantBufferObj srcBuffer1(m_device, COMPRESSED_SIZE1, compressedData1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     ASSERT_TRUE(srcBuffer1.initialized());
 
@@ -115,6 +120,10 @@ TEST_F(DecompressionTest, DecompressMemory) {
 
 TEST_F(DecompressionTest, DecompressMemoryIndirect) {
     TEST_DESCRIPTION("Test vkCmdDecompressMemoryIndirectCountNV.");
+
+    if (InstanceExtensionSupported(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME)) {
+        GTEST_SKIP() << "VK_KHR_portability_subset enabled, skipping.\n";
+    }
 
     if (!CheckDecompressionSupportAndInitState()) {
         GTEST_SKIP() << kSkipPrefix << " decompression not supported, skipping test";
