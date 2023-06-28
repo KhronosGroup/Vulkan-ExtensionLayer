@@ -21,6 +21,17 @@ project(Vulkan-ExtensionLayer)
 
 add_subdirectory(scripts)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
+set(CMAKE_VISIBILITY_INLINES_HIDDEN "YES")
+
+include(GNUInstallDirs)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 if (NOT TARGET Vulkan::Headers)
     find_package(VulkanHeaders CONFIG REQUIRED QUIET)
 endif()
@@ -55,23 +66,7 @@ else()
     endif()
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
-set(CMAKE_VISIBILITY_INLINES_HIDDEN "YES")
-
-include(GNUInstallDirs)
-
-# Enable IDE GUI folders
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-# "Helper" targets that don't have interesting source code should set their FOLDER property to this
-set(LAYERS_HELPER_FOLDER "Helper Targets")
-
-# NOTE: The idiom for open source projects is to not enable warnings as errors.
-# This reduces problems for users who simply want to build the repository.
-option(BUILD_WERROR "Treat compiler warnings as errors" OFF)
+option(BUILD_WERROR "Treat compiler warnings as errors")
 if (BUILD_WERROR)
     add_compile_options("$<IF:$<CXX_COMPILER_ID:MSVC>,/WX,-Werror>")
 endif()
