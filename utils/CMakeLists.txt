@@ -21,10 +21,6 @@
 # files directly in layers.
 add_definitions(-DNV_EXTENSIONS -DAMD_EXTENSIONS)
 
-if(ANNOTATED_SPEC_LINK)
-    add_definitions(-DANNOTATED_SPEC_LINK=${ANNOTATED_SPEC_LINK})
-endif()
-
 if(WIN32)
     add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
     if(MSVC)
