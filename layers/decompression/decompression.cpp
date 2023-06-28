@@ -125,7 +125,7 @@ std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
 namespace memory_decompression {
 
 static const VkLayerProperties kGlobalLayer = {
-    "VK_LAYER_KHRONOS_decompression",
+    "VK_LAYER_KHRONOS_memory_decompression",
     VK_HEADER_VERSION_COMPLETE,
     1,
     "Default memory decompression layer",

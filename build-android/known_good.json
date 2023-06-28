@@ -9,6 +9,20 @@
             "commit": "v1.3.261"
         },
         {
+            "name": "Vulkan-Utility-Libraries",
+            "url": "https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git",
+            "sub_dir": "Vulkan-Utility-Libraries",
+            "build_dir": "Vulkan-Utility-Libraries/build",
+            "install_dir": "Vulkan-Utility-Libraries/build/install",
+            "commit": "c0525368d724896349b40d8aa7b779f32bbbed0c",
+            "deps": [
+                {
+                    "var_name": "VULKAN_HEADERS_INSTALL_DIR",
+                    "repo_name": "Vulkan-Headers"
+                }
+            ]
+        },
+        {
             "name": "glslang",
             "url": "https://github.com/KhronosGroup/glslang.git",
             "sub_dir": "glslang",
@@ -30,6 +44,7 @@
     ],
     "install_names": {
         "Vulkan-Headers": "VULKAN_HEADERS_INSTALL_DIR",
+        "Vulkan-Utility-Libraries": "VULKAN_UTILITY_LIBRARIES_INSTALL_DIR",
         "glslang": "GLSLANG_INSTALL_DIR",
         "SPIRV-Headers": "SPIRV_HEADERS_INSTALL_DIR"
     }
