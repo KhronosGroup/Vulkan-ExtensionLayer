@@ -34,17 +34,13 @@ if(ANNOTATED_SPEC_LINK)
 endif()
 
 if(WIN32)
-    add_definitions(-DVK_USE_PLATFORM_WIN32_KHR -DWIN32_LEAN_AND_MEAN -DNOMINMAX)
+    add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
     # Workaround for TR1 deprecation in Visual Studio 15.5 until Google Test is updated
     add_definitions(-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
     # If MSVC, allow Windows to use multiprocessor compilation
     if(MSVC)
     add_compile_options(/MP)
     endif()
-elseif(ANDROID)
-    add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR)
-elseif(APPLE)
-    add_definitions(-DVK_USE_PLATFORM_MACOS_MVK)
 endif()
 
 if(WIN32)
@@ -82,6 +78,10 @@ add_test(NAME vk_extension_layer_tests COMMAND vk_extension_layer_tests)
 
 if(MSVC_IDE)
     set_target_properties(vk_extension_layer_tests PROPERTIES VS_DEBUGGER_ENVIRONMENT "VK_LAYER_PATH=$<TARGET_FILE_DIR:VkLayer_khronos_synchronization2>")
+endif()
+
+if (NOT MSVC)
+    target_compile_options(vk_extension_layer_tests PRIVATE "-Wno-sign-compare")
 endif()
 
 add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_memory_decompression generate_test_layer_location)
@@ -135,25 +135,12 @@ target_link_libraries(vk_extension_layer_tests PRIVATE
     glslang::HLSL
     glslang::SPIRV
     glslang::SPVRemapper
+    $<TARGET_NAME_IF_EXISTS:PkgConfig::XCB>
+    $<TARGET_NAME_IF_EXISTS:PkgConfig::X11>
+    $<TARGET_NAME_IF_EXISTS:PkgConfig::WAYlAND_CLIENT>
+    ${CMAKE_DL_LIBS}
 )
 
 target_compile_definitions(vk_extension_layer_tests PUBLIC SHADER_OBJECT_BINARY_PATH="$<TARGET_FILE_DIR:VkLayer_khronos_shader_object>")
-
-# Specify target_link_libraries
-if(NOT WIN32)
-    target_compile_options(vk_extension_layer_tests PRIVATE "-Wno-sign-compare")
-    target_link_libraries(vk_extension_layer_tests PRIVATE ${CMAKE_DL_LIBS} VkExtLayer_utils)
-    if(BUILD_WSI_XCB_SUPPORT)
-        target_link_libraries(vk_extension_layer_tests PRIVATE PkgConfig::XCB)
-    endif()
-
-    if (BUILD_WSI_XLIB_SUPPORT)
-        target_link_libraries(vk_extension_layer_tests PRIVATE PkgConfig::X11)
-    endif()
-
-    if(BUILD_WSI_WAYLAND_SUPPORT)
-        target_link_libraries(vk_extension_layer_tests PRIVATE PkgConfig::WAYLAND)
-    endif()
-endif()
 
 install(TARGETS vk_extension_layer_tests)

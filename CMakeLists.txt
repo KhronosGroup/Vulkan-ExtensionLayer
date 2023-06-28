@@ -25,7 +25,35 @@ if (NOT TARGET Vulkan::Headers)
     find_package(VulkanHeaders CONFIG REQUIRED QUIET)
 endif()
 
-add_compile_definitions(VK_ENABLE_BETA_EXTENSIONS)
+target_compile_definitions(Vulkan::Headers INTERFACE VK_ENABLE_BETA_EXTENSIONS) # Enable beta Vulkan extensions
+if(WIN32)
+    target_compile_definitions(Vulkan::Headers INTERFACE VK_USE_PLATFORM_WIN32_KHR)
+elseif(ANDROID)
+    target_compile_definitions(Vulkan::Headers INTERFACE VK_USE_PLATFORM_ANDROID_KHR)
+elseif(APPLE)
+    target_compile_definitions(Vulkan::Headers INTERFACE VK_USE_PLATFORM_MACOS_MVK VK_USE_PLATFORM_METAL_EXT)
+else()
+    option(BUILD_WSI_XCB_SUPPORT "Build XCB WSI support" ON)
+    option(BUILD_WSI_XLIB_SUPPORT "Build Xlib WSI support" ON)
+    option(BUILD_WSI_WAYLAND_SUPPORT "Build Wayland WSI support" ON)
+
+    find_package(PkgConfig REQUIRED QUIET) # Use PkgConfig to find Linux system libraries
+
+    if(BUILD_WSI_XCB_SUPPORT)
+        pkg_check_modules(XCB REQUIRED QUIET IMPORTED_TARGET xcb)
+        target_compile_definitions(Vulkan::Headers INTERFACE VK_USE_PLATFORM_XCB_KHR)
+    endif()
+
+    if(BUILD_WSI_XLIB_SUPPORT)
+        pkg_check_modules(X11 REQUIRED QUIET IMPORTED_TARGET x11)
+        target_compile_definitions(Vulkan::Headers INTERFACE VK_USE_PLATFORM_XLIB_KHR VK_USE_PLATFORM_XLIB_XRANDR_EXT)
+    endif()
+
+    if(BUILD_WSI_WAYLAND_SUPPORT)
+        pkg_check_modules(WAYlAND_CLIENT QUIET REQUIRED IMPORTED_TARGET wayland-client)
+        target_compile_definitions(Vulkan::Headers INTERFACE VK_USE_PLATFORM_WAYLAND_KHR)
+    endif()
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -111,33 +139,6 @@ if(MAKE_C_COMPILER_ID MATCHES "Clang")
 
 endif()
 
-option(BUILD_TESTS "Build tests")
-if(BUILD_TESTS)
-    # Options for Linux only
-    if(UNIX AND NOT APPLE) # i.e. Linux
-        find_package(PkgConfig REQUIRED QUIET) # Use PkgConfig to find Linux system libraries
-
-        option(BUILD_WSI_XCB_SUPPORT "Build XCB WSI support" ON)
-        option(BUILD_WSI_XLIB_SUPPORT "Build Xlib WSI support" ON)
-        option(BUILD_WSI_WAYLAND_SUPPORT "Build Wayland WSI support" ON)
-
-        if(BUILD_WSI_XCB_SUPPORT)
-            pkg_check_modules(XCB REQUIRED QUIET IMPORTED_TARGET xcb)
-            add_definitions(-DVK_USE_PLATFORM_XCB_KHR)
-        endif()
-
-        if(BUILD_WSI_XLIB_SUPPORT)
-            pkg_check_modules(X11 REQUIRED QUIET IMPORTED_TARGET x11)
-            add_definitions(-DVK_USE_PLATFORM_XLIB_KHR -DVK_USE_PLATFORM_XLIB_XRANDR_EXT)
-        endif()
-
-        if(BUILD_WSI_WAYLAND_SUPPORT)
-            pkg_check_modules(WAYLAND REQUIRED QUIET IMPORTED_TARGET wayland-client)
-            add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
-        endif()
-    endif()
-endif()
-
 option(VEL_CODEGEN "Enable code generation")
 if (VEL_CODEGEN)
     find_package(Python3 REQUIRED QUIET)
@@ -150,6 +151,8 @@ endif()
 
 add_subdirectory(layers)
 add_subdirectory(utils)
+
+option(BUILD_TESTS "Build tests")
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)

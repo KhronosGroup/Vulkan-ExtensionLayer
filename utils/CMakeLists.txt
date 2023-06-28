@@ -26,17 +26,13 @@ if(ANNOTATED_SPEC_LINK)
 endif()
 
 if(WIN32)
-    add_definitions(-DVK_USE_PLATFORM_WIN32_KHR -DWIN32_LEAN_AND_MEAN -DNOMINMAX)
+    add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
     if(MSVC)
         # Workaround for TR1 deprecation in Visual Studio 15.5 until Google Test is updated
         add_definitions(-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
         # Allow Windows to use multiprocessor compilation
         add_compile_options(/MP)
     endif()
-elseif(ANDROID)
-    add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR)
-elseif(APPLE)
-    add_definitions(-DVK_USE_PLATFORM_MACOS_MVK)
 endif()
 
 if(WIN32)
