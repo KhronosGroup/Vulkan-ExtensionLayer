@@ -29,10 +29,6 @@ add_custom_command(
     )
 add_custom_target (generate_test_layer_location DEPENDS "${CMAKE_BINARY_DIR}/test_layer_location.h")
 
-if(ANNOTATED_SPEC_LINK)
-    add_definitions(-DANNOTATED_SPEC_LINK=${ANNOTATED_SPEC_LINK})
-endif()
-
 if(WIN32)
     add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
     # If MSVC, allow Windows to use multiprocessor compilation
