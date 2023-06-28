@@ -59,6 +59,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
+set(CMAKE_VISIBILITY_INLINES_HIDDEN "YES")
 
 include(GNUInstallDirs)
 
@@ -93,8 +95,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
                         -Wno-unused-parameter
                         -Wno-missing-field-initializers
                         -fno-strict-aliasing
-                        -fno-builtin-memcmp
-                        -fvisibility=hidden)
+                        -fno-builtin-memcmp)
 
     set(CMAKE_C_STANDARD 99)
 
