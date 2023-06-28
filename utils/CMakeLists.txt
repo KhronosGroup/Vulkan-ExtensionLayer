@@ -28,8 +28,6 @@ endif()
 if(WIN32)
     add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
     if(MSVC)
-        # Workaround for TR1 deprecation in Visual Studio 15.5 until Google Test is updated
-        add_definitions(-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
         # Allow Windows to use multiprocessor compilation
         add_compile_options(/MP)
     endif()
