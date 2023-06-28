@@ -19,7 +19,6 @@
 # For Windows, we use a static lib because the Windows loader has a fairly restrictive loader search path that can't be easily
 # modified to point it to the same directory that contains the layers. TODO: This should not be a library -- in future, include
 # files directly in layers.
-add_definitions(-DNV_EXTENSIONS -DAMD_EXTENSIONS)
 
 if(WIN32)
     add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
