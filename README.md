@@ -1,4 +1,4 @@
-# Vulkan-ExtensionLayer
+# Vulkan Extension Layer (VEL)
 
 ## Introduction
 
