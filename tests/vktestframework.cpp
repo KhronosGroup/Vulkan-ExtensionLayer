@@ -297,6 +297,17 @@ static const char *DefaultConfig =
     "MaxTaskWorkGroupSizeZ_NV 1\n"
     "MaxMeshViewCountNV 4\n"
 
+    "MaxMeshOutputVerticesEXT 256\n"
+    "MaxMeshOutputPrimitivesEXT 512\n"
+    "MaxMeshWorkGroupSizeX_EXT 32\n"
+    "MaxMeshWorkGroupSizeY_EXT 1\n"
+    "MaxMeshWorkGroupSizeZ_EXT 1\n"
+    "MaxTaskWorkGroupSizeX_EXT 32\n"
+    "MaxTaskWorkGroupSizeY_EXT 1\n"
+    "MaxTaskWorkGroupSizeZ_EXT 1\n"
+    "MaxMeshViewCountEXT 4\n"
+    "MaxDualSourceDrawBuffersEXT 1\n"
+
     "nonInductiveForLoops 1\n"
     "whileLoops 1\n"
     "doWhileLoops 1\n"
@@ -538,6 +549,27 @@ void VkTestFramework::ProcessConfigFile(VkPhysicalDeviceLimits const *const devi
             Resources.maxTaskWorkGroupSizeZ_NV = value;
         else if (strcmp(token, "MaxMeshViewCountNV") == 0)
             Resources.maxMeshViewCountNV = value;
+
+        else if (strcmp(token, "MaxMeshOutputVerticesEXT") == 0)
+            Resources.maxMeshOutputVerticesEXT = value;
+        else if (strcmp(token, "MaxMeshOutputPrimitivesEXT") == 0)
+            Resources.maxMeshOutputPrimitivesEXT = value;
+        else if (strcmp(token, "MaxMeshWorkGroupSizeX_EXT") == 0)
+            Resources.maxMeshWorkGroupSizeX_EXT = value;
+        else if (strcmp(token, "MaxMeshWorkGroupSizeY_EXT") == 0)
+            Resources.maxMeshWorkGroupSizeY_EXT = value;
+        else if (strcmp(token, "MaxMeshWorkGroupSizeZ_EXT") == 0)
+            Resources.maxMeshWorkGroupSizeZ_EXT = value;
+        else if (strcmp(token, "MaxTaskWorkGroupSizeX_EXT") == 0)
+            Resources.maxTaskWorkGroupSizeX_EXT = value;
+        else if (strcmp(token, "MaxTaskWorkGroupSizeY_EXT") == 0)
+            Resources.maxTaskWorkGroupSizeY_EXT = value;
+        else if (strcmp(token, "MaxTaskWorkGroupSizeZ_EXT") == 0)
+            Resources.maxTaskWorkGroupSizeZ_EXT = value;
+        else if (strcmp(token, "MaxMeshViewCountEXT") == 0)
+            Resources.maxMeshViewCountEXT = value;
+        else if (strcmp(token, "MaxDualSourceDrawBuffersEXT") == 0)
+            Resources.maxDualSourceDrawBuffersEXT = value;
 
         else if (strcmp(token, "nonInductiveForLoops") == 0)
             Resources.limits.nonInductiveForLoops = (value != 0);
