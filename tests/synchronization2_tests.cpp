@@ -1311,8 +1311,17 @@ TEST_F(Sync2Test, SwapchainImage) {
 
     ret = vk::AcquireNextImageKHR(m_device->handle(), m_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &image_index);
     ASSERT_VK_SUCCESS(ret);
+
+    uint32_t format_count;
+    vk::GetPhysicalDeviceSurfaceFormatsKHR(m_device->phy().handle(), m_surface, &format_count, nullptr);
+    vector<VkSurfaceFormatKHR> formats;
+    if (format_count != 0) {
+        formats.resize(format_count);
+        vk::GetPhysicalDeviceSurfaceFormatsKHR(m_device->phy().handle(), m_surface, &format_count, formats.data());
+    }
+
     VkAttachmentDescription attach[] = {
-        {0, VK_FORMAT_B8G8R8A8_UNORM, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        {0, formats[0].format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
          VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED,
          VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
     };
@@ -1336,7 +1345,7 @@ TEST_F(Sync2Test, SwapchainImage) {
     auto ivci = LvlInitStruct<VkImageViewCreateInfo>();
     ivci.image = swapchain_images[image_index];
     ivci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    ivci.format = VK_FORMAT_B8G8R8A8_UNORM;
+    ivci.format = formats[0].format;
     ivci.components = {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
                        VK_COMPONENT_SWIZZLE_IDENTITY};
     ivci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
