@@ -152,6 +152,7 @@ static uint64_t ChecksumFletcher64(uint32_t const* data, size_t count) {
 template <typename T>
 class ReaderWriterContainer {
   public:
+    ReaderWriterContainer() = default;
     ReaderWriterContainer(T&& data) : data_(std::move(data)) {}
 
     T const& GetDataForReading(std::shared_lock<std::shared_mutex>& lock) {
@@ -161,6 +162,10 @@ class ReaderWriterContainer {
 
     T& GetDataForWriting(std::unique_lock<std::shared_mutex>& lock) {
         lock = std::unique_lock<std::shared_mutex>(mutex_);
+        return data_;
+    }
+
+    T& GetDataUnsafe() {
         return data_;
     }
 
@@ -452,13 +457,42 @@ class HashMap {
         num_entries_ = 0;
     }
 
-    Value& Get(Key const& key) { return *GetOrNullptr(key); }
+    const Value& Get(Key const& key) { return *GetOrNullptr(key); }
 
-    Value* GetOrNullptr(Key const& key) {
+    const Value* GetOrNullptr(Key const& key) const {
         std::unique_lock<std::mutex> lock = UseMutex ? std::unique_lock<std::mutex>(mutex_) : std::unique_lock<std::mutex>{};
 
-        auto found = FindNoLock(key);
-        return found != end() ? &found.GetValue() : nullptr;
+        if (slots_.IsEmpty()) {
+            return nullptr;
+        }
+
+        const size_t hashed_key = hasher_(key);
+        const uint32_t start_index = (uint32_t)(hashed_key % slots_.GetUsed());
+
+        uint32_t index = start_index;
+        for (;;) {
+            const Slot& slot = slots_[index];
+
+            if (slot.state == Slot::State::OCCUPIED && slot.key == key) {
+                // We found the key
+                return &slots_[index].value;
+            }
+
+            if (slot.state == Slot::State::UNOCCUPIED) {
+                // If we came across an unoccupied slot, we've gone past the end of the cluster
+                // i.e. we didn't find the key
+                return nullptr;
+            }
+
+            // If we reach here, we're still in the cluster
+            // i.e. this is a deleted slot or it's an occupied slot with the wrong key
+
+            index = (index + 1) % slots_.GetUsed();
+            if (index == start_index) {
+                // We searched through all the slots and didn't find it
+                return nullptr;
+            }
+        }
     }
 
     Iterator Find(Key const& key) {
@@ -605,7 +639,7 @@ class HashMap {
 
     std::hash<Key> hasher_;
 
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
 };
 
 // These LayerDispatch* structs hold pointers to the next layer's version of these functions so that we can call down the chain
@@ -972,7 +1006,7 @@ struct Shader {
     PrivateDataSlotPair*                 reserved_private_data_slots;
 
     // Associates draw states related to this shader with pipelines. Only used for shaders that are always present (i.e. vertex or mesh)
-    HashMap<FullDrawStateData::Key, VkPipeline, false> pipelines;
+    ReaderWriterContainer<HashMap<FullDrawStateData::Key, VkPipeline, false>> pipelines;
 
     // Pipeline cache that is generated at create time (if it's not being created from binary) and is copied into cache
     // This gets serialized into the shader binary
@@ -1350,10 +1384,12 @@ void Shader::Destroy(DeviceData const& device_data, Shader* pShader, VkAllocatio
             FullDrawStateData::Destroy(pShader->partial_pipeline.draw_state);
         }
     }
-    for (auto const& pair : pShader->pipelines) {
+
+    auto& pipelines = pShader->pipelines.GetDataUnsafe();
+    for (auto const& pair : pipelines) {
         vtable.DestroyPipeline(device, pair.value, nullptr);
     }
-    pShader->pipelines.Clear();
+    pipelines.Clear();
     pShader->private_data.Clear();
     pShader->~Shader();
 
@@ -1369,7 +1405,7 @@ uint64_t Shader::GetPrivateData(DeviceData const& device_data, VkPrivateDataSlot
     }
 
     // then, look up in the map
-    uint64_t* found = private_data.GetOrNullptr(slot);
+    const uint64_t* found = private_data.GetOrNullptr(slot);
     if (found) {
         return *found;
     }
@@ -2437,11 +2473,25 @@ static void UpdateDrawState(CommandBufferData& data, VkCommandBuffer commandBuff
     ASSERT(vertex_or_mesh_shader != nullptr);
 
     auto state_data_key     = state_data->GetKey();
-    auto found_pipeline_ptr = vertex_or_mesh_shader->pipelines.GetOrNullptr(state_data_key);
-    VkPipeline pipeline     = found_pipeline_ptr ? *found_pipeline_ptr : VK_NULL_HANDLE;
+    VkPipeline pipeline     = VK_NULL_HANDLE;
+    uint32_t pipeline_count = 0;
+    {
+        std::shared_lock<std::shared_mutex> lock;
+        auto const& pipelines   = vertex_or_mesh_shader->pipelines.GetDataForReading(lock);
+        auto found_pipeline_ptr = pipelines.GetOrNullptr(state_data_key);
+        if (found_pipeline_ptr) {
+            pipeline = *found_pipeline_ptr;
+        }
+        pipeline_count = pipelines.NumEntries();
+    }
     if (pipeline == VK_NULL_HANDLE) {
-        pipeline = CreateGraphicsPipelineForCommandBufferState(data);
-        vertex_or_mesh_shader->pipelines.Add(state_data_key, pipeline);
+        std::unique_lock<std::shared_mutex> lock;
+        auto& pipelines = vertex_or_mesh_shader->pipelines.GetDataForWriting(lock);
+        // Ensure that a pipeline for this state wasn't created in another thread between the read lock above and the write lock
+        if (pipelines.NumEntries() == pipeline_count || pipelines.Find(state_data_key) == pipelines.end()) {
+            pipeline = CreateGraphicsPipelineForCommandBufferState(data);
+            pipelines.Add(state_data_key, pipeline);
+        }
     }
 
     data.device_data->vtable.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
