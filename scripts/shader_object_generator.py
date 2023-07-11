@@ -380,7 +380,7 @@ def generate_full_draw_state_struct_members(data):
         out_file.write(f'        if (flag == {subset_flag}) {{\n')
 
         for shader in data['pipeline_subsets'][subset_flag]['shaders']:
-            out_file.write(f'            if (o.shaders_[{shader}] != shaders_[{shader}]) {{\n')
+            out_file.write(f'            if (!(o.comparable_shaders_[{shader}] == comparable_shaders_[{shader}])) {{\n')
             out_file.write(f'                return false;\n')
             out_file.write(f'            }}\n')
 

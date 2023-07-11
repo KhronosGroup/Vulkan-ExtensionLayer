@@ -86,19 +86,19 @@ public:
         return color_blend_attachment_states_;
     }
     
-    void SetShader(uint32_t index, Shader* const& element) {
-        if (element == shaders_[index]) {
+    void SetComparableShader(uint32_t index, ComparableShader const& element) {
+        if (element == comparable_shaders_[index]) {
             return;
         }
         dirty_hash_bits_.set(MISC);
         MarkDirty();
-        shaders_[index] = element;
+        comparable_shaders_[index] = element;
     }
-    Shader* const& GetShader(uint32_t index) const {
-        return shaders_[index];
+    ComparableShader const& GetComparableShader(uint32_t index) const {
+        return comparable_shaders_[index];
     }
-    Shader* const* GetShaderPtr() const {
-        return shaders_;
+    ComparableShader const* GetComparableShaderPtr() const {
+        return comparable_shaders_;
     }
     
     void SetCullMode(VkCullModeFlags const& element) {
@@ -748,7 +748,7 @@ public:
         }
 
         for (uint32_t i = 0; i < NUM_SHADERS; ++i) {
-            if (!(o.shaders_[i] == shaders_[i])) {
+            if (!(o.comparable_shaders_[i] == comparable_shaders_[i])) {
                 return false;
             }
         }
@@ -977,22 +977,22 @@ public:
 
     bool CompareStateSubset(FullDrawStateData const& o, VkGraphicsPipelineLibraryFlagBitsEXT flag) const {
         if (flag == VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT) {
-            if (o.shaders_[VERTEX_SHADER] != shaders_[VERTEX_SHADER]) {
+            if (!(o.comparable_shaders_[VERTEX_SHADER] == comparable_shaders_[VERTEX_SHADER])) {
                 return false;
             }
-            if (o.shaders_[TESSELLATION_CONTROL_SHADER] != shaders_[TESSELLATION_CONTROL_SHADER]) {
+            if (!(o.comparable_shaders_[TESSELLATION_CONTROL_SHADER] == comparable_shaders_[TESSELLATION_CONTROL_SHADER])) {
                 return false;
             }
-            if (o.shaders_[TESSELLATION_EVALUATION_SHADER] != shaders_[TESSELLATION_EVALUATION_SHADER]) {
+            if (!(o.comparable_shaders_[TESSELLATION_EVALUATION_SHADER] == comparable_shaders_[TESSELLATION_EVALUATION_SHADER])) {
                 return false;
             }
-            if (o.shaders_[GEOMETRY_SHADER] != shaders_[GEOMETRY_SHADER]) {
+            if (!(o.comparable_shaders_[GEOMETRY_SHADER] == comparable_shaders_[GEOMETRY_SHADER])) {
                 return false;
             }
-            if (o.shaders_[TASK_SHADER] != shaders_[TASK_SHADER]) {
+            if (!(o.comparable_shaders_[TASK_SHADER] == comparable_shaders_[TASK_SHADER])) {
                 return false;
             }
-            if (o.shaders_[MESH_SHADER] != shaders_[MESH_SHADER]) {
+            if (!(o.comparable_shaders_[MESH_SHADER] == comparable_shaders_[MESH_SHADER])) {
                 return false;
             }
             if (!(o.cull_mode_ == cull_mode_)) {
@@ -1029,7 +1029,7 @@ public:
 
         }
         if (flag == VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT) {
-            if (o.shaders_[FRAGMENT_SHADER] != shaders_[FRAGMENT_SHADER]) {
+            if (!(o.comparable_shaders_[FRAGMENT_SHADER] == comparable_shaders_[FRAGMENT_SHADER])) {
                 return false;
             }
             if (!(o.depth_bounds_test_enable_ == depth_bounds_test_enable_)) {
@@ -1171,7 +1171,7 @@ private:
     VkFormat* color_attachment_formats_{};
     uint32_t num_color_attachments_{};
     VkPipelineColorBlendAttachmentState* color_blend_attachment_states_{};
-    Shader* shaders_[NUM_SHADERS];
+    ComparableShader comparable_shaders_[NUM_SHADERS];
     VkCullModeFlags cull_mode_{};
     VkBool32 depth_bounds_test_enable_{};
     VkCompareOp depth_compare_op_{};

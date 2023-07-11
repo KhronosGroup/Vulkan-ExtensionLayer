@@ -919,8 +919,8 @@
             "init_time_array_length": "max_color_attachments"
         },
         {
-            "type": "Shader*",
-            "name": "shader",
+            "type": "ComparableShader",
+            "name": "comparable_shader",
             "compile_time_array_length": "NUM_SHADERS"
         }
     ],
