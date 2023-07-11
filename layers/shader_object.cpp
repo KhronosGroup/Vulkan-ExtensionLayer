@@ -26,6 +26,7 @@
 #include <shared_mutex>
 #include <functional>
 #include <vector>
+#include <atomic>
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_layer.h>
@@ -735,8 +736,24 @@ inline bool operator==(VkViewportSwizzleNV const& a, VkViewportSwizzleNV const& 
 class CommandBufferData;
 static void UpdateDrawState(CommandBufferData& data, VkCommandBuffer commandBuffer);
 
-// All relevant draw state for a single command buffer
 struct Shader;
+
+// Encapsulation of Shader to accurately compare Shaders even if they are out of their lifetimes (they could alias memory location)
+class ComparableShader {
+public:
+    ComparableShader() = default;
+    explicit ComparableShader(Shader* shader);
+
+    bool operator==(ComparableShader const& other) const { return id_ == other.id_; }
+
+    Shader* GetShaderPtr() const { return shader_; }
+
+private:
+    Shader* shader_;
+    uint64_t id_;
+};
+
+// All relevant draw state for a single command buffer
 struct FullDrawStateData {
     struct Limits {
         Limits() {}
@@ -984,6 +1001,8 @@ struct Shader {
     uint64_t GetPrivateData(DeviceData const& device_data, VkPrivateDataSlot slot);
     void     SetPrivateData(DeviceData const& device_data, VkPrivateDataSlot slot, uint64_t data);
 
+    uint64_t id;
+
     const char* name;
     size_t      name_byte_count;
 
@@ -1146,6 +1165,8 @@ static VkResult CreatePipelineLayoutForShader(DeviceData const& deviceData, VkAl
     return deviceData.vtable.CreatePipelineLayout(deviceData.device, &pipeline_layout_create_info, &allocator, &shader->pipeline_layout);
 }
 
+ComparableShader::ComparableShader(Shader *shader) : shader_(shader), id_(shader ? shader->id : 0) {}
+
 void DeviceData::AddDynamicState(VkDynamicState state) {
     ASSERT(dynamic_state_count < kMaxDynamicStates);
     dynamic_states[dynamic_state_count] = state;
@@ -1230,6 +1251,10 @@ VkResult Shader::Create(DeviceData const& deviceData, VkShaderCreateInfoEXT cons
     }
 
     Shader* shader = new (memory) Shader();
+
+    static std::atomic<uint64_t> id_counter{1};
+    shader->id = id_counter.fetch_add(1, std::memory_order_relaxed);
+
     *ppOutShader = shader;
     shader->stage = createInfo.stage;
     if (createInfo.flags & VK_SHADER_CREATE_ALLOW_VARYING_SUBGROUP_SIZE_BIT_EXT) {
@@ -1592,7 +1617,7 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
     VkShaderStageFlags present_stages = 0;
 
     for (uint32_t shader_type = 0; shader_type < NUM_SHADERS; ++shader_type) {
-        Shader* shader = state->GetShader(shader_type);
+        Shader* shader = state->GetComparableShader(shader_type).GetShaderPtr();
 
         if (shader == nullptr) {
             continue;
@@ -1895,7 +1920,7 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
 
         // Search through available precompiled pipelines
         for (uint32_t shader_type = 0; shader_type < NUM_SHADERS; ++shader_type) {
-            Shader* shader = state->GetShader(shader_type);
+            Shader* shader = state->GetComparableShader(shader_type).GetShaderPtr();
             if (shader == nullptr) {
                 continue;
             }
@@ -2231,7 +2256,7 @@ PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, Vk
         stages
     };
     for (uint32_t i = 0; i < shaderCount; ++i) {
-        partial_pipeline.draw_state->SetShader(ShaderStageToShaderType(ppShaders[i]->stage), ppShaders[i]);
+        partial_pipeline.draw_state->SetComparableShader(ShaderStageToShaderType(ppShaders[i]->stage), ComparableShader(ppShaders[i]));
     }
     if (gpl_create_info.flags & VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT) {
         create_info.pViewportState = &viewport_state;
@@ -2467,9 +2492,9 @@ static void UpdateDrawState(CommandBufferData& data, VkCommandBuffer commandBuff
         return;
     }
 
-    auto vertex_or_mesh_shader = state_data->GetShader(VERTEX_SHADER);
+    auto vertex_or_mesh_shader = state_data->GetComparableShader(VERTEX_SHADER).GetShaderPtr();
     if (vertex_or_mesh_shader == nullptr) {
-        vertex_or_mesh_shader = state_data->GetShader(MESH_SHADER);
+        vertex_or_mesh_shader = state_data->GetComparableShader(MESH_SHADER).GetShaderPtr();
     }
     ASSERT(vertex_or_mesh_shader != nullptr);
 
@@ -3303,7 +3328,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdBindShadersEXT(VkCommandBuffer commandBuffe
         if (shader) {
             cmd_data->graphics_bind_point_belongs_to_layer = true;
         }
-        cmd_data->GetDrawStateData()->SetShader(ShaderStageToShaderType(pStages[i]), shader);
+        cmd_data->GetDrawStateData()->SetComparableShader(ShaderStageToShaderType(pStages[i]), ComparableShader(shader));
     }
 }
 
