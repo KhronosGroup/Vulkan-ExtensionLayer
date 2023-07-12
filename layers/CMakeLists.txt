@@ -16,11 +16,14 @@
 # limitations under the License.
 # ~~~
 
-# System-specific macros to create a library target.
-macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
-    add_library(VkLayer_${target} MODULE ${ARGN})
-    target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
+# TODO: Remove this macro. It's more confusing than helpful.
+macro(AddVkLayer target)
+    add_library(VkLayer_${target} MODULE)
+
+    target_include_directories(VkLayer_${target} PRIVATE .)
+
     target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils Vulkan::Headers)
+
     if(MSVC)
         target_link_options(VkLayer_${target} PRIVATE /DEF:${CMAKE_CURRENT_SOURCE_DIR}/VkLayer_${target}.def)
         target_compile_definitions(VkLayer_${target} PUBLIC NOMINMAX)
@@ -36,51 +39,28 @@ macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
     endif()
 endmacro()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${PROJECT_SOURCE_DIR}/utils
-                    ${PROJECT_SOURCE_DIR}/utils/generated)
-
-if(MSVC)
-    # Applies to all configurations
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS -DNOMINMAX)
-    # Avoid: fatal error C1128: number of sections exceeded object file format limit: compile with /bigobj
-    add_compile_options("/bigobj")
-    # Allow Windows to use multiprocessor compilation
-    add_compile_options(/MP)
-    # Turn off transitional "changed behavior" warning message for Visual Studio versions prior to 2015. The changed behavior is
-    # that constructor initializers are now fixed to clear the struct members.
-    add_compile_options("$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,19>>:/wd4351>")
-else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpointer-arith -Wno-unused-function -Wno-sign-compare")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wpointer-arith -Wno-unused-function -Wno-sign-compare")
-endif()
-
 if(NOT WIN32)
-set(TIMELINE_SEMAPHORE_FILES
-    hash_table.cpp
-    timeline_semaphore.c)
-
-AddVkLayer(khronos_timeline_semaphore ""
-    ${TIMELINE_SEMAPHORE_FILES})
+    AddVkLayer(khronos_timeline_semaphore)
+    target_sources(VkLayer_khronos_timeline_semaphore PRIVATE
+        hash_table.cpp
+        timeline_semaphore.c
+    )
 endif()
 
-set(SYNCHRONIZATION2_FILES
-    synchronization2.cpp)
+AddVkLayer(khronos_synchronization2)
+target_sources(VkLayer_khronos_synchronization2 PRIVATE
+    synchronization2.cpp
+)
 
-AddVkLayer(khronos_synchronization2 ""
-    ${SYNCHRONIZATION2_FILES})
+AddVkLayer(khronos_shader_object)
+target_sources(VkLayer_khronos_shader_object PRIVATE
+    shader_object.cpp
+)
 
-set(SHADER_OBJECT_FILES
-    shader_object.cpp)
-
-AddVkLayer(khronos_shader_object ""
-    ${SHADER_OBJECT_FILES})
-
-set(DECOMPRESSION_FILES
-    decompression/decompression.cpp)
-
-AddVkLayer(khronos_memory_decompression ""
-    ${DECOMPRESSION_FILES})
+AddVkLayer(khronos_memory_decompression)
+target_sources(VkLayer_khronos_memory_decompression PRIVATE
+    decompression/decompression.cpp
+)
 
 set(TARGET_NAMES VkLayer_khronos_timeline_semaphore VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object VkLayer_khronos_memory_decompression)
 
