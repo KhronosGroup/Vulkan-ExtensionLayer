@@ -3107,13 +3107,17 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateShadersEXT(VkDevice device, uint32_t
         auto shader = reinterpret_cast<Shader**>(&pShaders[i]);
         result = Shader::Create(device_data, pCreateInfos[i], allocator, shader);
         if (result != VK_SUCCESS) {
-            shader = VK_NULL_HANDLE;
+            *shader = nullptr;
             successfulCreateCount = i;
             break;
         }
         if ((pCreateInfos[i].stage & VK_SHADER_STAGE_ALL_GRAPHICS) != 0 && (pCreateInfos[i].flags & VK_SHADER_CREATE_LINK_STAGE_BIT_EXT) != 0) {
             are_graphics_shaders_linked = true;
         }
+    }
+
+    if (result != VK_SUCCESS && are_graphics_shaders_linked) {
+        return result;
     }
 
     bool incompatible_binary = false;

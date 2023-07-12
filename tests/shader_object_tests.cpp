@@ -1120,3 +1120,128 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
 
     m_errorMonitor->VerifyNotFound();
 }
+
+TEST_F(ShaderObjectTest, FailCreateShaders) {
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    if (!CheckShaderObjectSupportAndInitState()) {
+        GTEST_SKIP() << kSkipPrefix << " shader object not supported, skipping test";
+    }
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+
+    TEST_DESCRIPTION("Test drawing using task and mesh shaders");
+
+    m_errorMonitor->ExpectSuccess();
+
+    static const char vertSource[] = R"glsl(
+        #version 460
+        void main() {
+            vec2 pos = vec2(float(gl_VertexIndex & 1), float((gl_VertexIndex >> 1) & 1));
+            gl_Position = vec4(pos - 0.5f, 0.0f, 1.0f);;
+        }
+    )glsl";
+
+    static const char tescSource[] = R"glsl(
+        #version 450
+        layout(vertices = 4) out;
+        void main (void) {
+            if (gl_InvocationID == 0) {
+                gl_TessLevelInner[0] = 1.0;
+                gl_TessLevelInner[1] = 1.0;
+                gl_TessLevelOuter[0] = 1.0;
+                gl_TessLevelOuter[1] = 1.0;
+                gl_TessLevelOuter[2] = 1.0;
+                gl_TessLevelOuter[3] = 1.0;
+            }
+            gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+        }
+    )glsl";
+
+    static const char teseSource[] = R"glsl(
+        #version 450
+        layout(quads, equal_spacing) in;
+        void main (void) {
+            float u = gl_TessCoord.x;
+            float v = gl_TessCoord.y;
+            float omu = 1.0f - u;
+            float omv = 1.0f - v;
+            gl_Position = omu * omv * gl_in[0].gl_Position + u * omv * gl_in[2].gl_Position + u * v * gl_in[3].gl_Position + omu * v * gl_in[1].gl_Position;
+            gl_Position.x *= 1.5f;
+        }
+    )glsl";
+
+    static const char geomSource[] = R"glsl(
+        #version 450
+        layout(triangles) in;
+        layout(triangle_strip, max_vertices = 4) out;
+
+        void main(void)
+        {
+            gl_Position = gl_in[0].gl_Position;
+            gl_Position.y *= 1.5f;
+            gl_Position.z = 0.5f;
+            EmitVertex();
+            gl_Position = gl_in[1].gl_Position;
+            gl_Position.y *= 1.5f;
+            gl_Position.z = 0.5f;
+            EmitVertex();
+            gl_Position = gl_in[2].gl_Position;
+            gl_Position.y *= 1.5f;
+            gl_Position.z = 0.5f;
+            EmitVertex();
+            EndPrimitive();
+        }
+    )glsl";
+
+    static const char fragSource[] = R"glsl(
+        #version 460
+        layout(location = 0) out vec4 uFragColor;
+        void main(){
+           uFragColor = vec4(0.2f, 0.4f, 0.6f, 0.8f);
+        }
+    )glsl";
+
+    constexpr uint32_t stages_count = 5;
+    constexpr uint32_t shaders_count = 20;
+    constexpr uint32_t fail_index = 15;
+
+    VkShaderStageFlagBits shaderStages[stages_count] = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+                                                        VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, VK_SHADER_STAGE_GEOMETRY_BIT,
+                                                        VK_SHADER_STAGE_FRAGMENT_BIT};
+
+    std::vector<unsigned int> spv[stages_count];
+    GLSLtoSPV(&m_device->props.limits, VK_SHADER_STAGE_VERTEX_BIT, vertSource, spv[0], false, 0);
+    GLSLtoSPV(&m_device->props.limits, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, tescSource, spv[1], false, 0);
+    GLSLtoSPV(&m_device->props.limits, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, teseSource, spv[2], false, 0);
+    GLSLtoSPV(&m_device->props.limits, VK_SHADER_STAGE_GEOMETRY_BIT, geomSource, spv[3], false, 0);
+    GLSLtoSPV(&m_device->props.limits, VK_SHADER_STAGE_FRAGMENT_BIT, fragSource, spv[4], false, 0);
+
+    VkShaderEXT shaders[shaders_count];
+
+    VkShaderCreateInfoEXT createInfos[shaders_count];
+    for (uint32_t i = 0; i < shaders_count; ++i) {
+        createInfos[i] = LvlInitStruct<VkShaderCreateInfoEXT>();
+        createInfos[i].stage = shaderStages[i % stages_count];
+        createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
+        createInfos[i].codeSize = spv[i % stages_count].size() * sizeof(unsigned int);
+        createInfos[i].pCode = spv[i % stages_count].data();
+        createInfos[i].pName = "main";
+    }
+
+    createInfos[fail_index].codeType = VK_SHADER_CODE_TYPE_BINARY_EXT;
+
+    VkResult res = vk::CreateShadersEXT(m_device->handle(), 20u, createInfos, nullptr, shaders);
+    ASSERT_EQ(res, VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT);
+
+    for (uint32_t i = 0; i < shaders_count; ++i) {
+        if (i < fail_index) {
+            vk::DestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
+            ASSERT_NE(shaders[i], VK_NULL_HANDLE);
+        } else {
+            ASSERT_EQ(shaders[i], VK_NULL_HANDLE);
+        }
+    }
+
+    m_errorMonitor->VerifyNotFound();
+}
