@@ -2336,6 +2336,7 @@ static VkResult PopulateCachesForShaders(DeviceData const& deviceData, VkAllocat
 
         // Gather shaders into stages for pipeline compilation
         VkPipelineShaderStageCreateInfo stages[NUM_SHADERS];
+        uint32_t graphics_shader_count = 0;
         for (uint32_t i = 0; i < shaderCount; ++i) {
             auto shader = *reinterpret_cast<Shader**>(&pShaders[i]);
             switch (shader->stage) {
@@ -2352,11 +2353,13 @@ static VkResult PopulateCachesForShaders(DeviceData const& deviceData, VkAllocat
                 case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
                     has_tese = true;
                     break;
+                case VK_SHADER_STAGE_COMPUTE_BIT:
+                    continue;
                 default:
                     break;
             }
 
-            stages[i] = {
+            stages[graphics_shader_count++] = {
                 VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
                 nullptr,
                 shader->flags,
@@ -2373,14 +2376,14 @@ static VkResult PopulateCachesForShaders(DeviceData const& deviceData, VkAllocat
         }
 
         AddGraphicsPipelineToCache(deviceData, allocator,
-            vertex_or_mesh_shader->cache, vertex_or_mesh_shader->pipeline_layout, shaderCount, stages,
+            vertex_or_mesh_shader->cache, vertex_or_mesh_shader->pipeline_layout, graphics_shader_count, stages,
             PipelineCreationFlagBits::INCLUDE_DEPTH);
         if (has_fragment_shader) {
             AddGraphicsPipelineToCache(deviceData, allocator,
-                vertex_or_mesh_shader->cache, vertex_or_mesh_shader->pipeline_layout, shaderCount, stages,
+                vertex_or_mesh_shader->cache, vertex_or_mesh_shader->pipeline_layout, graphics_shader_count, stages,
                 PipelineCreationFlagBits::INCLUDE_COLOR);
             AddGraphicsPipelineToCache(deviceData, allocator,
-                vertex_or_mesh_shader->cache, vertex_or_mesh_shader->pipeline_layout, shaderCount, stages,
+                vertex_or_mesh_shader->cache, vertex_or_mesh_shader->pipeline_layout, graphics_shader_count, stages,
                 PipelineCreationFlagBits::INCLUDE_DEPTH | PipelineCreationFlagBits::INCLUDE_COLOR);
         }
     }
