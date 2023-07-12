@@ -2,7 +2,6 @@
     "file_format_version" : "1.2.0",
     "layer" : {
         "name": "VK_LAYER_KHRONOS_shader_object",
-        "status": "BETA",
         "type": "GLOBAL",
         "library_path": "@JSON_LIBRARY_PATH@",
         "api_version": "@JSON_VERSION@",
