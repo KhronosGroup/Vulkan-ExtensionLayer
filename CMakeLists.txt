@@ -17,7 +17,7 @@
 # ~~~
 cmake_minimum_required(VERSION 3.17.2)
 
-project(VEL LANGUAGES CXX C)
+project(VEL LANGUAGES CXX)
 
 add_subdirectory(scripts)
 
@@ -71,47 +71,27 @@ if (BUILD_WERROR)
     add_compile_options("$<IF:$<CXX_COMPILER_ID:MSVC>,/WX,-Werror>")
 endif()
 
-# Platform-specific compiler switches
-if(MAKE_C_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wconversion
-
-                        # TODO These warnings also get turned on with -Wconversion in some versions of clang.
-                        #      Leave off until further investigation.
-                        -Wno-sign-conversion
-                        -Wno-shorten-64-to-32
-                        -Wno-string-conversion
-                        -Wno-implicit-int-conversion
-                        -Wno-enum-enum-conversion)
-
-endif()
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wall
-                        -Wextra
-                        -Wno-unused-parameter
-                        -Wno-missing-field-initializers
-                        -fno-strict-aliasing
-                        -fno-builtin-memcmp)
-
-    set(CMAKE_C_STANDARD 99)
-
-    # For GCC version 7.1 or greater, we need to disable the implicit fallthrough warning since there's no consistent way to satisfy
-    # all compilers until they all accept the C++17 standard.
-    if(CMAKE_COMPILER_IS_GNUCC AND NOT (CMAKE_CXX_COMPILER_VERSION LESS 7.1))
-        add_compile_options(-Wimplicit-fallthrough=0)
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "(GNU|Clang)")
+    add_compile_options(
+        -Wall
+        -Wextra
+        -Wpointer-arith
+    )
+    if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+        add_compile_options(
+            -Wconversion
+            -Wimplicit-fallthrough
+            -Wstring-conversion
+        )
     endif()
 elseif(MSVC)
-    add_compile_options("/W3")
-    # Warn about nested declarations
-    add_compile_options("/w34456")
-    # Warn about potentially uninitialized variables
-    add_compile_options("/w34701")
-    add_compile_options("/w34703")
-    # Warn about different indirection types.
-    add_compile_options("/w34057")
-    # Warn about signed/unsigned mismatch.
-    add_compile_options("/w34245")
-    # Warn zero sized arrays in structs or unions
-    add_compile_options("/wd4200")
+    add_compile_options(
+        /W4
+        /we5038 # Enable warning about MIL ordering in constructors
+    )
+
+    # Enforce stricter ISO C++
+    add_compile_options(/permissive-)
 
     # PDBs aren't generated on Release builds by default.
     add_compile_options("$<$<CONFIG:Release>:/Zi>")
@@ -120,19 +100,11 @@ elseif(MSVC)
     add_link_options("$<$<CONFIG:Release>:/OPT:REF>")
     # Merge duplicate data/functions
     add_link_options("$<$<CONFIG:Release>:/OPT:ICF>")
-endif()
 
-if(MAKE_C_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wconversion
+    # Allow usage of unsafe CRT functions and minimize what Windows.h leaks
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS NOMINMAX WIN32_LEAN_AND_MEAN)
 
-                        # TODO These warnings also get turned on with -Wconversion in some versions of clang.
-                        #      Leave off until further investigation.
-                        -Wno-sign-conversion
-                        -Wno-shorten-64-to-32
-                        -Wno-string-conversion
-                        -Wno-implicit-int-conversion
-                        -Wno-enum-enum-conversion)
-
+    add_compile_options($<$<BOOL:${MSVC_IDE}>:/MP>) # Speed up Visual Studio builds
 endif()
 
 option(VEL_CODEGEN "Enable code generation")

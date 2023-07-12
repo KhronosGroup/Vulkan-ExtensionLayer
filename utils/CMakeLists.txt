@@ -15,46 +15,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ~~~
-# VkExtLayer_utils library ----------------------------------------------------------------------------------------------------------
-# For Windows, we use a static lib because the Windows loader has a fairly restrictive loader search path that can't be easily
-# modified to point it to the same directory that contains the layers. TODO: This should not be a library -- in future, include
-# files directly in layers.
+add_library(VkExtLayer_utils STATIC)
 
-if(WIN32)
-    add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
-    if(MSVC)
-        # Allow Windows to use multiprocessor compilation
-        add_compile_options(/MP)
-    endif()
+target_sources(VkExtLayer_utils PRIVATE
+    allocator.cpp
+    vk_format_utils.cpp
+    vk_layer_config.cpp
+    generated/vk_safe_struct.cpp
+    generated/lvt_function_pointers.cpp
+)
+
+# TODO: Fix warnings
+target_compile_options(VkExtLayer_utils PUBLIC "$<IF:$<CXX_COMPILER_ID:MSVC>,/wd4100,-Wno-unused-parameter>")
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "(GNU|Clang)")
+    target_compile_options(VkExtLayer_utils PUBLIC -Wno-missing-field-initializers)
 endif()
-
-if(WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES")
-
-    # If MSVC, disable some signed/unsigned mismatch warnings.
-    if(MSVC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267")
-    endif()
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    target_compile_options(VkExtLayer_utils PUBLIC
+        -Wno-implicit-int-conversion
+        -Wno-sign-conversion
+        -Wno-string-conversion
+        -Wno-implicit-fallthrough
+        -Wno-implicit-int-float-conversion
+        -Wno-shorten-64-to-32
+    )
 endif()
-
-
-set(TARGET_NAMES
-    VkExtLayer_utils)
-add_library(VkExtLayer_utils
-            STATIC
-            ./allocator.cpp
-            ./vk_format_utils.cpp
-            ./vk_layer_config.cpp
-            ./generated/vk_safe_struct.cpp
-            ./generated/lvt_function_pointers.cpp)
+if (MSVC)
+    target_compile_options(VkExtLayer_utils PUBLIC
+        /wd4389
+        /wd4324
+        /wd4244
+        /wd4815
+        /wd4200
+        /wd4267
+        /wd4505
+        /wd4706
+    )
+endif()
 
 target_link_libraries(VkExtLayer_utils PUBLIC Vulkan::Headers)
+
 if(ANDROID)
     target_link_libraries(VkExtLayer_utils PUBLIC log)
 endif()
-if(WIN32)
-   target_compile_definitions(VkExtLayer_utils PUBLIC _CRT_SECURE_NO_WARNINGS)
-endif()
-set_target_properties(VkExtLayer_utils PROPERTIES LINKER_LANGUAGE CXX)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${CMAKE_CURRENT_SOURCE_DIR}/generated)
+
+target_include_directories(VkExtLayer_utils PUBLIC
+    .
+    generated
+)

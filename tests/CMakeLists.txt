@@ -29,53 +29,23 @@ add_custom_command(
     )
 add_custom_target (generate_test_layer_location DEPENDS "${CMAKE_BINARY_DIR}/test_layer_location.h")
 
-if(WIN32)
-    add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
-    # If MSVC, allow Windows to use multiprocessor compilation
-    if(MSVC)
-    add_compile_options(/MP)
-    endif()
-endif()
+add_executable(vk_extension_layer_tests)
 
-if(WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES")
-
-    # If MSVC, disable some signed/unsigned mismatch warnings.
-    if(MSVC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267")
-    endif()
-endif()
-
-set(LIBGLM_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/libs)
-
-set(COMMON_CPP
+target_sources(vk_extension_layer_tests PRIVATE
+    extension_layer_tests.cpp
+    synchronization2_tests.cpp
+    decompression_tests.cpp
+    shader_object_tests.cpp
     vkrenderframework.cpp
     vktestbinding.cpp
     vktestframework.cpp
-    test_environment.cpp)
+    test_environment.cpp
+)
 
-if(NOT TARGET vulkan)
-    set(
-        CMAKE_PREFIX_PATH
-        ${CMAKE_PREFIX_PATH};${VULKAN_HEADERS_INSTALL_DIR};$ENV{VULKAN_HEADERS_INSTALL_DIR}
-        )
-endif()
-
-set_source_files_properties(${PROJECT_BINARY_DIR}/vk_safe_struct.cpp PROPERTIES GENERATED TRUE)
-add_executable(vk_extension_layer_tests
-               extension_layer_tests.cpp
-               synchronization2_tests.cpp
-               decompression_tests.cpp
-               shader_object_tests.cpp
-               ${COMMON_CPP})
 add_test(NAME vk_extension_layer_tests COMMAND vk_extension_layer_tests)
 
 if(MSVC_IDE)
     set_target_properties(vk_extension_layer_tests PROPERTIES VS_DEBUGGER_ENVIRONMENT "VK_LAYER_PATH=$<TARGET_FILE_DIR:VkLayer_khronos_synchronization2>")
-endif()
-
-if (NOT MSVC)
-    target_compile_options(vk_extension_layer_tests PRIVATE "-Wno-sign-compare")
 endif()
 
 add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_memory_decompression generate_test_layer_location)
