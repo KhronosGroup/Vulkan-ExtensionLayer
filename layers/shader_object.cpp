@@ -1942,7 +1942,7 @@ void AddGraphicsPipelineToCache(DeviceData const& deviceData, VkAllocationCallba
         nullptr,
         0,
         (options & PipelineCreationFlagBits::INCLUDE_COLOR) ? 1u : 0u,
-        &color_format,
+        (options & PipelineCreationFlagBits::INCLUDE_COLOR) ? &color_format : nullptr,
         depth_stencil_format,
         depth_stencil_format,
     };
@@ -2042,7 +2042,7 @@ void AddGraphicsPipelineToCache(DeviceData const& deviceData, VkAllocationCallba
     };
     VkGraphicsPipelineCreateInfo create_info{
         VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-        nullptr,
+        &rendering_info,
         0u,
         stageCount,
         stages,
