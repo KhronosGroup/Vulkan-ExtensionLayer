@@ -15,97 +15,87 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ~~~
-
-# TODO: Remove this macro. It's more confusing than helpful.
-macro(AddVkLayer target)
-    add_library(VkLayer_${target} MODULE)
-
-    target_include_directories(VkLayer_${target} PRIVATE .)
-
-    target_link_libraries(VkLayer_${target} PRIVATE VkExtLayer_utils Vulkan::Headers)
-
-    if(MSVC)
-        target_link_options(VkLayer_${target} PRIVATE /DEF:${CMAKE_CURRENT_SOURCE_DIR}/VkLayer_${target}.def)
-        target_compile_definitions(VkLayer_${target} PUBLIC NOMINMAX)
-    elseif(MINGW)
-        target_sources(VkLayer_${target} PRIVATE VkLayer_${target}.def)
-    elseif(APPLE)
-        message(DEBUG "Functions are exported via VEL_EXPORT")
-        set_target_properties(VkLayer_${target} PROPERTIES SUFFIX ".dylib")
-    elseif(ANDROID)
-        message(DEBUG "Functions are exported via VEL_EXPORT")
-    else()
-        target_link_options(VkLayer_${target} PRIVATE LINKER:--version-script=${CMAKE_CURRENT_SOURCE_DIR}/libVkLayer_${target}.map,-Bsymbolic,--exclude-libs,ALL)
-    endif()
-endmacro()
-
-if(NOT WIN32)
-    AddVkLayer(khronos_timeline_semaphore)
-    target_sources(VkLayer_khronos_timeline_semaphore PRIVATE
-        hash_table.cpp
-        timeline_semaphore.c
-    )
-endif()
-
-AddVkLayer(khronos_synchronization2)
+add_library(VkLayer_khronos_synchronization2 MODULE)
 target_sources(VkLayer_khronos_synchronization2 PRIVATE
     synchronization2.cpp
 )
 
-AddVkLayer(khronos_shader_object)
+add_library(VkLayer_khronos_shader_object MODULE)
 target_sources(VkLayer_khronos_shader_object PRIVATE
     shader_object.cpp
 )
 
-AddVkLayer(khronos_memory_decompression)
+add_library(VkLayer_khronos_memory_decompression MODULE)
 target_sources(VkLayer_khronos_memory_decompression PRIVATE
     decompression/decompression.cpp
 )
 
-set(TARGET_NAMES VkLayer_khronos_timeline_semaphore VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object VkLayer_khronos_memory_decompression)
+set(EXTENSION_LAYERS VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object VkLayer_khronos_memory_decompression)
 
-# timeline_semaphore doesn't build on windows yet
-if (WIN32)
-    list(REMOVE_ITEM TARGET_NAMES "VkLayer_khronos_timeline_semaphore")
+if (NOT WIN32)
+    add_library(VkLayer_khronos_timeline_semaphore MODULE)
+    target_sources(VkLayer_khronos_timeline_semaphore PRIVATE
+        hash_table.cpp
+        timeline_semaphore.c
+    )
+    list(APPEND EXTENSION_LAYERS "VkLayer_khronos_timeline_semaphore")
 endif()
 
-foreach(TARGET_NAME ${TARGET_NAMES})
-    set(INPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in")
-    set(INTERMEDIATE_FILE "${CMAKE_CURRENT_BINARY_DIR}/json/intermediate-${TARGET_NAME}.json")
-    set(OUTPUT_FILE_FINAL_NAME "${TARGET_NAME}.json")
+foreach(extension_layer ${EXTENSION_LAYERS})
+    target_include_directories(${extension_layer} PRIVATE .)
+
+    target_link_libraries(${extension_layer} PRIVATE VkExtLayer_utils)
+
+    if(MSVC)
+        target_link_options(${extension_layer} PRIVATE /DEF:${CMAKE_CURRENT_SOURCE_DIR}/${extension_layer}.def)
+        target_compile_definitions(${extension_layer} PUBLIC NOMINMAX)
+    elseif(MINGW)
+        target_sources(${extension_layer} PRIVATE ${extension_layer}.def)
+    elseif(APPLE)
+        message(DEBUG "Functions are exported via VEL_EXPORT")
+        set_target_properties(${extension_layer} PROPERTIES SUFFIX ".dylib")
+    elseif(ANDROID)
+        message(DEBUG "Functions are exported via VEL_EXPORT")
+    else()
+        target_link_options(${extension_layer} PRIVATE LINKER:--version-script=${CMAKE_CURRENT_SOURCE_DIR}/lib${extension_layer}.map,-Bsymbolic,--exclude-libs,ALL)
+    endif()
+
+    set(INPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/json/${extension_layer}.json.in")
+    set(INTERMEDIATE_FILE "${CMAKE_CURRENT_BINARY_DIR}/json/intermediate-${extension_layer}.json")
+    set(OUTPUT_FILE_FINAL_NAME "${extension_layer}.json")
     set(LAYER_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
     if (WIN32)
         set(LAYER_INSTALL_DIR ${CMAKE_INSTALL_BINDIR}) # WIN32/MINGW expect the dll in the `bin` dir, this matches our WIN32 SDK process
     endif()
 
     if (WIN32)
-        set(JSON_LIBRARY_PATH ".\\\\${TARGET_NAME}.dll")
+        set(JSON_LIBRARY_PATH ".\\\\${extension_layer}.dll")
     elseif(APPLE)
-        set(JSON_LIBRARY_PATH "./lib${TARGET_NAME}.dylib")
+        set(JSON_LIBRARY_PATH "./lib${extension_layer}.dylib")
     else()
-        set(JSON_LIBRARY_PATH "./lib${TARGET_NAME}.so")
+        set(JSON_LIBRARY_PATH "./lib${extension_layer}.so")
     endif()
 
     set(JSON_VERSION ${VulkanHeaders_VERSION})
 
     configure_file(${INPUT_FILE} ${INTERMEDIATE_FILE} @ONLY)
 
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${INTERMEDIATE_FILE} $<TARGET_FILE_DIR:${TARGET_NAME}>/${OUTPUT_FILE_FINAL_NAME}
+    add_custom_command(TARGET ${extension_layer} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${INTERMEDIATE_FILE} $<TARGET_FILE_DIR:${extension_layer}>/${OUTPUT_FILE_FINAL_NAME}
     )
 
     # Don't install VkLayer_khronos_memory_decompression. We don't plan to release this for the 1.3.250 SDK release.
-    if (${TARGET_NAME} STREQUAL "VkLayer_khronos_memory_decompression")
+    if (${extension_layer} STREQUAL "VkLayer_khronos_memory_decompression")
         continue()
     endif()
 
     if (UNIX)
-        set(UNIX_INTERMEDIATE_FILE "${CMAKE_CURRENT_BINARY_DIR}/json/unix_install_${TARGET_NAME}.json")
+        set(UNIX_INTERMEDIATE_FILE "${CMAKE_CURRENT_BINARY_DIR}/json/unix_install_${extension_layer}.json")
 
         if(APPLE)
-            set(JSON_LIBRARY_PATH "lib${TARGET_NAME}.dylib")
+            set(JSON_LIBRARY_PATH "lib${extension_layer}.dylib")
         else()
-            set(JSON_LIBRARY_PATH "lib${TARGET_NAME}.so")
+            set(JSON_LIBRARY_PATH "lib${extension_layer}.so")
         endif()
 
         configure_file(${INPUT_FILE} ${UNIX_INTERMEDIATE_FILE} @ONLY)
@@ -117,8 +107,8 @@ foreach(TARGET_NAME ${TARGET_NAMES})
         install(FILES ${INTERMEDIATE_FILE} DESTINATION ${LAYER_INSTALL_DIR} RENAME ${OUTPUT_FILE_FINAL_NAME})
     endif()
     if (MSVC)
-        install(FILES $<TARGET_PDB_FILE:${TARGET_NAME}> DESTINATION ${LAYER_INSTALL_DIR})
+        install(FILES $<TARGET_PDB_FILE:${extension_layer}> DESTINATION ${LAYER_INSTALL_DIR})
     endif()
 
-    install(TARGETS ${TARGET_NAME} DESTINATION ${LAYER_INSTALL_DIR})
+    install(TARGETS ${extension_layer} DESTINATION ${LAYER_INSTALL_DIR})
 endforeach()
