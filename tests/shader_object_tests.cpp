@@ -979,8 +979,10 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
     }
 
     auto mesh_shader_features = LvlInitStruct<VkPhysicalDeviceMeshShaderFeaturesEXT>();
-    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&mesh_shader_features);
-    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (DeviceExtensionSupported(VK_EXT_MESH_SHADER_EXTENSION_NAME, 0)) {
+        auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&mesh_shader_features);
+        vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    }
     if (!mesh_shader_features.taskShader || !mesh_shader_features.meshShader) {
         GTEST_SKIP() << "Task and mesh shaders are required";
     }
