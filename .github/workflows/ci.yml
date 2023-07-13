@@ -25,6 +25,9 @@ on:
         branches:
             - main
 
+env:
+  CMAKE_GENERATOR: Ninja
+
 permissions:
     contents: read
 
@@ -68,16 +71,19 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        arch: [ x64, Win32 ]
+        arch: [ amd64, amd64_x86 ]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: '3.8'
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
       - name: Install build dependencies
         run: python -m pip install jsonschema pyparsing
       - name: Build Vulkan-ExtensionLayer
-        run: python scripts/github_ci_build_desktop.py --config release --arch ${{ matrix.arch }}
+        run: python scripts/github_ci_build_desktop.py --config release 
 
   macos:
     runs-on: macos-latest
@@ -92,7 +98,7 @@ jobs:
         with:
             key: macos-ccache
       - name: Configure
-        run: cmake -S. -B build  -G "Ninja" -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=ON -D BUILD_WERROR=ON -D UPDATE_DEPS=ON
+        run: cmake -S. -B build -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=ON -D BUILD_WERROR=ON -D UPDATE_DEPS=ON
         env:
           MACOSX_DEPLOYMENT_TARGET: 10.15
           CMAKE_C_COMPILER_LAUNCHER: ccache
