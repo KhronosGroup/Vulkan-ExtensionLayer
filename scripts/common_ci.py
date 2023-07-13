@@ -26,10 +26,6 @@ import platform
 import shutil
 import argparse
 
-if sys.version_info[0] != 3:
-    print("This script requires Python 3. Run script with [-h] option for more details.")
-    sys_exit(0)
-
 # helper to define paths relative to the repo root
 def RepoRelative(path):
     return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', path))
@@ -43,8 +39,6 @@ EXTERNAL_DIR = RepoRelative(EXTERNAL_DIR_NAME)
 VEL_BUILD_DIR = RepoRelative(BUILD_DIR_NAME)
 CONFIGURATIONS = ['release', 'debug']
 DEFAULT_CONFIGURATION = CONFIGURATIONS[0]
-ARCHS = [ 'x64', 'Win32' ]
-DEFAULT_ARCH = ARCHS[0]
 
 # Runs a command in a directory and returns its return code.
 # Directory is project root by default, or a relative path from project root
@@ -67,45 +61,29 @@ def CheckVELCodegenConsistency():
     gen_check_cmd = f'python scripts/generate_source.py --verify {EXTERNAL_DIR}/Release/Vulkan-Headers/registry'
     RunShellCmd(gen_check_cmd)
 
-# Utility for creating a directory if it does not exist. Behaves similarly to 'mkdir -p'
-def make_dirs(path, clean=False):
-    if clean and os.path.isdir(path):
-        shutil.rmtree(path)
-    os.makedirs(path, exist_ok=True)
-
 def BuildVEL(args):
-
     print("Log CMake version")
     cmake_ver_cmd = 'cmake --version'
     RunShellCmd(cmake_ver_cmd)
 
-    GTEST_DIR = RepoRelative("external/googletest")
-    if not os.path.exists(GTEST_DIR):
-        print("Clone Testing Framework Source Code")
-        clone_gtest_cmd = f'git clone https://github.com/google/googletest.git {GTEST_DIR}'
-        RunShellCmd(clone_gtest_cmd)
-
-        print("Get Specified Testing Source")
-        gtest_checkout_cmd = 'git checkout tags/release-1.10.0'
-        RunShellCmd(gtest_checkout_cmd, GTEST_DIR)
-
-    make_dirs(VEL_BUILD_DIR)
     print("Run CMake for Extension Layer")
-    cmake_cmd = f'cmake -DUPDATE_DEPS=ON -DCMAKE_BUILD_TYPE={args.configuration.capitalize()} {args.cmake} ..'
+    cmake_cmd = f'cmake -S . -B {VEL_BUILD_DIR} -DUPDATE_DEPS=ON -DCMAKE_BUILD_TYPE={args.configuration.capitalize()}'
     # By default BUILD_WERROR is OFF, CI should always enable it.
     cmake_cmd = cmake_cmd + ' -DBUILD_WERROR=ON'
     cmake_cmd = cmake_cmd + ' -DBUILD_TESTS=ON'
-    if IsWindows(): cmake_cmd = cmake_cmd + f' -A {args.arch}'
-    RunShellCmd(cmake_cmd, VEL_BUILD_DIR)
+
+    if args.cmake:
+        cmake_cmd += f' {args.cmake}'
+
+    RunShellCmd(cmake_cmd)
 
     print("Build Extension Layer and Tests")
-    build_cmd = f'cmake --build . --config {args.configuration}'
-    if not IsWindows(): build_cmd = build_cmd + f' -- -j{os.cpu_count()}'
-    RunShellCmd(build_cmd, VEL_BUILD_DIR)
+    build_cmd = f'cmake --build {VEL_BUILD_DIR}'
+    RunShellCmd(build_cmd)
 
     print("Install Extension Layers")
-    install_cmd = f'cmake --install . --prefix ./install/ --config {args.configuration}'
-    RunShellCmd(install_cmd, VEL_BUILD_DIR)
+    install_cmd = f'cmake --install {VEL_BUILD_DIR} --prefix {VEL_BUILD_DIR}/install/'
+    RunShellCmd(install_cmd)
 
 def GetArgParser():
     parser = argparse.ArgumentParser()
@@ -115,11 +93,6 @@ def GetArgParser():
         choices=CONFIGURATIONS, default=DEFAULT_CONFIGURATION,
         help='Build target configuration. Can be one of: {0}'.format(
             ', '.join(CONFIGURATIONS)))
-    parser.add_argument(
-        '-a', '--arch', dest='arch',
-        metavar='ARCH', action='store',
-        choices=ARCHS, default=DEFAULT_ARCH,
-        help=f'Target architecture. Can be one of: {ARCHS}')
     parser.add_argument(
         '--cmake', dest='cmake',
         metavar='CMAKE', type=str,
