@@ -26,11 +26,11 @@ add_custom_command(
     DEPENDS  "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h"
     OUTPUT   "${CMAKE_BINARY_DIR}/test_layer_location.h"
     COMMENT  "creating test_layer_location.h file ({event: PRE_BUILD}, {filename: test_layer_location.h })"
-    )
-add_custom_target (generate_test_layer_location DEPENDS "${CMAKE_BINARY_DIR}/test_layer_location.h")
+)
+add_custom_target(generate_test_layer_location DEPENDS "${CMAKE_BINARY_DIR}/test_layer_location.h")
+include_directories(${CMAKE_BINARY_DIR})
 
 add_executable(vk_extension_layer_tests)
-
 target_sources(vk_extension_layer_tests PRIVATE
     extension_layer_tests.cpp
     synchronization2_tests.cpp
@@ -42,24 +42,13 @@ target_sources(vk_extension_layer_tests PRIVATE
     test_environment.cpp
 )
 
-add_test(NAME vk_extension_layer_tests COMMAND vk_extension_layer_tests)
-
 if(MSVC_IDE)
     set_target_properties(vk_extension_layer_tests PROPERTIES VS_DEBUGGER_ENVIRONMENT "VK_LAYER_PATH=$<TARGET_FILE_DIR:VkLayer_khronos_synchronization2>")
 endif()
 
 add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_memory_decompression generate_test_layer_location)
 
-# Note that there is no need to add GTEST directories here due to googletest exporting them via the gtest target.
-target_include_directories(vk_extension_layer_tests
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                  ${PROJECT_SOURCE_DIR}/utils
-                                  ${PROJECT_SOURCE_DIR}/utils/generated
-                                  ${CMAKE_CURRENT_BINARY_DIR}
-                                  ${CMAKE_BINARY_DIR}
-                                  ${PROJECT_BINARY_DIR}
-                                  ${PROJECT_BINARY_DIR}/layers)
-add_dependencies(vk_extension_layer_tests VkExtLayer_utils)
+target_include_directories(vk_extension_layer_tests PRIVATE .)
 
 find_package(SPIRV-Headers REQUIRED CONFIG QUIET)
 target_link_libraries(vk_extension_layer_tests PRIVATE SPIRV-Headers::SPIRV-Headers)
@@ -105,6 +94,9 @@ target_link_libraries(vk_extension_layer_tests PRIVATE
     ${CMAKE_DL_LIBS}
 )
 
-target_compile_definitions(vk_extension_layer_tests PUBLIC SHADER_OBJECT_BINARY_PATH="$<TARGET_FILE_DIR:VkLayer_khronos_shader_object>")
+target_compile_definitions(vk_extension_layer_tests PRIVATE SHADER_OBJECT_BINARY_PATH="$<TARGET_FILE_DIR:VkLayer_khronos_shader_object>")
+
+include(GoogleTest)
+gtest_discover_tests(vk_extension_layer_tests DISCOVERY_TIMEOUT 100)
 
 install(TARGETS vk_extension_layer_tests)
