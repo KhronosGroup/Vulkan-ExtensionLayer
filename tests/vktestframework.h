@@ -64,6 +64,10 @@ class VkTestFramework : public ::testing::Test {
     static bool m_strip_spv;
     static bool m_do_everything_spv;
 
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+    static inline ANativeWindow *window = nullptr;
+#endif
+
     char **ReadFileData(const char *fileName);
     void FreeFileData(char **data);
 

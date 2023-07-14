@@ -117,3 +117,41 @@ jobs:
           python-version: '3.8'
       - name: Build
         run: python scripts/github_ci_android.py --abi arm64-v8a
+
+  android_cmake:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        abi: [ arm64-v8a ]
+        build_tests: [ "ON" ]
+        stl_type: ["c++_shared"]
+        include:
+        - abi: armeabi-v7a
+          build_tests: "OFF"
+          stl_type: c++_static
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: lukka/get-cmake@latest
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: android-${{ matrix.abi }}-${{ matrix.build_tests }}-${{ matrix.stl_type }}
+      - name: Configure
+        run: |
+          cmake -S . -B build/ --toolchain $ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake \
+          -D ANDROID_PLATFORM=26 \
+          -D CMAKE_ANDROID_ARCH_ABI=${{ matrix.abi }} \
+          -D CMAKE_ANDROID_STL_TYPE=${{ matrix.stl_type }} \
+          -D ANDROID_USE_LEGACY_TOOLCHAIN_FILE=NO \
+          -D CMAKE_BUILD_TYPE=Debug \
+          -D BUILD_TESTS=${{ matrix.build_tests }} \
+          -D UPDATE_DEPS=ON \
+          -D BUILD_WERROR=ON
+        env:
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+      - name: Build
+        run: cmake --build build/
+      - name: Install
+        run: cmake --install build --prefix build/install

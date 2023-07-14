@@ -396,7 +396,7 @@ bool VkExtensionLayerTest::AddSurfaceInstanceExtension() {
     bSupport = true;
 #endif
 
-#if defined(VK_USE_PLATFORM_ANDROID_KHR) && defined(VALIDATION_APK)
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
     if (!InstanceExtensionSupported(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME)) {
         printf("%s %s extension not supported\n", kSkipPrefix, VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
         return false;
@@ -467,7 +467,7 @@ uint32_t VkExtensionLayerTest::DeviceValidationVersion() {
     return std::min(m_target_api_version, physDevProps().apiVersion);
 }
 
-#if defined(ANDROID) && defined(VALIDATION_APK)
+#if defined(ANDROID)
 const char *appTag = "VulkanExtensionLayerTests";
 static bool initialized = false;
 static bool active = false;
@@ -658,6 +658,7 @@ void android_main(struct android_app *app) {
 #include <crtdbg.h>
 #endif
 
+#if !defined(ANDROID)
 int main(int argc, char **argv) {
     int result;
 
@@ -673,10 +674,8 @@ int main(int argc, char **argv) {
     _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
 #endif
 
-#if !defined(ANDROID)
     // Set VK_LAYER_PATH so that the loader can find the layers
     SetEnvironment("VK_LAYER_PATH", LAYER_BUILD_LOCATION);
-#endif
 
     ::testing::InitGoogleTest(&argc, argv);
     VkTestFramework::InitArgs(&argc, argv);
@@ -688,3 +687,4 @@ int main(int argc, char **argv) {
     VkTestFramework::Finish();
     return result;
 }
+#endif

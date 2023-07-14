@@ -32,8 +32,8 @@ LOCAL_SRC_FILES += $(SRC_DIR)/utils/generated/lvt_function_pointers.cpp
 LOCAL_C_INCLUDES += $(VULKAN_INCLUDE) \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils/generated \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils
-LOCAL_CPPFLAGS += -std=c++17 -Wall -Werror -Wno-unused-function -Wno-unused-const-variable -fexceptions
-LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -DVK_PROTOTYPES -fvisibility=hidden
+LOCAL_CPPFLAGS += -std=c++17 -fexceptions
+LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -fvisibility=hidden
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -44,8 +44,8 @@ LOCAL_C_INCLUDES += $(VULKAN_INCLUDE) \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils/generated \
                     $(LOCAL_PATH)/$(THIRD_PARTY)/shaderc/third_party/spirv-tools/external/spirv-headers/include
 LOCAL_STATIC_LIBRARIES += extlayer_utils glslang SPIRV-Tools SPIRV-Tools-opt
-LOCAL_CPPFLAGS += -std=c++17 -Wall -Werror -Wno-unused-function -Wno-unused-const-variable -Wno-cast-calling-convention -fexceptions
-LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -DVK_PROTOTYPES -fvisibility=hidden
+LOCAL_CPPFLAGS += -std=c++17 -fexceptions
+LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -fvisibility=hidden
 LOCAL_LDLIBS    := -llog -landroid
 LOCAL_LDFLAGS   += -Wl,-Bsymbolic
 LOCAL_LDFLAGS   += -Wl,--exclude-libs,ALL
@@ -60,8 +60,8 @@ LOCAL_C_INCLUDES += $(VULKAN_INCLUDE) \
                     $(LOCAL_PATH)/$(SRC_DIR)/utils/generated \
                     $(LOCAL_PATH)/$(THIRD_PARTY)/shaderc/third_party/spirv-tools/external/spirv-headers/include
 LOCAL_STATIC_LIBRARIES += extlayer_utils glslang SPIRV-Tools SPIRV-Tools-opt
-LOCAL_CPPFLAGS += -std=c++17 -Wall -Werror -Wno-unused-function -Wno-unused-const-variable -Wno-cast-calling-convention -fexceptions
-LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -DVK_PROTOTYPES -fvisibility=hidden
+LOCAL_CPPFLAGS += -std=c++17 -fexceptions
+LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -fvisibility=hidden
 LOCAL_LDLIBS    := -llog -landroid
 LOCAL_LDFLAGS   += -Wl,-Bsymbolic
 LOCAL_LDFLAGS   += -Wl,--exclude-libs,ALL
@@ -72,36 +72,13 @@ LOCAL_MODULE := VkLayer_khronos_timeline_semaphore
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/timeline_semaphore.c \
                    $(SRC_DIR)/layers/hash_table.cpp
 LOCAL_C_INCLUDES += $(VULKAN_INCLUDE)
-LOCAL_CPPFLAGS += -std=c++17 -Wall -Werror -Wno-unused-function -Wno-unused-const-variable -Wno-cast-calling-convention -fexceptions
-LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -DVK_PROTOTYPES -fvisibility=hidden
+LOCAL_CPPFLAGS += -std=c++17 -fexceptions
+LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -fvisibility=hidden
 LOCAL_LDLIBS    := -llog -landroid
 LOCAL_LDFLAGS   += -Wl,-Bsymbolic
 LOCAL_LDFLAGS   += -Wl,--exclude-libs,ALL
 include $(BUILD_SHARED_LIBRARY)
 
-include $(CLEAR_VARS)
-LOCAL_MODULE := VkExtensionLayerTests
-LOCAL_SRC_FILES += $(SRC_DIR)/tests/extension_layer_tests.cpp \
-                   $(SRC_DIR)/tests/vktestbinding.cpp \
-                   $(SRC_DIR)/tests/synchronization2_tests.cpp \
-                   $(SRC_DIR)/tests/decompression_tests.cpp \
-                   $(SRC_DIR)/tests/vkrenderframework.cpp \
-                   $(SRC_DIR)/tests/vktestframeworkandroid.cpp \
-                   $(SRC_DIR)/tests/test_environment.cpp
-LOCAL_C_INCLUDES += $(VULKAN_INCLUDE) \
-                    $(LOCAL_PATH)/$(SRC_DIR)/utils/generated \
-                    $(LOCAL_PATH)/$(SRC_DIR)/utils \
-                    $(LOCAL_PATH)/$(SRC_DIR)/libs
-
-LOCAL_STATIC_LIBRARIES := googletest_main extlayer_utils shaderc
-LOCAL_CPPFLAGS += -std=c++17 -DVK_PROTOTYPES -Wall -Werror -Wno-unused-function -Wno-unused-const-variable
-LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -fvisibility=hidden
-LOCAL_LDLIBS := -llog -landroid -ldl
-LOCAL_LDFLAGS   += -Wl,-Bsymbolic
-LOCAL_LDFLAGS   += -Wl,--exclude-libs,ALL
-include $(BUILD_EXECUTABLE)
-
-# Note: The following module is similar in name to the executable, but differs so that loader won't enumerate the resulting .so
 include $(CLEAR_VARS)
 LOCAL_MODULE := VulkanExtensionLayerTests
 LOCAL_SRC_FILES += $(SRC_DIR)/tests/extension_layer_tests.cpp \
@@ -117,8 +94,8 @@ LOCAL_C_INCLUDES += $(VULKAN_INCLUDE) \
                     $(LOCAL_PATH)/$(SRC_DIR)/libs
 
 LOCAL_STATIC_LIBRARIES := googletest_main extlayer_utils shaderc
-LOCAL_CPPFLAGS += -std=c++17 -DVK_PROTOTYPES -Wall -Werror -Wno-unused-function -Wno-unused-const-variable
-LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -fvisibility=hidden -DVALIDATION_APK
+LOCAL_CPPFLAGS += -std=c++17
+LOCAL_CPPFLAGS += -DVK_ENABLE_BETA_EXTENSIONS -DVK_USE_PLATFORM_ANDROID_KHR -fvisibility=hidden
 LOCAL_WHOLE_STATIC_LIBRARIES += android_native_app_glue
 LOCAL_LDLIBS := -llog -landroid -ldl
 LOCAL_LDFLAGS := -u ANativeActivity_onCreate

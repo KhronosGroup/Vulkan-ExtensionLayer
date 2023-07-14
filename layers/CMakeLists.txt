@@ -33,6 +33,9 @@ target_sources(VkLayer_khronos_memory_decompression PRIVATE
 set(EXTENSION_LAYERS VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object VkLayer_khronos_memory_decompression)
 
 if (NOT WIN32)
+    # timeline_semaphore.c requires a C compiler
+    enable_language(C)
+
     add_library(VkLayer_khronos_timeline_semaphore MODULE)
     target_sources(VkLayer_khronos_timeline_semaphore PRIVATE
         hash_table.cpp
@@ -58,6 +61,11 @@ foreach(extension_layer ${EXTENSION_LAYERS})
         message(DEBUG "Functions are exported via VEL_EXPORT")
     else()
         target_link_options(${extension_layer} PRIVATE LINKER:--version-script=${CMAKE_CURRENT_SOURCE_DIR}/lib${extension_layer}.map,-Bsymbolic,--exclude-libs,ALL)
+    endif()
+
+    if (ANDROID)
+        install(TARGETS ${extension_layer} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        continue()
     endif()
 
     set(INPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/json/${extension_layer}.json.in")
