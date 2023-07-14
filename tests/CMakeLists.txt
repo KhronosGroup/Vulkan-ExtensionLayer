@@ -14,39 +14,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ~~~
+if (NOT ANDROID)
+    # run the generator expression on the test_layer_location file
+    file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h" INPUT "${CMAKE_CURRENT_LIST_DIR}/generator_source/test_layer_location.h")
 
-# run the generator expression on the test_layer_location file
-file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h" INPUT "${CMAKE_CURRENT_LIST_DIR}/generator_source/test_layer_location.h")
+    # copy $<BUILD>/test_layer_location_$<CONFIG> to $<BUILD>/test_layer_location.h
+    add_custom_command(
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} "-E" "copy_if_different" "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h" "${CMAKE_BINARY_DIR}/test_layer_location.h"
+        VERBATIM
+        DEPENDS  "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h"
+        OUTPUT   "${CMAKE_BINARY_DIR}/test_layer_location.h"
+        COMMENT  "creating test_layer_location.h file ({event: PRE_BUILD}, {filename: test_layer_location.h })"
+    )
+    add_custom_target(generate_test_layer_location DEPENDS "${CMAKE_BINARY_DIR}/test_layer_location.h")
+    include_directories(${CMAKE_BINARY_DIR})
+endif()
 
-# copy $<BUILD>/test_layer_location_$<CONFIG> to $<BUILD>/test_layer_location.h
-add_custom_command(
-    PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} "-E" "copy_if_different" "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h" "${CMAKE_BINARY_DIR}/test_layer_location.h"
-    VERBATIM
-    DEPENDS  "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h"
-    OUTPUT   "${CMAKE_BINARY_DIR}/test_layer_location.h"
-    COMMENT  "creating test_layer_location.h file ({event: PRE_BUILD}, {filename: test_layer_location.h })"
-)
-add_custom_target(generate_test_layer_location DEPENDS "${CMAKE_BINARY_DIR}/test_layer_location.h")
-include_directories(${CMAKE_BINARY_DIR})
+if (ANDROID)
+    add_library(vk_extension_layer_tests MODULE)
+else()
+    add_executable(vk_extension_layer_tests)
+endif()
 
-add_executable(vk_extension_layer_tests)
 target_sources(vk_extension_layer_tests PRIVATE
     extension_layer_tests.cpp
     synchronization2_tests.cpp
     decompression_tests.cpp
-    shader_object_tests.cpp
     vkrenderframework.cpp
     vktestbinding.cpp
     vktestframework.cpp
     test_environment.cpp
 )
 
-if(MSVC_IDE)
-    set_target_properties(vk_extension_layer_tests PROPERTIES VS_DEBUGGER_ENVIRONMENT "VK_LAYER_PATH=$<TARGET_FILE_DIR:VkLayer_khronos_synchronization2>")
+if (NOT ANDROID)
+    target_compile_definitions(vk_extension_layer_tests PRIVATE SHADER_OBJECT_BINARY_PATH="$<TARGET_FILE_DIR:VkLayer_khronos_shader_object>")
+    target_sources(vk_extension_layer_tests PRIVATE shader_object_tests.cpp)
 endif()
 
-add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_memory_decompression generate_test_layer_location)
+set_target_properties(vk_extension_layer_tests PROPERTIES VS_DEBUGGER_ENVIRONMENT "VK_LAYER_PATH=$<TARGET_FILE_DIR:VkLayer_khronos_synchronization2>")
+
+add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_memory_decompression)
+
+if (NOT ANDROID)
+    add_dependencies(vk_extension_layer_tests generate_test_layer_location)
+endif()
+
+# TODO: Remove once ndk-build is gone
+target_compile_definitions(vk_extension_layer_tests PRIVATE VVL_TESTS_USE_CMAKE)
 
 target_include_directories(vk_extension_layer_tests PRIVATE .)
 
@@ -94,7 +109,10 @@ target_link_libraries(vk_extension_layer_tests PRIVATE
     ${CMAKE_DL_LIBS}
 )
 
-target_compile_definitions(vk_extension_layer_tests PRIVATE SHADER_OBJECT_BINARY_PATH="$<TARGET_FILE_DIR:VkLayer_khronos_shader_object>")
+if (ANDROID)
+    add_subdirectory(android)
+    return()
+endif()
 
 include(GoogleTest)
 gtest_discover_tests(vk_extension_layer_tests DISCOVERY_TIMEOUT 100)

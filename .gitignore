@@ -1,6 +1,7 @@
 CMakeCache.txt
 CMakeLists.txt.user
 CMakeFiles/
+CMakeUserPresets.json
 cmake_install.cmake
 Makefile
 __pycache__

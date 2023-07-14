@@ -254,6 +254,7 @@ void DebugReporter::Destroy(VkInstance instance) noexcept {
     debug_obj_ = VK_NULL_HANDLE;
 }
 
+#ifndef VK_USE_PLATFORM_ANDROID_KHR
 static inline VkDebugReportFlagsEXT DebugAnnotFlagsToReportFlags(VkDebugUtilsMessageSeverityFlagBitsEXT da_severity,
                                                                  VkDebugUtilsMessageTypeFlagsEXT da_type) {
     if (da_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) return VK_DEBUG_REPORT_ERROR_BIT_EXT;
@@ -268,6 +269,7 @@ static inline VkDebugReportFlagsEXT DebugAnnotFlagsToReportFlags(VkDebugUtilsMes
 
     return 0;
 }
+#endif
 
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReporter::DebugCallback(VkDebugReportFlagsEXT message_flags, VkDebugReportObjectTypeEXT,
@@ -626,7 +628,7 @@ bool VkRenderFramework::InitSurface(float width, float height) {
     if (err != VK_SUCCESS) return false;
 #endif
 
-#if defined(VK_USE_PLATFORM_ANDROID_KHR) && defined(VALIDATION_APK)
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
     VkAndroidSurfaceCreateInfoKHR surface_create_info = {};
     surface_create_info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
     surface_create_info.window = VkTestFramework::window;

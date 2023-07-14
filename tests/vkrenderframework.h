@@ -24,18 +24,16 @@
 
 #include "lvt_function_pointers.h"
 
-#ifdef ANDROID
+#if defined(VVL_TESTS_USE_CMAKE)
+#include "vktestframework.h"
+#else
 #include "vktestframeworkandroid.h"
 class VkImageObj;
-#else
-#include "vktestframework.h"
 #endif
 
 #if defined(ANDROID)
 #include <android/log.h>
-#if defined(VALIDATION_APK)
 #include <android_native_app_glue.h>
-#endif
 #endif
 
 #include <algorithm>

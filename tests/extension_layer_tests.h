@@ -31,9 +31,7 @@
 
 #if defined(ANDROID)
 #include <android/log.h>
-#if defined(VALIDATION_APK)
 #include <android_native_app_glue.h>
-#endif
 #endif
 
 #include "test_common.h"

@@ -16,6 +16,7 @@
 
 // clang-format off
 
+#include <cassert>
 #include <cctype>
 #include <cstring>
 #include <chrono>
