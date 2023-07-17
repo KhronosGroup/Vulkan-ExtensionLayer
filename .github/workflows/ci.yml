@@ -108,16 +108,6 @@ jobs:
       - name: Install
         run: cmake --install build --prefix build/install
 
-  android_mk:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.8'
-      - name: Build
-        run: python scripts/github_ci_android.py --abi arm64-v8a
-
   android_cmake:
     runs-on: ubuntu-22.04
     strategy:
