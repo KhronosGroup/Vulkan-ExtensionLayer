@@ -36,9 +36,18 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        compiler: [{cc: gcc, cxx: g++}, {cc: clang, cxx: clang++}]
+        compiler: [{cc: gcc, cxx: g++}]
         config: [debug, release]
-        os: [ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-22.04]
+        include:
+          # Test Ubuntu-20.04 release build works.
+          - os: ubuntu-20.04
+            compiler: {cc: gcc, cxx: g++}
+            config: release
+          # Test clang support
+          - os: ubuntu-22.04
+            compiler: {cc: clang, cxx: clang++}
+            config: release
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
