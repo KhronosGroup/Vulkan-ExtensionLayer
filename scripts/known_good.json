@@ -25,7 +25,7 @@
             "sub_dir": "SPIRV-Headers",
             "build_dir": "SPIRV-Headers/build",
             "install_dir": "SPIRV-Headers/build/install",
-            "commit": "8e2ad27488ed2f87c068c01a8f5e8979f7086405",
+            "commit": "f1ba373ef03752ee9f6f2b898bea1213f93e1ef2",
             "optional": [
                 "tests"
             ]
@@ -42,7 +42,7 @@
                 "-DSPIRV_SKIP_TESTS=ON",
                 "-DSPIRV_SKIP_EXECUTABLES=ON"
             ],
-            "commit": "d33bea584707c3509065010c45d9b79c54c8376b",
+            "commit": "4b6bd5a665ba0529747af3a0bc808732b7e78f48",
             "optional": [
                 "tests"
             ]
@@ -58,7 +58,7 @@
                 "-Dgtest_force_shared_crt=ON",
                 "-DBUILD_SHARED_LIBS=OFF"
             ],
-            "commit": "v1.12.0",
+            "commit": "ec4fed93217bc2830959bb8e86798c1d86956949",
             "optional": [
                 "tests"
             ]
