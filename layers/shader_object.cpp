@@ -2489,7 +2489,13 @@ static void UpdateDrawState(CommandBufferData& data, VkCommandBuffer commandBuff
         std::unique_lock<std::shared_mutex> lock;
         auto& pipelines = vertex_or_mesh_shader->pipelines.GetDataForWriting(lock);
         // Ensure that a pipeline for this state wasn't created in another thread between the read lock above and the write lock
-        if (pipelines.NumEntries() == pipeline_count || pipelines.Find(state_data_key) == pipelines.end()) {
+        if (pipelines.NumEntries() > pipeline_count) {
+            auto iter = pipelines.Find(state_data_key);
+            if (iter != pipelines.end()) {
+                pipeline = iter.GetValue();
+            }
+        }
+        if (pipeline == VK_NULL_HANDLE) {
             pipeline = CreateGraphicsPipelineForCommandBufferState(data);
             pipelines.Add(state_data_key, pipeline);
         }
