@@ -17,14 +17,13 @@
  * limitations under the License.
  */
 
-    static size_t GetSizeInBytes(Limits const& limits) {
-        return
-            sizeof(VkFormat) * limits.max_color_attachments +
-            sizeof(VkPipelineColorBlendAttachmentState) * limits.max_color_attachments +
-            sizeof(VkViewportSwizzleNV) * limits.max_viewports +
-            sizeof(VkVertexInputAttributeDescription) * limits.max_vertex_input_attributes +
-            sizeof(VkVertexInputBindingDescription) * limits.max_vertex_input_bindings +
-            sizeof(FullDrawStateData);
+    static constexpr void ReserveMemory(AlignedMemory& aligned_memory, Limits const& limits) {
+        aligned_memory.Add<VkFormat>(limits.max_color_attachments);
+        aligned_memory.Add<VkPipelineColorBlendAttachmentState>(limits.max_color_attachments);
+        aligned_memory.Add<VkViewportSwizzleNV>(limits.max_viewports);
+        aligned_memory.Add<VkVertexInputAttributeDescription>(limits.max_vertex_input_attributes);
+        aligned_memory.Add<VkVertexInputBindingDescription>(limits.max_vertex_input_bindings);
+        aligned_memory.Add<FullDrawStateData>();
     }
 
     static void SetInternalArrayPointers(FullDrawStateData* state, Limits const& limits) {

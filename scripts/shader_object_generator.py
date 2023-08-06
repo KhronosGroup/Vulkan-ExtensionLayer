@@ -460,15 +460,14 @@ def generate_full_draw_state_utility_functions(data):
 
     # generate GetSizeInBytes
 
-    out_file.write('    static size_t GetSizeInBytes(Limits const& limits) {\n')
-    out_file.write('        return\n')
+    out_file.write('    static constexpr void ReserveMemory(AlignedMemory& aligned_memory, Limits const& limits) {\n')
 
     for var_data in init_time_array_variables:
         var_type = var_data['type']
         length = var_data['init_time_array_length']
-        out_file.write(f'            sizeof({var_type}) * limits.{length} +\n')
+        out_file.write(f'        aligned_memory.Add<{var_type}>(limits.{length});\n')
 
-    out_file.write('            sizeof(FullDrawStateData);\n')
+    out_file.write(f'        aligned_memory.Add<FullDrawStateData>();\n')
     out_file.write('    }\n\n')
 
     # generate SetInternalArrayPointers
