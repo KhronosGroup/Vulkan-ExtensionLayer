@@ -971,6 +971,15 @@ TEST_F(ShaderObjectTest, ComputeShader) {
 TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
     TEST_DESCRIPTION("Test drawing using task and mesh shaders");
     SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    if (!DeviceExtensionSupported(VK_KHR_MAINTENANCE_4_EXTENSION_NAME, 0)) {
+        GTEST_SKIP() << "VK_KHR_maintenance4 not supported";
+    }
+    if (!DeviceExtensionSupported(VK_EXT_MESH_SHADER_EXTENSION_NAME, 0)) {
+        GTEST_SKIP() << "VK_EXT_mesh_shader not supported";
+    }
+    m_device_extension_names.push_back(VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
+    m_device_extension_names.push_back(VK_EXT_MESH_SHADER_EXTENSION_NAME);
     if (!CheckShaderObjectSupportAndInitState()) {
         GTEST_SKIP() << kSkipPrefix << " shader object not supported, skipping test";
     }
@@ -978,13 +987,17 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
         GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
-    auto mesh_shader_features = LvlInitStruct<VkPhysicalDeviceMeshShaderFeaturesEXT>();
+    auto maintenance_4_features = LvlInitStruct<VkPhysicalDeviceMaintenance4Features>();
+    auto mesh_shader_features = LvlInitStruct<VkPhysicalDeviceMeshShaderFeaturesEXT>(&maintenance_4_features);
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&mesh_shader_features);
     if (DeviceExtensionSupported(VK_EXT_MESH_SHADER_EXTENSION_NAME, 0)) {
-        auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&mesh_shader_features);
         vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
     }
     if (!mesh_shader_features.taskShader || !mesh_shader_features.meshShader) {
         GTEST_SKIP() << "Task and mesh shaders are required";
+    }
+    if (!maintenance_4_features.maintenance4) {
+        GTEST_SKIP() << "maintenance4 not supported";
     }
 
     m_errorMonitor->ExpectSuccess();
@@ -1107,6 +1120,18 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
                                &imageMemoryBarrier);
     }
     vkCmdBeginRenderingKHR(m_commandBuffer->handle(), &begin_rendering_info);
+    std::vector<VkShaderStageFlagBits> nullStages = {VK_SHADER_STAGE_VERTEX_BIT};
+    if (features2.features.tessellationShader) {
+        nullStages.push_back(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
+        nullStages.push_back(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
+    }
+    if (features2.features.geometryShader) {
+        nullStages.push_back(VK_SHADER_STAGE_GEOMETRY_BIT);
+    }
+    for (const auto stage : nullStages) {
+        VkShaderEXT nullShader = VK_NULL_HANDLE;
+        vk::CmdBindShadersEXT(m_commandBuffer->handle(), 1u, &stage, &nullShader);
+    }
     vk::CmdBindShadersEXT(m_commandBuffer->handle(), 3u, shaderStages, shaders);
     BindDefaultDynamicStates(vertexBuffer.handle(), false);
     vkCmdDrawMeshTasksEXT(m_commandBuffer->handle(), 1, 1, 1);
@@ -1116,7 +1141,7 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
 
     SubmitAndWait();
 
-    for (uint32_t i = 0; i < 2; ++i) vk::DestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
+    for (uint32_t i = 0; i < 3; ++i) vk::DestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
 
     m_errorMonitor->VerifyNotFound();
 }
