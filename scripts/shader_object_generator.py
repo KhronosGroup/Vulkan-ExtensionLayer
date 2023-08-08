@@ -461,28 +461,28 @@ def generate_full_draw_state_utility_functions(data):
     # generate GetSizeInBytes
 
     out_file.write('    static constexpr void ReserveMemory(AlignedMemory& aligned_memory, Limits const& limits) {\n')
+    out_file.write('        aligned_memory.Add<FullDrawStateData>();\n')
 
     for var_data in init_time_array_variables:
         var_type = var_data['type']
         length = var_data['init_time_array_length']
         out_file.write(f'        aligned_memory.Add<{var_type}>(limits.{length});\n')
 
-    out_file.write(f'        aligned_memory.Add<FullDrawStateData>();\n')
     out_file.write('    }\n\n')
 
     # generate SetInternalArrayPointers
 
     out_file.write('    static void SetInternalArrayPointers(FullDrawStateData* state, Limits const& limits) {\n')
     out_file.write('        // Set array pointers to beginning of their memory\n')
-    out_file.write('        char* offset_ptr = (char*)state + sizeof(FullDrawStateData);\n')
+    out_file.write('        AlignedMemory aligned_memory;\n')
+    out_file.write('        aligned_memory.SetMemoryWritePtr((char*)state + sizeof(FullDrawStateData));\n')
 
     for var_data in init_time_array_variables:
         var_name_private = get_private_variable_name(var_data)
         var_type = var_data['type']
         length = var_data['init_time_array_length']
 
-        out_file.write(f'\n        state->{var_name_private} = ({var_type}*)offset_ptr;\n')
-        out_file.write(f'        offset_ptr += sizeof({var_type}) * limits.{length};\n')
+        out_file.write(f'        state->{var_name_private} = aligned_memory.GetNextAlignedPtr<{var_type}>(limits.{length});\n')
 
     out_file.write('    }\n')
 
