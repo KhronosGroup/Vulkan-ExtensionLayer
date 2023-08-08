@@ -28,6 +28,7 @@
 #include <vector>
 #include <atomic>
 #include <type_traits>
+#include <algorithm>
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_layer.h>
@@ -112,48 +113,78 @@ static bool GetForceEnable() {
 
 class AlignedMemory {
   public:
-    AlignedMemory(size_t initial_size = 0) : size_(initial_size), memory_write_ptr_(nullptr) {}
+    AlignedMemory() : size_(0), max_alignment_(1), memory_write_ptr_(nullptr) {}
 
+    // Reserve memory for T[count] respecting T's alignment
     template<typename T>
     constexpr void Add(size_t count = 1) {
         if (count > 0) {
             size_ += align(std::alignment_of<T>::value, size_);
             size_ += sizeof(T) * count;
+
+            if (max_alignment_ < std::alignment_of<T>::value) {
+                max_alignment_ = std::alignment_of<T>::value;
+            }
         }
     }
 
     template<typename T>
     void SetMemoryWritePtr(T* ptr) {
+        assert(memory_write_ptr_ == nullptr);
         memory_write_ptr_ = reinterpret_cast<uint8_t*>(ptr);
     }
 
-    template<typename P, typename T>
-    void CopyBytes(P*& dst_ptr, T& dst_size, const void* src_ptr, T src_size) {
-        if (src_size == 0) {
-            dst_ptr = nullptr;
-        } else {
-            dst_size = src_size;
-            if constexpr (std::is_same<P, void>::value || std::is_same<P, const void>::value) {
-                size_t alignment = std::alignment_of<uint32_t>::value;
-                memory_write_ptr_ += align(alignment, reinterpret_cast<size_t>(memory_write_ptr_));
-            } else {
-                size_t alignment = std::alignment_of<P>::value;
-                memory_write_ptr_ += align(alignment, reinterpret_cast<size_t>(memory_write_ptr_));
-            }
-            dst_ptr = reinterpret_cast<P*>(memory_write_ptr_);
-            memcpy((void*)dst_ptr, src_ptr, src_size);
-            memory_write_ptr_ += src_size;
-        }
+    // Allocate memory required for storing all arrays added with Add
+    void Allocate(VkAllocationCallbacks const& allocator, VkSystemAllocationScope scope) {
+        assert(GetSize() > 0);
+        SetMemoryWritePtr(allocator.pfnAllocation(allocator.pUserData, GetSize(), GetAlignment(), scope));
     }
 
+    // Fetch a pointer to array T[count] that was reserved via Add
+    // The order, types and counts in which GetNextAlignedPtr is called must exactly match those of calls to Add
+    template<typename T>
+    T* GetNextAlignedPtr(size_t count = 1) {
+        T* result = nullptr;
+
+        if (count > 0) {
+            memory_write_ptr_ += align(std::alignment_of<T>::value, reinterpret_cast<size_t>(memory_write_ptr_));
+            result = reinterpret_cast<T*>(memory_write_ptr_);
+            memory_write_ptr_ += sizeof(T) * count;
+        }
+
+        return result;
+    }
+
+    // Fetches a pointer to A[src_size / sizeof(A)] array and copies data from src_ptr to it
+    // src_size must be aligned to sizeof(A)
+    template<typename A, typename T, typename P>
+    void CopyBytes(P*& dst_ptr, T& dst_size, void const* src_ptr, T src_size) {
+        void* data_ptr = static_cast<void*>(GetNextAlignedPtr<A>(src_size / sizeof(A)));
+
+        if (src_size > 0) {
+            memcpy(data_ptr, src_ptr, src_size);
+        }
+
+        dst_size = src_size;
+        dst_ptr = static_cast<P*>(data_ptr);
+    }
+
+    // Fetches a pointer to P[src_count] array and copies data from src_ptr to it
     template<typename P, typename T>
-    void CopyStruct(P*& dst_ptr, uint32_t& dst_count, const T* src_ptr, uint32_t src_count) {
-        CopyBytes<P, uint32_t>(dst_ptr, dst_count, src_ptr, sizeof(*src_ptr) * src_count);
+    void CopyStruct(P*& dst_ptr, uint32_t& dst_count, T const* src_ptr, uint32_t src_count) {
+        static_assert(std::is_same<const P, const T>::value);
+
+        size_t dst_size;
+        CopyBytes<T>(dst_ptr, dst_size, src_ptr, sizeof(T) * src_count);
         dst_count = src_count;
     }
 
-    size_t GetSize() const { return size_; }
+    size_t GetSize() const { return size_ + align(max_alignment_, size_); }
+    size_t GetAlignment() const { return max_alignment_; }
+
     uint8_t* GetMemoryWritePtr() const { return memory_write_ptr_; }
+
+    explicit operator bool() const { return memory_write_ptr_ != nullptr; }
 
   private:
     size_t align(size_t alignment, size_t offset) const {
@@ -161,6 +192,7 @@ class AlignedMemory {
     }
 
     size_t size_;
+    size_t max_alignment_;
     uint8_t* memory_write_ptr_;
 };
 
@@ -937,10 +969,13 @@ struct FullDrawStateData {
     static FullDrawStateData* Create(VkPhysicalDeviceProperties const& properties, VkAllocationCallbacks const& allocator) {
         AlignedMemory aligned_memory;
         ReserveMemory(aligned_memory, properties);
-        auto state = static_cast<FullDrawStateData*>(allocator.pfnAllocation(allocator.pUserData, aligned_memory.GetSize(), std::alignment_of<FullDrawStateData>::value, VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_DEVICE));
-        if (!state) {
+        
+        aligned_memory.Allocate(allocator, VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_DEVICE);
+        if (!aligned_memory) {
             return nullptr;
         }
+        
+        auto state = aligned_memory.GetNextAlignedPtr<FullDrawStateData>();
         InitializeMemory(state, properties);
         state->allocator_ = allocator;
         return state;
@@ -950,11 +985,14 @@ struct FullDrawStateData {
         AlignedMemory aligned_memory;
         ReserveMemory(aligned_memory, o->limits_);
         auto allocator = kDefaultAllocator;
-        auto state = static_cast<FullDrawStateData*>(allocator.pfnAllocation(allocator.pUserData, aligned_memory.GetSize(), std::alignment_of<FullDrawStateData>::value, VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_DEVICE));
-        if (!state) {
+
+        aligned_memory.Allocate(allocator, VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_DEVICE);
+        if (!aligned_memory) {
             return nullptr;
         }
-        memcpy(state, o, aligned_memory.GetSize());
+        memcpy(aligned_memory.GetMemoryWritePtr(), o, aligned_memory.GetSize());
+
+        auto state = aligned_memory.GetNextAlignedPtr<FullDrawStateData>();
         SetInternalArrayPointers(state, o->limits_);
         state->allocator_ = allocator;
         return state;
@@ -1249,16 +1287,17 @@ CommandBufferData* CommandBufferData::Create(DeviceData* data, VkAllocationCallb
     AlignedMemory aligned_memory;
     ReserveMemory(aligned_memory, data->properties);
 
-    auto cmd_data = static_cast<CommandBufferData*>(allocator.pfnAllocation(
-        allocator.pUserData, aligned_memory.GetSize(), std::alignment_of<CommandBufferData>::value, VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_OBJECT));
-    if (!cmd_data) {
+    aligned_memory.Allocate(allocator, VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_OBJECT);
+    if (!aligned_memory) {
         return nullptr;
     }
 
-    memset(cmd_data, 0, aligned_memory.GetSize());
+    memset(aligned_memory.GetMemoryWritePtr(), 0, aligned_memory.GetSize());
+
+    auto cmd_data = aligned_memory.GetNextAlignedPtr<CommandBufferData>();
     cmd_data->device_data      = data;
     cmd_data->allocator        = allocator;
-    cmd_data->draw_state_data_ = reinterpret_cast<FullDrawStateData*>(cmd_data + 1);
+    cmd_data->draw_state_data_ = aligned_memory.GetNextAlignedPtr<FullDrawStateData>();
     FullDrawStateData::InitializeMemory(cmd_data->draw_state_data_, data->properties);
     return cmd_data;
 }
@@ -1292,25 +1331,24 @@ VkResult Shader::Create(DeviceData const& deviceData, VkShaderCreateInfoEXT cons
 
     size_t name_size = createInfo.pName == nullptr ? 0 : strlen(createInfo.pName) + 1;
 
-    AlignedMemory aligned_memory(sizeof(Shader));
-    aligned_memory.Add<const char>(name_size);
+    AlignedMemory aligned_memory;
+    aligned_memory.Add<Shader>();
+    aligned_memory.Add<char>(name_size);
     aligned_memory.Add<uint32_t>(spirv_size / sizeof(uint32_t));
     aligned_memory.Add<VkPushConstantRange>(createInfo.pushConstantRangeCount);
     aligned_memory.Add<VkDescriptorSetLayout>(createInfo.setLayoutCount);
     aligned_memory.Add<PrivateDataSlotPair>(deviceData.reserved_private_data_slot_count);
     if (createInfo.pSpecializationInfo) {
-        aligned_memory.Add<VkSpecializationInfo>();
         aligned_memory.Add<uint32_t>(createInfo.pSpecializationInfo->dataSize / sizeof(uint32_t));
         aligned_memory.Add<VkSpecializationMapEntry>(createInfo.pSpecializationInfo->mapEntryCount);
     }
 
-    void* memory = allocator.pfnAllocation(allocator.pUserData, aligned_memory.GetSize(), std::alignment_of<Shader>::value,
-                                           VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_OBJECT);
-    if (!memory) {
+    aligned_memory.Allocate(allocator, VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_OBJECT);
+    if (!aligned_memory) {
         return VK_ERROR_OUT_OF_HOST_MEMORY;
     }
 
-    Shader* shader = new (memory) Shader();
+    Shader* shader = new (aligned_memory.GetNextAlignedPtr<Shader>()) Shader();
 
     static std::atomic<uint64_t> id_counter{1};
     shader->id = id_counter.fetch_add(1, std::memory_order_relaxed);
@@ -1326,13 +1364,9 @@ VkResult Shader::Create(DeviceData const& deviceData, VkShaderCreateInfoEXT cons
 
     // Copy data over from create info struct
 
-    aligned_memory.SetMemoryWritePtr(reinterpret_cast<uint8_t*>(shader) + sizeof(Shader));
-
-    if (createInfo.pName != nullptr) {
-        aligned_memory.CopyBytes(shader->name, shader->name_byte_count, createInfo.pName, name_size);
-    }
-
-    aligned_memory.CopyBytes(shader->spirv_data, shader->spirv_data_size, spirv_data, spirv_size);
+    aligned_memory.CopyBytes<char>(shader->name, shader->name_byte_count, createInfo.pName, name_size);
+    
+    aligned_memory.CopyBytes<uint32_t>(shader->spirv_data, shader->spirv_data_size, spirv_data, spirv_size);
 
     aligned_memory.CopyStruct(shader->push_constant_ranges, shader->num_push_constant_ranges, createInfo.pPushConstantRanges,
                               createInfo.pushConstantRangeCount);
@@ -1340,19 +1374,18 @@ VkResult Shader::Create(DeviceData const& deviceData, VkShaderCreateInfoEXT cons
     aligned_memory.CopyStruct(shader->descriptor_set_layouts, shader->num_descriptor_set_layouts, createInfo.pSetLayouts,
                               createInfo.setLayoutCount);
 
+    shader->reserved_private_data_slots = aligned_memory.GetNextAlignedPtr<PrivateDataSlotPair>(deviceData.reserved_private_data_slot_count);
+
     if (createInfo.pSpecializationInfo) {
         shader->specialization_info = *createInfo.pSpecializationInfo;
         shader->specialization_info_ptr = &shader->specialization_info;
 
-        aligned_memory.CopyBytes(shader->specialization_info.pData, shader->specialization_info.dataSize,
+        aligned_memory.CopyBytes<uint32_t>(shader->specialization_info.pData, shader->specialization_info.dataSize,
                                  createInfo.pSpecializationInfo->pData, createInfo.pSpecializationInfo->dataSize);
 
         aligned_memory.CopyStruct(shader->specialization_info.pMapEntries, shader->specialization_info.mapEntryCount,
                                   createInfo.pSpecializationInfo->pMapEntries, createInfo.pSpecializationInfo->mapEntryCount);
     }
-
-    shader->reserved_private_data_slots = (PrivateDataSlotPair*)aligned_memory.GetMemoryWritePtr();
-    aligned_memory.Add<PrivateDataSlotPair>(deviceData.reserved_private_data_slot_count);
 
     // Create shader module from SPIR-V
 
