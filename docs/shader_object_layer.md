@@ -80,4 +80,4 @@ the Settings File.
 
 ## Layer Options
 
-The options for this layer are specified in VkLayer_khronos_shader_object.json. The details of the layer options are documented in the [Shader object layer documentation](https://vulkan.lunarg.com/doc/sdk/latest/windows/shader_object.html).
+The options for this layer are specified in VkLayer_khronos_shader_object.json. The details of the layer options are documented in the [Shader object layer documentation](https://vulkan.lunarg.com/doc/sdk/latest/windows/shader_object_layer.html).
