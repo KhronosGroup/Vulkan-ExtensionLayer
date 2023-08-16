@@ -31,7 +31,7 @@
 #include "vk_layer_config.h"
 
 void Sync2Test::SetUp() {
-    SetEnvironment("VK_SYNC2_FORCE_ENABLE", "1");
+    SetEnvironment("VK_SYNCHRONIZATION2_FORCE_ENABLE", "1");
     VkExtensionLayerTest::SetUp();
     SetTargetApiVersion(VK_API_VERSION_1_2);
     VkExtensionLayerTest::AddSurfaceInstanceExtension();

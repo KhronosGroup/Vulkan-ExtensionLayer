@@ -50,9 +50,9 @@ static const VkExtensionProperties kDeviceExtension = {VK_KHR_SYNCHRONIZATION_2_
 
 static const char* const kEnvarForceEnable =
 #if defined(__ANDROID__)
-    "debug.vulkan.sync2.force_enable";
+    "debug.vulkan.synchronization2.force_enable";
 #else
-    "VK_SYNC2_FORCE_ENABLE";
+    "VK_SYNCHRONIZATION2_FORCE_ENABLE";
 #endif
 static const char* const kLayerSettingsForceEnable = "khronos_synchronization2.force_enable";
 
@@ -60,9 +60,9 @@ static const char* const kLayerSettingsForceEnable = "khronos_synchronization2.f
 // to be defined once?
 static const char* const kEnvarCustomStypeList =
 #if defined(__ANDROID__)
-    "debug.vulkan.sync2.custom_stype_list";
+    "debug.vulkan.synchronization2.custom_stype_list";
 #else
-    "VK_LAYER_SYNC2_CUSTOM_STYPE_LIST";
+    "VK_SYNCHRONIZATION2_CUSTOM_STYPE_LIST";
 #endif
 static const char* const kLayerSettingsCustomStypeList = "khronos_synchronization2.custom_stype_list";
 

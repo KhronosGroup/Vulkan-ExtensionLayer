@@ -6,7 +6,7 @@
         "library_path": "@JSON_LIBRARY_PATH@",
         "api_version": "@JSON_VERSION@",
         "implementation_version": "1",
-        "description": "Khronos Memory Decompression layer",
+        "description": "Khronos Decompression layer",
         "status": "STABLE",
         "platforms": [ "WINDOWS", "LINUX", "MACOS", "ANDROID" ],
         "instance_extensions": [],

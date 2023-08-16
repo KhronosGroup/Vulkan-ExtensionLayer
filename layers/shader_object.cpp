@@ -77,7 +77,7 @@ std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
 
 namespace shader_object {
 
-static const char* kLayerName = "VkLayer_khronos_shader_object";
+static const char* kLayerName = "VK_LAYER_KHRONOS_shader_object";
 static const VkExtensionProperties kExtensionProperties = {VK_EXT_SHADER_OBJECT_EXTENSION_NAME, VK_EXT_SHADER_OBJECT_SPEC_VERSION};
 
 static const char* const kEnvarForceEnable =
