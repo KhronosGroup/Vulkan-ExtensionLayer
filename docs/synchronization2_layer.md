@@ -63,6 +63,16 @@ To force the layer to be enabled for Vulkan applications, you can set the `VK_IN
 
     export VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_synchronization2
 
+To force the layer to be enabled for Vulkan applications, even though the Vulkan implementation supports `VK_KHR_synchronization2` extension, you can set the `VK_SYNCHRONIZATION2_FORCE_ENABLE` environment variable in the following way:
+
+**Windows**
+
+    set VK_VK_SYNCHRONIZATION2_FORCE_ENABLE=true
+
+**Linux/MacOS**
+
+    export VK_VK_SYNCHRONIZATION2_FORCE_ENABLE=true
+
 <br></br>
 
 ### Android
@@ -125,11 +135,11 @@ The easiest way to set a property is from the ADB shell:
 To set force enable, which on desktop uses `VK_SYNC2_FORCE_ENABLE`
 set the following property:
 
-    debug.sync2_force_enable
+    debug.vulkan.synchronization2.force_enable
 
 Which you can set in the following way:
 
-    adb shell "setprop debug.sync2_force_enable true"
+    adb shell "setprop debug.vulkan.synchronization2.force_enable true"
 
 <br></br>
 
