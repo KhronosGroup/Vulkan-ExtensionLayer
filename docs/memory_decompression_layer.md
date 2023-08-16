@@ -69,8 +69,7 @@ To force the layer to be enabled for Vulkan applications, you can set the `VK_IN
 
     export VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_memory_decompression
 
-To force the layer to be enabled for Vulkan applications, even though the Vulkan implementation supports `VK_NV_memory_decompression` extension, you can
-set the `VK_MEMORY_DECOMPRESSION_FORCE_ENABLE` environment variable in the following way:
+To force the layer to be enabled for Vulkan applications, even though the Vulkan implementation supports `VK_NV_memory_decompression` extension, you can set the `VK_MEMORY_DECOMPRESSION_FORCE_ENABLE` environment variable in the following way:
 
 **Windows**
 
@@ -142,11 +141,11 @@ The easiest way to set a property is from the ADB shell:
 To set force enable, which on desktop uses `VK_MEMORY_DECOMPRESSION_FORCE_ENABLE`
 set the following property:
 
-    debug.vulkan.decompression
+    debug.vulkan.memory_decompression.force_enable
 
 Which you can set in the following way:
 
-    adb shell "setprop debug.vulkan.decompression true"
+    adb shell "setprop debug.vulkan.memory_decompression.force_enable true"
 
 <br></br>
 

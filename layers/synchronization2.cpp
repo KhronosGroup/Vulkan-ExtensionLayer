@@ -48,6 +48,12 @@ static const VkLayerProperties kGlobalLayer = {
 static const VkExtensionProperties kDeviceExtension = {VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
                                                        VK_KHR_SYNCHRONIZATION_2_SPEC_VERSION};
 
+static const char* const kEnvarForceEnableRemoved =
+#if defined(__ANDROID__)
+    "debug.vulkan.sync2.force_enable";
+#else
+    "VK_SYNC2_FORCE_ENABLE";
+#endif
 static const char* const kEnvarForceEnable =
 #if defined(__ANDROID__)
     "debug.vulkan.synchronization2.force_enable";
@@ -58,6 +64,12 @@ static const char* const kLayerSettingsForceEnable = "khronos_synchronization2.f
 
 // TODO: should we try to use the same fields as ValidationLayers, so that list only needs
 // to be defined once?
+static const char* const kEnvarCustomStypeListRemoved =
+#if defined(__ANDROID__)
+    "debug.vulkan.sync2.custom_stype_list";
+#else
+    "VK_LAYER_SYNC2_CUSTOM_STYPE_LIST";
+#endif
 static const char* const kEnvarCustomStypeList =
 #if defined(__ANDROID__)
     "debug.vulkan.synchronization2.custom_stype_list";
@@ -77,6 +89,11 @@ static void string_tolower(std::string &s) {
 
 static bool GetForceEnable() {
     bool result = false;
+    std::string setting_removed = GetEnvironment(kEnvarForceEnableRemoved);
+    if (!setting_removed.empty()) {
+        LOG("%s was renamed into %s, please update your developer environment.\n", kEnvarForceEnableRemoved, kEnvarForceEnable);
+    }
+
     std::string setting = GetEnvironment(kEnvarForceEnable);
     if (setting.empty()) {
         setting = GetLayerOption(kLayerSettingsForceEnable);
@@ -147,6 +164,12 @@ static void SetCustomStypeInfo(std::string raw_id_list, const std::string &delim
 }
 
 static void SetupCustomStypes() {
+    std::string setting_removed = GetEnvironment(kEnvarCustomStypeListRemoved);
+    if (!setting_removed.empty()) {
+        LOG("%s was renamed into %s, please update your developer environment.\n", kEnvarCustomStypeListRemoved,
+            kEnvarCustomStypeList);
+    }
+
     const std::string kEnvDelim =
 #if defined(_WIN32)
         ";";

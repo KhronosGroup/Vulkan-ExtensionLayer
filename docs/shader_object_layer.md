@@ -65,6 +65,16 @@ To force the layer to be enabled for Vulkan applications, you can set the `VK_IN
 
     export VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_shader_object
 
+To force the layer to be enabled for Vulkan applications, even though the Vulkan implementation supports `VK_EXT_shader_object` extension, you can set the `VK_SHADER_OBJECT_FORCE_ENABLE` environment variable in the following way:
+
+**Windows**
+
+    set VK_SHADER_OBJECT_FORCE_ENABLE=true
+
+**Linux/MacOS**
+
+    export VK_SHADER_OBJECT_FORCE_ENABLE=true
+
 <br>
 
 ### Settings Priority
