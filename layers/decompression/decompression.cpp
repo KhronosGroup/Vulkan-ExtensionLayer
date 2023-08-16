@@ -124,7 +124,7 @@ static const VkLayerProperties kGlobalLayer = {
     "VK_LAYER_KHRONOS_memory_decompression",
     VK_HEADER_VERSION_COMPLETE,
     1,
-    "Default memory_decompression layer",
+    "Default memory decompression layer",
 };
 
 static const VkExtensionProperties kDeviceExtension = {VK_NV_MEMORY_DECOMPRESSION_EXTENSION_NAME,
@@ -132,7 +132,7 @@ static const VkExtensionProperties kDeviceExtension = {VK_NV_MEMORY_DECOMPRESSIO
 
 static const char* const kEnvarForceEnable =
 #if defined(__ANDROID__)
-    "debug.vulkan.decompression";
+    "debug.vulkan.memory_decompression.force_enable";
 #else
     "VK_MEMORY_DECOMPRESSION_FORCE_ENABLE";
 #endif
@@ -140,7 +140,7 @@ static const char* const kLayerSettingsForceEnable = "khronos_memory_decompressi
 
 static const char* const kEnvarLogging =
 #if defined(__ANDROID__)
-    "debug.vulkan.decompression.logging";
+    "debug.vulkan.memory_decompression.logging";
 #else
     "VK_MEMORY_DECOMPRESSION_LOGGING";
 #endif

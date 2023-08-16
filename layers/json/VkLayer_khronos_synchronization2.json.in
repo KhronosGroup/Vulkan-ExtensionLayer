@@ -32,7 +32,7 @@
             "settings": [
                 {
                     "key": "force_enable",
-                    "env": "VK_SYNC2_FORCE_ENABLE",
+                    "env": "VK_SYNCHRONIZATION2_FORCE_ENABLE",
                     "label": "Force Enable",
                     "description": "Force the layer to be active even if the underlying driver also implements the synchonization2 extension.",
                     "type": "BOOL",
