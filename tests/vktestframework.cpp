@@ -114,6 +114,15 @@ VkTestFramework::VkTestFramework() : m_compile_options(0), m_num_shader_strings(
 
 VkTestFramework::~VkTestFramework() {}
 
+// TODO: When the layer path issue is resolved with CI (set outside of the tests) remove this function
+void VkTestFramework::setEnvironmentSetting(std::string setting, const char *val) {
+#ifdef _WIN32
+    _putenv_s(setting.c_str(), val);
+#else
+    setenv(setting.c_str(), val, 1);
+#endif
+}
+
 // Define all the static elements
 bool VkTestFramework::m_canonicalize_spv = false;
 bool VkTestFramework::m_strip_spv = false;

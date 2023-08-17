@@ -21,3 +21,4 @@ LIBRARY VkLayer_khronos_shader_object
 EXPORTS
 vkGetInstanceProcAddr
 vkGetDeviceProcAddr
+vkEnumerateInstanceLayerSettingsEXT

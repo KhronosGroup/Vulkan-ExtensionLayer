@@ -20,7 +20,6 @@ add_library(VkExtLayer_utils STATIC)
 target_sources(VkExtLayer_utils PRIVATE
     allocator.cpp
     vk_format_utils.cpp
-    vk_layer_config.cpp
     generated/vk_safe_struct.cpp
     generated/lvt_function_pointers.cpp
 )

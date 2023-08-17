@@ -92,6 +92,7 @@ find_package(glslang REQUIRED CONFIG QUIET)
 
 target_link_libraries(vk_extension_layer_tests PRIVATE
     VkExtLayer_utils
+    Vulkan::LayerSettings
     Vulkan::Headers
     GTest::gtest
     GTest::gtest_main

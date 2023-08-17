@@ -28,15 +28,23 @@
 
 #include "extension_layer_tests.h"
 #include "synchronization2_tests.h"
-#include "vk_layer_config.h"
 
 void Sync2Test::SetUp() {
-    SetEnvironment("VK_SYNCHRONIZATION2_FORCE_ENABLE", "1");
+    VkBool32 force_enable = VK_TRUE;
+
+    VkLayerSettingEXT settings[] = {
+        {"VK_LAYER_KHRONOS_synchronization2", "force_enable", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &force_enable}
+    };
+
+    VkLayerSettingsCreateInfoEXT layer_settings_create_info{
+        VK_STRUCTURE_TYPE_LAYER_SETTINGS_EXT, nullptr,
+        static_cast<uint32_t>(std::size(settings)), &settings[0]};
+
     VkExtensionLayerTest::SetUp();
     SetTargetApiVersion(VK_API_VERSION_1_2);
     VkExtensionLayerTest::AddSurfaceInstanceExtension();
     instance_layers_.push_back("VK_LAYER_KHRONOS_synchronization2");
-    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor, &layer_settings_create_info));
 
     VkExtensionLayerTest::AddSwapchainDeviceExtension();
 }

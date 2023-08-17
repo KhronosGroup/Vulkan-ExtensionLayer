@@ -25,3 +25,4 @@ vkGetInstanceProcAddr
 vkGetDeviceProcAddr
 vkEnumerateInstanceExtensionProperties
 vkNegotiateLoaderLayerInterfaceVersion
+vkEnumerateInstanceLayerSettingsEXT
