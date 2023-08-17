@@ -115,9 +115,22 @@ static const ByteCode kIndirectGInflateBytecode[] = {
     {(const uint8_t*)kIndirectGInflate64_HAVE_INT16_HAVE_INT64, sizeof(kIndirectGInflate64_HAVE_INT16_HAVE_INT64)},
 };
 
-#define kLayerSettingsForceEnable "force_device"
-#define kLayerSettingsCustomSTypeInfo "custom_stype_list"
-#define kLayerSettingsLogging "logging"
+enum SettingsId {
+    SETTING_FORCE_DEVICE = 0,
+    SETTING_LOGGING,
+    SETTING_CUSTOM_STYPE_LIST,
+
+    SETTING_FIRST = SETTING_FORCE_DEVICE,
+    SETTING_LAST = SETTING_CUSTOM_STYPE_LIST,
+};
+
+enum { SETTING_COUNT = SETTING_LAST - SETTING_FIRST + 1 };
+
+static const VkLayerSettingPropertiesEXT kSettings[] = {
+    {VK_STRUCTURE_TYPE_LAYER_SETTING_PROPERTIES_EXT, nullptr, "force_device", VK_LAYER_SETTING_TYPE_BOOL32_EXT},
+    {VK_STRUCTURE_TYPE_LAYER_SETTING_PROPERTIES_EXT, nullptr, "logging", VK_LAYER_SETTING_TYPE_BOOL32_EXT},
+    {VK_STRUCTURE_TYPE_LAYER_SETTING_PROPERTIES_EXT, nullptr, "custom_stype_list", VK_LAYER_SETTING_TYPE_UINT32_EXT}};
+static_assert(std::size(kSettings) == SETTING_COUNT);
 
 // required by vk_safe_struct
 std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
@@ -251,16 +264,19 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
     VlLayerSettingSet layerSettingSet = VK_NULL_HANDLE;
     vlCreateLayerSettingSet(kGlobalLayer.layerName, vlFindLayerSettingsCreateInfo(pCreateInfo), pAllocator, nullptr, &layerSettingSet);
 
-    if (vlHasLayerSetting(layerSettingSet, kLayerSettingsForceEnable)) {
-        vlGetLayerSettingValue(layerSettingSet, kLayerSettingsForceEnable, layer_settings->force_enable);
+    const char* setting_key_force_enable = kSettings[SETTING_FORCE_DEVICE].key;
+    if (vlHasLayerSetting(layerSettingSet, setting_key_force_enable)) {
+        vlGetLayerSettingValue(layerSettingSet, setting_key_force_enable, layer_settings->force_enable);
     }
 
-    if (vlHasLayerSetting(layerSettingSet, kLayerSettingsLogging)) {
-        vlGetLayerSettingValue(layerSettingSet, kLayerSettingsLogging, layer_settings->logging);
+    const char* setting_key_logging = kSettings[SETTING_FORCE_DEVICE].key;
+    if (vlHasLayerSetting(layerSettingSet, setting_key_logging)) {
+        vlGetLayerSettingValue(layerSettingSet, setting_key_logging, layer_settings->logging);
     }
 
-    if (vlHasLayerSetting(layerSettingSet, kLayerSettingsCustomSTypeInfo)) {
-        vlGetLayerSettingValues(layerSettingSet, kLayerSettingsCustomSTypeInfo, custom_stype_info);
+    const char* setting_key_custom_stype_list = kSettings[SETTING_CUSTOM_STYPE_LIST].key;
+    if (vlHasLayerSetting(layerSettingSet, setting_key_custom_stype_list)) {
+        vlGetLayerSettingValues(layerSettingSet, setting_key_custom_stype_list, custom_stype_info);
     }
 
     vlDestroyLayerSettingSet(layerSettingSet, pAllocator);
@@ -1001,6 +1017,28 @@ extern "C" VEL_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensio
         return VK_SUCCESS;
     }
     return VK_ERROR_LAYER_NOT_PRESENT;
+}
+
+extern "C" VEL_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerSettingsEXT(const char* pLayerName,
+                                                                                         uint32_t* pPropertyCount,
+                                                                                         VkLayerSettingPropertiesEXT* pProperties) {
+    assert(pPropertyCount != nullptr);
+    if (pLayerName && strncmp(pLayerName, memory_decompression::kGlobalLayer.layerName, VK_MAX_EXTENSION_NAME_SIZE) != 0) {
+        return VK_SUCCESS;
+    }
+
+    std::size_t count = std::min(*pPropertyCount, static_cast<uint32_t>(std::size(kSettings)));
+
+    if (*pPropertyCount > 0 && pProperties != nullptr) {
+        memcpy(pProperties, kSettings, sizeof(VkLayerSettingPropertiesEXT) * count);
+    }
+
+    if (count < std::size(kSettings)) {
+        return VK_INCOMPLETE;
+    } else {
+        *pPropertyCount = static_cast<uint32_t>(std::size(kSettings));
+        return VK_SUCCESS;
+    }
 }
 
 // loader-layer interface v0 - Needed for Android loader using explicit layers
