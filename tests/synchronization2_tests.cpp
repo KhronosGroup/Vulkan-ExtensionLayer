@@ -1435,3 +1435,24 @@ TEST_F(Sync2Test, SwapchainImage) {
     vk::DestroyImageView(m_device->device(), view, NULL);
     DestroySwapchain();
 }
+
+TEST_F(Sync2Test, EnumerateDeviceExtensionProperties) {
+    TEST_DESCRIPTION("Verify the extension is found only once");
+    if (!CheckSynchronization2SupportAndInitState()) {
+        GTEST_SKIP() << kSkipPrefix << " synchronization2 not supported, skipping test";
+    }
+
+    uint32_t propertyCount;
+    vk::EnumerateDeviceExtensionProperties(m_device->phy().handle(), nullptr, &propertyCount, nullptr);
+    std::vector<VkExtensionProperties> props(propertyCount);
+    vk::EnumerateDeviceExtensionProperties(m_device->phy().handle(), nullptr, &propertyCount, props.data());
+
+    uint32_t count = 0;
+    for (const auto &p : props) {
+        if (strcmp(p.extensionName, "VK_KHR_synchronization2") == 0) {
+            ++count;
+        }
+    }
+
+    ASSERT_EQ(count, 1);
+}
