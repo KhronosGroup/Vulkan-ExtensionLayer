@@ -221,8 +221,18 @@ VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysicalDevi
             return VK_INCOMPLETE;
         }
         instance_data->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, &count, pProperties);
-        pProperties[count] = kDeviceExtension;
-        *pPropertyCount = count + 1;
+
+        bool has_native_synchronization2 = false;
+        for (uint32_t i = 0; i < count; ++i) {
+            if (strncmp(pProperties[i].extensionName, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
+                has_native_synchronization2 = true;
+                break;
+            }
+        }
+        if (!has_native_synchronization2) {
+            pProperties[count] = kDeviceExtension;
+            *pPropertyCount = count + 1;
+        }
         return VK_SUCCESS;
     }
 
