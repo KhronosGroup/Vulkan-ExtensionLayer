@@ -14188,6 +14188,143 @@ struct safe_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM {
     VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM const *ptr() const { return reinterpret_cast<VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM const *>(this); }
 };
 
+struct safe_VkPhysicalDeviceImageProcessing2FeaturesQCOM {
+    VkStructureType sType;
+    void* pNext{};
+    VkBool32 textureBlockMatch2;
+    safe_VkPhysicalDeviceImageProcessing2FeaturesQCOM(const VkPhysicalDeviceImageProcessing2FeaturesQCOM* in_struct);
+    safe_VkPhysicalDeviceImageProcessing2FeaturesQCOM(const safe_VkPhysicalDeviceImageProcessing2FeaturesQCOM& copy_src);
+    safe_VkPhysicalDeviceImageProcessing2FeaturesQCOM& operator=(const safe_VkPhysicalDeviceImageProcessing2FeaturesQCOM& copy_src);
+    safe_VkPhysicalDeviceImageProcessing2FeaturesQCOM();
+    ~safe_VkPhysicalDeviceImageProcessing2FeaturesQCOM();
+    void initialize(const VkPhysicalDeviceImageProcessing2FeaturesQCOM* in_struct);
+    void initialize(const safe_VkPhysicalDeviceImageProcessing2FeaturesQCOM* copy_src);
+    VkPhysicalDeviceImageProcessing2FeaturesQCOM *ptr() { return reinterpret_cast<VkPhysicalDeviceImageProcessing2FeaturesQCOM *>(this); }
+    VkPhysicalDeviceImageProcessing2FeaturesQCOM const *ptr() const { return reinterpret_cast<VkPhysicalDeviceImageProcessing2FeaturesQCOM const *>(this); }
+};
+
+struct safe_VkPhysicalDeviceImageProcessing2PropertiesQCOM {
+    VkStructureType sType;
+    void* pNext{};
+    VkExtent2D maxBlockMatchWindow;
+    safe_VkPhysicalDeviceImageProcessing2PropertiesQCOM(const VkPhysicalDeviceImageProcessing2PropertiesQCOM* in_struct);
+    safe_VkPhysicalDeviceImageProcessing2PropertiesQCOM(const safe_VkPhysicalDeviceImageProcessing2PropertiesQCOM& copy_src);
+    safe_VkPhysicalDeviceImageProcessing2PropertiesQCOM& operator=(const safe_VkPhysicalDeviceImageProcessing2PropertiesQCOM& copy_src);
+    safe_VkPhysicalDeviceImageProcessing2PropertiesQCOM();
+    ~safe_VkPhysicalDeviceImageProcessing2PropertiesQCOM();
+    void initialize(const VkPhysicalDeviceImageProcessing2PropertiesQCOM* in_struct);
+    void initialize(const safe_VkPhysicalDeviceImageProcessing2PropertiesQCOM* copy_src);
+    VkPhysicalDeviceImageProcessing2PropertiesQCOM *ptr() { return reinterpret_cast<VkPhysicalDeviceImageProcessing2PropertiesQCOM *>(this); }
+    VkPhysicalDeviceImageProcessing2PropertiesQCOM const *ptr() const { return reinterpret_cast<VkPhysicalDeviceImageProcessing2PropertiesQCOM const *>(this); }
+};
+
+struct safe_VkSamplerBlockMatchWindowCreateInfoQCOM {
+    VkStructureType sType;
+    const void* pNext{};
+    VkExtent2D windowExtent;
+    VkBlockMatchWindowCompareModeQCOM windowCompareMode;
+    safe_VkSamplerBlockMatchWindowCreateInfoQCOM(const VkSamplerBlockMatchWindowCreateInfoQCOM* in_struct);
+    safe_VkSamplerBlockMatchWindowCreateInfoQCOM(const safe_VkSamplerBlockMatchWindowCreateInfoQCOM& copy_src);
+    safe_VkSamplerBlockMatchWindowCreateInfoQCOM& operator=(const safe_VkSamplerBlockMatchWindowCreateInfoQCOM& copy_src);
+    safe_VkSamplerBlockMatchWindowCreateInfoQCOM();
+    ~safe_VkSamplerBlockMatchWindowCreateInfoQCOM();
+    void initialize(const VkSamplerBlockMatchWindowCreateInfoQCOM* in_struct);
+    void initialize(const safe_VkSamplerBlockMatchWindowCreateInfoQCOM* copy_src);
+    VkSamplerBlockMatchWindowCreateInfoQCOM *ptr() { return reinterpret_cast<VkSamplerBlockMatchWindowCreateInfoQCOM *>(this); }
+    VkSamplerBlockMatchWindowCreateInfoQCOM const *ptr() const { return reinterpret_cast<VkSamplerBlockMatchWindowCreateInfoQCOM const *>(this); }
+};
+
+struct safe_VkPhysicalDeviceCubicWeightsFeaturesQCOM {
+    VkStructureType sType;
+    void* pNext{};
+    VkBool32 selectableCubicWeights;
+    safe_VkPhysicalDeviceCubicWeightsFeaturesQCOM(const VkPhysicalDeviceCubicWeightsFeaturesQCOM* in_struct);
+    safe_VkPhysicalDeviceCubicWeightsFeaturesQCOM(const safe_VkPhysicalDeviceCubicWeightsFeaturesQCOM& copy_src);
+    safe_VkPhysicalDeviceCubicWeightsFeaturesQCOM& operator=(const safe_VkPhysicalDeviceCubicWeightsFeaturesQCOM& copy_src);
+    safe_VkPhysicalDeviceCubicWeightsFeaturesQCOM();
+    ~safe_VkPhysicalDeviceCubicWeightsFeaturesQCOM();
+    void initialize(const VkPhysicalDeviceCubicWeightsFeaturesQCOM* in_struct);
+    void initialize(const safe_VkPhysicalDeviceCubicWeightsFeaturesQCOM* copy_src);
+    VkPhysicalDeviceCubicWeightsFeaturesQCOM *ptr() { return reinterpret_cast<VkPhysicalDeviceCubicWeightsFeaturesQCOM *>(this); }
+    VkPhysicalDeviceCubicWeightsFeaturesQCOM const *ptr() const { return reinterpret_cast<VkPhysicalDeviceCubicWeightsFeaturesQCOM const *>(this); }
+};
+
+struct safe_VkSamplerCubicWeightsCreateInfoQCOM {
+    VkStructureType sType;
+    const void* pNext{};
+    VkCubicFilterWeightsQCOM cubicWeights;
+    safe_VkSamplerCubicWeightsCreateInfoQCOM(const VkSamplerCubicWeightsCreateInfoQCOM* in_struct);
+    safe_VkSamplerCubicWeightsCreateInfoQCOM(const safe_VkSamplerCubicWeightsCreateInfoQCOM& copy_src);
+    safe_VkSamplerCubicWeightsCreateInfoQCOM& operator=(const safe_VkSamplerCubicWeightsCreateInfoQCOM& copy_src);
+    safe_VkSamplerCubicWeightsCreateInfoQCOM();
+    ~safe_VkSamplerCubicWeightsCreateInfoQCOM();
+    void initialize(const VkSamplerCubicWeightsCreateInfoQCOM* in_struct);
+    void initialize(const safe_VkSamplerCubicWeightsCreateInfoQCOM* copy_src);
+    VkSamplerCubicWeightsCreateInfoQCOM *ptr() { return reinterpret_cast<VkSamplerCubicWeightsCreateInfoQCOM *>(this); }
+    VkSamplerCubicWeightsCreateInfoQCOM const *ptr() const { return reinterpret_cast<VkSamplerCubicWeightsCreateInfoQCOM const *>(this); }
+};
+
+struct safe_VkBlitImageCubicWeightsInfoQCOM {
+    VkStructureType sType;
+    const void* pNext{};
+    VkCubicFilterWeightsQCOM cubicWeights;
+    safe_VkBlitImageCubicWeightsInfoQCOM(const VkBlitImageCubicWeightsInfoQCOM* in_struct);
+    safe_VkBlitImageCubicWeightsInfoQCOM(const safe_VkBlitImageCubicWeightsInfoQCOM& copy_src);
+    safe_VkBlitImageCubicWeightsInfoQCOM& operator=(const safe_VkBlitImageCubicWeightsInfoQCOM& copy_src);
+    safe_VkBlitImageCubicWeightsInfoQCOM();
+    ~safe_VkBlitImageCubicWeightsInfoQCOM();
+    void initialize(const VkBlitImageCubicWeightsInfoQCOM* in_struct);
+    void initialize(const safe_VkBlitImageCubicWeightsInfoQCOM* copy_src);
+    VkBlitImageCubicWeightsInfoQCOM *ptr() { return reinterpret_cast<VkBlitImageCubicWeightsInfoQCOM *>(this); }
+    VkBlitImageCubicWeightsInfoQCOM const *ptr() const { return reinterpret_cast<VkBlitImageCubicWeightsInfoQCOM const *>(this); }
+};
+
+struct safe_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM {
+    VkStructureType sType;
+    void* pNext{};
+    VkBool32 ycbcrDegamma;
+    safe_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM(const VkPhysicalDeviceYcbcrDegammaFeaturesQCOM* in_struct);
+    safe_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM(const safe_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM& copy_src);
+    safe_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM& operator=(const safe_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM& copy_src);
+    safe_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM();
+    ~safe_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM();
+    void initialize(const VkPhysicalDeviceYcbcrDegammaFeaturesQCOM* in_struct);
+    void initialize(const safe_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM* copy_src);
+    VkPhysicalDeviceYcbcrDegammaFeaturesQCOM *ptr() { return reinterpret_cast<VkPhysicalDeviceYcbcrDegammaFeaturesQCOM *>(this); }
+    VkPhysicalDeviceYcbcrDegammaFeaturesQCOM const *ptr() const { return reinterpret_cast<VkPhysicalDeviceYcbcrDegammaFeaturesQCOM const *>(this); }
+};
+
+struct safe_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM {
+    VkStructureType sType;
+    void* pNext{};
+    VkBool32 enableYDegamma;
+    VkBool32 enableCbCrDegamma;
+    safe_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM(const VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM* in_struct);
+    safe_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM(const safe_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM& copy_src);
+    safe_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM& operator=(const safe_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM& copy_src);
+    safe_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM();
+    ~safe_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM();
+    void initialize(const VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM* in_struct);
+    void initialize(const safe_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM* copy_src);
+    VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM *ptr() { return reinterpret_cast<VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM *>(this); }
+    VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM const *ptr() const { return reinterpret_cast<VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM const *>(this); }
+};
+
+struct safe_VkPhysicalDeviceCubicClampFeaturesQCOM {
+    VkStructureType sType;
+    void* pNext{};
+    VkBool32 cubicRangeClamp;
+    safe_VkPhysicalDeviceCubicClampFeaturesQCOM(const VkPhysicalDeviceCubicClampFeaturesQCOM* in_struct);
+    safe_VkPhysicalDeviceCubicClampFeaturesQCOM(const safe_VkPhysicalDeviceCubicClampFeaturesQCOM& copy_src);
+    safe_VkPhysicalDeviceCubicClampFeaturesQCOM& operator=(const safe_VkPhysicalDeviceCubicClampFeaturesQCOM& copy_src);
+    safe_VkPhysicalDeviceCubicClampFeaturesQCOM();
+    ~safe_VkPhysicalDeviceCubicClampFeaturesQCOM();
+    void initialize(const VkPhysicalDeviceCubicClampFeaturesQCOM* in_struct);
+    void initialize(const safe_VkPhysicalDeviceCubicClampFeaturesQCOM* copy_src);
+    VkPhysicalDeviceCubicClampFeaturesQCOM *ptr() { return reinterpret_cast<VkPhysicalDeviceCubicClampFeaturesQCOM *>(this); }
+    VkPhysicalDeviceCubicClampFeaturesQCOM const *ptr() const { return reinterpret_cast<VkPhysicalDeviceCubicClampFeaturesQCOM const *>(this); }
+};
+
 struct safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT {
     VkStructureType sType;
     void* pNext{};
