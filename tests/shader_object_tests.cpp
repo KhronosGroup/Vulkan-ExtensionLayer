@@ -1256,7 +1256,7 @@ TEST_F(ShaderObjectTest, FailCreateShaders) {
 
     createInfos[fail_index].codeType = VK_SHADER_CODE_TYPE_BINARY_EXT;
 
-    VkResult res = vk::CreateShadersEXT(m_device->handle(), 20u, createInfos, nullptr, shaders);
+    VkResult res = vk::CreateShadersEXT(m_device->handle(), shaders_count, createInfos, nullptr, shaders);
     ASSERT_EQ(res, VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT);
 
     for (uint32_t i = 0; i < shaders_count; ++i) {
