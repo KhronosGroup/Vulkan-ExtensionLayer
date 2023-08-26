@@ -3259,7 +3259,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateShadersEXT(VkDevice device, uint32_t
     auto const& allocator = pAllocator ? *pAllocator : kDefaultAllocator;
     auto const& device_data = *device_data_map.Get(device);
     auto const& vtable = device_data.vtable;
-    memset(pShaders, 0, sizeof(VkShaderEXT*) * createInfoCount);
+    memset(pShaders, 0, sizeof(VkShaderEXT) * createInfoCount);
 
     // First, create individual shaders
     bool are_graphics_shaders_linked = false;
@@ -3268,7 +3268,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateShadersEXT(VkDevice device, uint32_t
         auto shader = reinterpret_cast<Shader**>(&pShaders[i]);
         result = Shader::Create(device_data, pCreateInfos[i], allocator, shader);
         if (result != VK_SUCCESS) {
-            *shader = nullptr;
+            memset(shader, 0u, sizeof(VkShaderEXT));
             successfulCreateCount = i;
             break;
         }
