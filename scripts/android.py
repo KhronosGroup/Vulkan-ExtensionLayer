@@ -29,7 +29,7 @@ import common_ci
 
 # Manifest file describing out test application
 def get_android_manifest() -> str:
-    manifest = common_ci.RepoRelative('build-android/AndroidManifest.xml')
+    manifest = common_ci.RepoRelative('tests/android/AndroidManifest.xml')
     if not os.path.isfile(manifest):
         print(f"Unable to find manifest for APK! {manifest}")
         sys.exit(-1)
@@ -37,7 +37,7 @@ def get_android_manifest() -> str:
 
 # Resources for our test application.
 def get_android_resources() -> str:
-    res = common_ci.RepoRelative('build-android/res')
+    res = common_ci.RepoRelative('tests/android/res')
     if not os.path.isdir(res):
         print(f"Unable to find android resources for APK! {res}")
         sys.exit(-1)
@@ -47,7 +47,11 @@ def get_android_resources() -> str:
 def generate_apk(SDK_ROOT : str, CMAKE_INSTALL_DIR : str) -> str:
     apk_dir = common_ci.RepoRelative(f'build-android/bin')
 
-    common_ci.RunShellCmd(f'cmake -E copy_directory {CMAKE_INSTALL_DIR} {apk_dir}')
+    # Delete APK directory since it could contain files from old runs
+    if os.path.isdir(apk_dir):
+        shutil.rmtree(apk_dir)
+
+    shutil.copytree(CMAKE_INSTALL_DIR, apk_dir)
 
     android_manifest = get_android_manifest()
     android_resources = get_android_resources()
@@ -79,7 +83,9 @@ def generate_apk(SDK_ROOT : str, CMAKE_INSTALL_DIR : str) -> str:
     common_ci.RunShellCmd(f'apksigner sign --verbose --ks {debug_key} --ks-pass pass:{ks_pass} {test_apk}')
 
 # Android APKs can contain binaries for multiple ABIs (armeabi-v7a, arm64-v8a, x86, x86_64).
-# CMake will need to be run multiple times to create a complete test APK that can run on any Android device.
+# https://en.wikipedia.org/wiki/Apk_(file_format)#Package_contents
+#
+# As a result CMake will need to be run multiple times to create a complete test APK that can be run on any Android device.
 def main():
     configs = ['Release', 'Debug']
 
@@ -89,6 +95,7 @@ def main():
     parser.add_argument('--app-stl', dest='android_stl', type=str, choices=["c++_static", "c++_shared"], default="c++_static")
     parser.add_argument('--apk', action='store_true', help='Generate an APK as a post build step.')
     parser.add_argument('--tests', action='store_true', help='Build tests.')
+    parser.add_argument('--clean', action='store_true', help='Cleans CMake build artifacts')
     args = parser.parse_args()
 
     cmake_config = args.config
@@ -96,6 +103,7 @@ def main():
     android_stl = args.android_stl
     create_apk = args.apk
     build_tests = args.tests
+    clean = args.clean
 
     if "ANDROID_NDK_HOME" not in os.environ:
         print("Cannot find ANDROID_NDK_HOME!")
@@ -134,16 +142,23 @@ def main():
 
     cmake_install_dir = common_ci.RepoRelative(f'build-android/libs')
 
-    # NOTE: I'm trying to roughly match what build-android/build_all.sh currently does.
+    # Delete install directory since it could contain files from old runs
+    if os.path.isdir(cmake_install_dir):
+        print("Cleaning CMake install")
+        shutil.rmtree(cmake_install_dir)
+
     for abi in android_abis:
-        build_dir = common_ci.RepoRelative(f'build-android/obj/{abi}')
+        build_dir = common_ci.RepoRelative(f'build-android/cmake/{abi}')
         lib_dir = f'lib/{abi}'
 
-        # Delete CMakeCache.txt to ensure clean builds
-        # NOTE: CMake 3.24 has --fresh which would be better to use in the future.
-        cmake_cache = f'{build_dir}/CMakeCache.txt'
-        if os.path.isfile(cmake_cache):
-            os.remove(cmake_cache)
+        if clean:
+            print("Deleting CMakeCache.txt")
+
+            # Delete CMakeCache.txt to ensure clean builds
+            # NOTE: CMake 3.24 has --fresh which would be better to use in the future.
+            cmake_cache = f'{build_dir}/CMakeCache.txt'
+            if os.path.isfile(cmake_cache):
+                os.remove(cmake_cache)
 
         cmake_cmd =  f'cmake -S . -B {build_dir} -G Ninja'
 

@@ -749,7 +749,7 @@ def main():
         if len(repo.ci_only):
             do_build = False
             for env in repo.ci_only:
-                if not env in os.environ:
+                if env not in os.environ:
                     continue
                 if os.environ[env].lower() == 'true':
                     do_build = True
@@ -773,3 +773,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

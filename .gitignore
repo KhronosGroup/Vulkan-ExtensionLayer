@@ -24,6 +24,7 @@ build
 build32
 dbuild
 build-android/external
+build-android/cmake
 build-android/bin
 build-android/libs
 build-android/obj

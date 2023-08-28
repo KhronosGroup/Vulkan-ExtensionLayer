@@ -15,7 +15,7 @@
 # limitations under the License.
 # ~~~
 
-set_directory_properties(PROPERTIES "COMPILE_OPTIONS" "") # Disable compiler warnings
+set_directory_properties(PROPERTIES "COMPILE_OPTIONS" "") # Disable compiler warnings for android glue
 
 enable_language(C) # NOTE: We need to enable the C language for android_native_app_glue.c
 
@@ -25,7 +25,8 @@ if (NOT EXISTS ${native_app_glue_dir})
     message(FATAL_ERROR "Couldn't find Android Native Glue directory!")
 endif()
 
-add_library(android_glue STATIC)
+# https://stackoverflow.com/questions/57189936/compiling-native-app-glue-c-results-in-an-invalid-library-file/76963564#76963564
+add_library(android_glue OBJECT)
 
 target_include_directories(android_glue PUBLIC ${native_app_glue_dir})
 target_sources(android_glue PRIVATE
@@ -33,11 +34,9 @@ target_sources(android_glue PRIVATE
     ${native_app_glue_dir}/android_native_app_glue.h
 )
 
-# Despite the fact this issue has been fixed "https://github.com/android-ndk/ndk/issues/381".
-# We still need to force export ANativeActivity_onCreate.
-target_link_options(android_glue PUBLIC -u ANativeActivity_onCreate)
-
 target_link_libraries(vk_extension_layer_tests PRIVATE android_glue)
+
+target_link_options(vk_extension_layer_tests PUBLIC LINKER:--version-script=${CMAKE_CURRENT_SOURCE_DIR}/android.map)
 
 set_target_properties(vk_extension_layer_tests PROPERTIES OUTPUT_NAME "VulkanExtensionLayerTests")
 
