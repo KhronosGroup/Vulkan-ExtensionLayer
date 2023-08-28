@@ -74,7 +74,6 @@ jobs:
           CMAKE_CXX_COMPILER_LAUNCHER: ccache
       - name: Verify generated code is up to date
         run: python scripts/github_ci_check_codegen.py
-        if: matrix.compiler.cc == 'gcc' && matrix.config == 'release'
 
   windows:
     runs-on: windows-latest

@@ -357,22 +357,16 @@ static void *object_find(struct object_map *map, void *obj)
 
 /**/
 
-static void *default_alloc_func(void *pUserData, size_t size, size_t align,
-                                VkSystemAllocationScope allocationScope)
-{
+static void *VKAPI_PTR default_alloc_func(void *pUserData, size_t size, size_t align, VkSystemAllocationScope allocationScope) {
     return malloc(size);
 }
 
-static void *default_realloc_func(void *pUserData, void *pOriginal, size_t size,
-                                  size_t align, VkSystemAllocationScope allocationScope)
-{
+static void *VKAPI_PTR default_realloc_func(void *pUserData, void *pOriginal, size_t size, size_t align,
+                                            VkSystemAllocationScope allocationScope) {
     return realloc(pOriginal, size);
 }
 
-static void default_free_func(void *pUserData, void *pMemory)
-{
-    free(pMemory);
-}
+static void VKAPI_PTR default_free_func(void *pUserData, void *pMemory) { free(pMemory); }
 
 static const VkAllocationCallbacks default_alloc = {
     .pUserData = NULL,

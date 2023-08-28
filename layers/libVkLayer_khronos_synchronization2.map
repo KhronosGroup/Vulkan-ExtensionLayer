@@ -6,6 +6,7 @@
     vkEnumerateInstanceLayerProperties;
     vkEnumerateDeviceExtensionProperties;
     vkEnumerateDeviceLayerProperties;
+    vkNegotiateLoaderLayerInterfaceVersion;
   local:
     *;
 };

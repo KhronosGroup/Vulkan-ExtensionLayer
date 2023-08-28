@@ -38,7 +38,6 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
         -Wno-implicit-fallthrough
         -Wno-implicit-int-float-conversion
         -Wno-shorten-64-to-32
-        -Wno-incompatible-function-pointer-types
     )
 endif()
 if (MSVC)

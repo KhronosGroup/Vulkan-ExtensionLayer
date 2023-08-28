@@ -35,6 +35,16 @@ if (ANDROID)
     add_library(vk_extension_layer_tests MODULE)
 else()
     add_executable(vk_extension_layer_tests)
+
+    add_dependencies(vk_extension_layer_tests generate_test_layer_location)
+
+    target_compile_definitions(vk_extension_layer_tests PRIVATE
+        SHADER_OBJECT_BINARY_PATH="$<TARGET_FILE_DIR:VkLayer_khronos_shader_object>"
+    )
+
+    target_sources(vk_extension_layer_tests PRIVATE
+        shader_object_tests.cpp
+    )
 endif()
 
 target_sources(vk_extension_layer_tests PRIVATE
@@ -47,18 +57,9 @@ target_sources(vk_extension_layer_tests PRIVATE
     test_environment.cpp
 )
 
-if (NOT ANDROID)
-    target_compile_definitions(vk_extension_layer_tests PRIVATE SHADER_OBJECT_BINARY_PATH="$<TARGET_FILE_DIR:VkLayer_khronos_shader_object>")
-    target_sources(vk_extension_layer_tests PRIVATE shader_object_tests.cpp)
-endif()
-
 set_target_properties(vk_extension_layer_tests PROPERTIES VS_DEBUGGER_ENVIRONMENT "VK_LAYER_PATH=$<TARGET_FILE_DIR:VkLayer_khronos_synchronization2>")
 
 add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_memory_decompression)
-
-if (NOT ANDROID)
-    add_dependencies(vk_extension_layer_tests generate_test_layer_location)
-endif()
 
 # TODO: Remove once ndk-build is gone
 target_compile_definitions(vk_extension_layer_tests PRIVATE VVL_TESTS_USE_CMAKE)

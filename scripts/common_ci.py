@@ -58,7 +58,7 @@ def IsWindows(): return 'windows' == platform.system().lower()
 # Verify consistency of generated source code
 def CheckVELCodegenConsistency():
     print("Check Generated Source Code Consistency")
-    gen_check_cmd = f'python scripts/generate_source.py --verify {EXTERNAL_DIR}/Release/Vulkan-Headers/registry'
+    gen_check_cmd = f'python scripts/generate_source.py --verify {EXTERNAL_DIR}/Vulkan-Headers/registry'
     RunShellCmd(gen_check_cmd)
 
 def BuildVEL(args):
@@ -67,7 +67,7 @@ def BuildVEL(args):
     RunShellCmd(cmake_ver_cmd)
 
     print("Run CMake for Extension Layer")
-    cmake_cmd = f'cmake -S . -B {VEL_BUILD_DIR} -DUPDATE_DEPS=ON -DCMAKE_BUILD_TYPE={args.configuration.capitalize()}'
+    cmake_cmd = f'cmake -S . -B {VEL_BUILD_DIR} -DUPDATE_DEPS_DIR={EXTERNAL_DIR} -DUPDATE_DEPS=ON -DCMAKE_BUILD_TYPE={args.configuration.capitalize()}'
     # By default BUILD_WERROR is OFF, CI should always enable it.
     cmake_cmd = cmake_cmd + ' -DBUILD_WERROR=ON'
     cmake_cmd = cmake_cmd + ' -DBUILD_TESTS=ON'
