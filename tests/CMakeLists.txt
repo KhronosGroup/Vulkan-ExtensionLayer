@@ -61,9 +61,6 @@ set_target_properties(vk_extension_layer_tests PROPERTIES VS_DEBUGGER_ENVIRONMEN
 
 add_dependencies(vk_extension_layer_tests VkLayer_khronos_synchronization2 VkLayer_khronos_memory_decompression)
 
-# TODO: Remove once ndk-build is gone
-target_compile_definitions(vk_extension_layer_tests PRIVATE VVL_TESTS_USE_CMAKE)
-
 target_include_directories(vk_extension_layer_tests PRIVATE .)
 
 find_package(SPIRV-Headers REQUIRED CONFIG QUIET)

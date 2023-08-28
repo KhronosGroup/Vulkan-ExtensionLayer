@@ -1,3 +1,9 @@
+# Ignore any build directories
+*build*/
+
+# By default we install dependencies to the external directory
+/external/*
+
 CMakeCache.txt
 CMakeLists.txt.user
 CMakeFiles/
@@ -5,9 +11,6 @@ CMakeUserPresets.json
 cmake_install.cmake
 Makefile
 __pycache__
-# Ignore everything in external except the CMake file
-/external/*
-!/external/CMakeLists.txt
 *.so
 *.so.*
 _out64
@@ -20,15 +23,6 @@ out64/*
 *.vcxproj
 *.sdf
 *.filters
-build
-build32
-dbuild
-build-android/external
-build-android/cmake
-build-android/bin
-build-android/libs
-build-android/obj
-build-android/third_party
 *.config
 *.creator
 *.creator.user

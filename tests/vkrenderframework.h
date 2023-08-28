@@ -24,12 +24,7 @@
 
 #include "lvt_function_pointers.h"
 
-#if defined(VVL_TESTS_USE_CMAKE)
 #include "vktestframework.h"
-#else
-#include "vktestframeworkandroid.h"
-class VkImageObj;
-#endif
 
 #if defined(ANDROID)
 #include <android/log.h>
