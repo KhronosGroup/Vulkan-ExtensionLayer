@@ -27,6 +27,8 @@ on:
 
 env:
   CMAKE_GENERATOR: Ninja
+  CMAKE_C_COMPILER_LAUNCHER: ccache
+  CMAKE_CXX_COMPILER_LAUNCHER: ccache
 
 permissions:
     contents: read
@@ -70,8 +72,6 @@ jobs:
         env:
           CC: ${{ matrix.compiler.cc }}
           CXX: ${{ matrix.compiler.cxx }}
-          CMAKE_C_COMPILER_LAUNCHER: ccache
-          CMAKE_CXX_COMPILER_LAUNCHER: ccache
       - name: Verify generated code is up to date
         run: python scripts/github_ci_check_codegen.py
 
@@ -109,8 +109,6 @@ jobs:
         run: cmake -S. -B build -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=ON -D BUILD_WERROR=ON -D UPDATE_DEPS=ON
         env:
           MACOSX_DEPLOYMENT_TARGET: 10.15
-          CMAKE_C_COMPILER_LAUNCHER: ccache
-          CMAKE_CXX_COMPILER_LAUNCHER: ccache
       - name: Build
         run: cmake --build build
       - name: Install
@@ -120,14 +118,9 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        abi: [ arm64-v8a ]
-        build_tests: [ "ON" ]
-        stl_type: ["c++_shared"]
-        include:
-        - abi: armeabi-v7a
-          build_tests: "OFF"
-          stl_type: c++_static
-
+        abi: [ arm64-v8a, armeabi-v7a ]
+        build_tests: [ "ON", "OFF" ]
+        stl_type: ["c++_shared", "c++_static"]
     steps:
       - uses: actions/checkout@v3
       - uses: lukka/get-cmake@latest
@@ -146,9 +139,6 @@ jobs:
           -D BUILD_TESTS=${{ matrix.build_tests }} \
           -D UPDATE_DEPS=ON \
           -D BUILD_WERROR=ON
-        env:
-          CMAKE_C_COMPILER_LAUNCHER: ccache
-          CMAKE_CXX_COMPILER_LAUNCHER: ccache
       - name: Build
         run: cmake --build build/
       - name: Install
