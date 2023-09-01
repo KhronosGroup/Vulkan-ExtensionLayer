@@ -3041,7 +3041,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
 
         // The layer requests a private data slot for command buffers
         VkDevicePrivateDataCreateInfo reserved_private_data_slot{
-            VK_STRUCTURE_TYPE_PRIVATE_DATA_SLOT_CREATE_INFO,
+            VK_STRUCTURE_TYPE_DEVICE_PRIVATE_DATA_CREATE_INFO,
             appended_features_chain,
             1
         };
