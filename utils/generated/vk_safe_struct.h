@@ -14434,6 +14434,21 @@ struct safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX {
 };
 #endif // VK_USE_PLATFORM_SCREEN_QNX
 
+struct safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV {
+    VkStructureType sType;
+    void* pNext{};
+    VkBool32 descriptorPoolOverallocation;
+    safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(const VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV* in_struct);
+    safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(const safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV& copy_src);
+    safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV& operator=(const safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV& copy_src);
+    safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV();
+    ~safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV();
+    void initialize(const VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV* in_struct);
+    void initialize(const safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV* copy_src);
+    VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV *ptr() { return reinterpret_cast<VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV *>(this); }
+    VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV const *ptr() const { return reinterpret_cast<VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV const *>(this); }
+};
+
 struct safe_VkAccelerationStructureGeometryTrianglesDataKHR {
     VkStructureType sType;
     const void* pNext{};
