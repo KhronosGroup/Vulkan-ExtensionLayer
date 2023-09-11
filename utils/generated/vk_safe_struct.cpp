@@ -57648,6 +57648,238 @@ void safe_VkPhysicalDevicePipelinePropertiesFeaturesEXT::initialize(const safe_V
     pNext = SafePnextCopy(copy_src->pNext);
 }
 
+safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT::safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT(const VkPhysicalDeviceFrameBoundaryFeaturesEXT* in_struct) :
+    sType(in_struct->sType),
+    frameBoundary(in_struct->frameBoundary)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT::safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAME_BOUNDARY_FEATURES_EXT),
+    pNext(nullptr),
+    frameBoundary()
+{}
+
+safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT::safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT(const safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT& copy_src)
+{
+    sType = copy_src.sType;
+    frameBoundary = copy_src.frameBoundary;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT& safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT::operator=(const safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    frameBoundary = copy_src.frameBoundary;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT::~safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT::initialize(const VkPhysicalDeviceFrameBoundaryFeaturesEXT* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    frameBoundary = in_struct->frameBoundary;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT::initialize(const safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT* copy_src)
+{
+    sType = copy_src->sType;
+    frameBoundary = copy_src->frameBoundary;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
+safe_VkFrameBoundaryEXT::safe_VkFrameBoundaryEXT(const VkFrameBoundaryEXT* in_struct) :
+    sType(in_struct->sType),
+    flags(in_struct->flags),
+    frameID(in_struct->frameID),
+    imageCount(in_struct->imageCount),
+    pImages(nullptr),
+    bufferCount(in_struct->bufferCount),
+    pBuffers(nullptr),
+    tagName(in_struct->tagName),
+    tagSize(in_struct->tagSize),
+    pTag(in_struct->pTag)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+    if (imageCount && in_struct->pImages) {
+        pImages = new VkImage[imageCount];
+        for (uint32_t i = 0; i < imageCount; ++i) {
+            pImages[i] = in_struct->pImages[i];
+        }
+    }
+    if (bufferCount && in_struct->pBuffers) {
+        pBuffers = new VkBuffer[bufferCount];
+        for (uint32_t i = 0; i < bufferCount; ++i) {
+            pBuffers[i] = in_struct->pBuffers[i];
+        }
+    }
+}
+
+safe_VkFrameBoundaryEXT::safe_VkFrameBoundaryEXT() :
+    sType(VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT),
+    pNext(nullptr),
+    flags(),
+    frameID(),
+    imageCount(),
+    pImages(nullptr),
+    bufferCount(),
+    pBuffers(nullptr),
+    tagName(),
+    tagSize(),
+    pTag(nullptr)
+{}
+
+safe_VkFrameBoundaryEXT::safe_VkFrameBoundaryEXT(const safe_VkFrameBoundaryEXT& copy_src)
+{
+    sType = copy_src.sType;
+    flags = copy_src.flags;
+    frameID = copy_src.frameID;
+    imageCount = copy_src.imageCount;
+    pImages = nullptr;
+    bufferCount = copy_src.bufferCount;
+    pBuffers = nullptr;
+    tagName = copy_src.tagName;
+    tagSize = copy_src.tagSize;
+    pTag = copy_src.pTag;
+    pNext = SafePnextCopy(copy_src.pNext);
+    if (imageCount && copy_src.pImages) {
+        pImages = new VkImage[imageCount];
+        for (uint32_t i = 0; i < imageCount; ++i) {
+            pImages[i] = copy_src.pImages[i];
+        }
+    }
+    if (bufferCount && copy_src.pBuffers) {
+        pBuffers = new VkBuffer[bufferCount];
+        for (uint32_t i = 0; i < bufferCount; ++i) {
+            pBuffers[i] = copy_src.pBuffers[i];
+        }
+    }
+}
+
+safe_VkFrameBoundaryEXT& safe_VkFrameBoundaryEXT::operator=(const safe_VkFrameBoundaryEXT& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pImages)
+        delete[] pImages;
+    if (pBuffers)
+        delete[] pBuffers;
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    flags = copy_src.flags;
+    frameID = copy_src.frameID;
+    imageCount = copy_src.imageCount;
+    pImages = nullptr;
+    bufferCount = copy_src.bufferCount;
+    pBuffers = nullptr;
+    tagName = copy_src.tagName;
+    tagSize = copy_src.tagSize;
+    pTag = copy_src.pTag;
+    pNext = SafePnextCopy(copy_src.pNext);
+    if (imageCount && copy_src.pImages) {
+        pImages = new VkImage[imageCount];
+        for (uint32_t i = 0; i < imageCount; ++i) {
+            pImages[i] = copy_src.pImages[i];
+        }
+    }
+    if (bufferCount && copy_src.pBuffers) {
+        pBuffers = new VkBuffer[bufferCount];
+        for (uint32_t i = 0; i < bufferCount; ++i) {
+            pBuffers[i] = copy_src.pBuffers[i];
+        }
+    }
+
+    return *this;
+}
+
+safe_VkFrameBoundaryEXT::~safe_VkFrameBoundaryEXT()
+{
+    if (pImages)
+        delete[] pImages;
+    if (pBuffers)
+        delete[] pBuffers;
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkFrameBoundaryEXT::initialize(const VkFrameBoundaryEXT* in_struct)
+{
+    if (pImages)
+        delete[] pImages;
+    if (pBuffers)
+        delete[] pBuffers;
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    flags = in_struct->flags;
+    frameID = in_struct->frameID;
+    imageCount = in_struct->imageCount;
+    pImages = nullptr;
+    bufferCount = in_struct->bufferCount;
+    pBuffers = nullptr;
+    tagName = in_struct->tagName;
+    tagSize = in_struct->tagSize;
+    pTag = in_struct->pTag;
+    pNext = SafePnextCopy(in_struct->pNext);
+    if (imageCount && in_struct->pImages) {
+        pImages = new VkImage[imageCount];
+        for (uint32_t i = 0; i < imageCount; ++i) {
+            pImages[i] = in_struct->pImages[i];
+        }
+    }
+    if (bufferCount && in_struct->pBuffers) {
+        pBuffers = new VkBuffer[bufferCount];
+        for (uint32_t i = 0; i < bufferCount; ++i) {
+            pBuffers[i] = in_struct->pBuffers[i];
+        }
+    }
+}
+
+void safe_VkFrameBoundaryEXT::initialize(const safe_VkFrameBoundaryEXT* copy_src)
+{
+    sType = copy_src->sType;
+    flags = copy_src->flags;
+    frameID = copy_src->frameID;
+    imageCount = copy_src->imageCount;
+    pImages = nullptr;
+    bufferCount = copy_src->bufferCount;
+    pBuffers = nullptr;
+    tagName = copy_src->tagName;
+    tagSize = copy_src->tagSize;
+    pTag = copy_src->pTag;
+    pNext = SafePnextCopy(copy_src->pNext);
+    if (imageCount && copy_src->pImages) {
+        pImages = new VkImage[imageCount];
+        for (uint32_t i = 0; i < imageCount; ++i) {
+            pImages[i] = copy_src->pImages[i];
+        }
+    }
+    if (bufferCount && copy_src->pBuffers) {
+        pBuffers = new VkBuffer[bufferCount];
+        for (uint32_t i = 0; i < bufferCount; ++i) {
+            pBuffers[i] = copy_src->pBuffers[i];
+        }
+    }
+}
+
 safe_VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT::safe_VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT(const VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT* in_struct) :
     sType(in_struct->sType),
     multisampledRenderToSingleSampled(in_struct->multisampledRenderToSingleSampled)
@@ -65512,6 +65744,62 @@ void safe_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX::initialize(cons
 #endif // VK_USE_PLATFORM_SCREEN_QNX
 
 
+safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT::safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT(const VkPhysicalDeviceLayeredDriverPropertiesMSFT* in_struct) :
+    sType(in_struct->sType),
+    underlyingAPI(in_struct->underlyingAPI)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT::safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT),
+    pNext(nullptr),
+    underlyingAPI()
+{}
+
+safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT::safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT(const safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT& copy_src)
+{
+    sType = copy_src.sType;
+    underlyingAPI = copy_src.underlyingAPI;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT& safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT::operator=(const safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    underlyingAPI = copy_src.underlyingAPI;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT::~safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT::initialize(const VkPhysicalDeviceLayeredDriverPropertiesMSFT* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    underlyingAPI = in_struct->underlyingAPI;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT::initialize(const safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT* copy_src)
+{
+    sType = copy_src->sType;
+    underlyingAPI = copy_src->underlyingAPI;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
 safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV::safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(const VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV* in_struct) :
     sType(in_struct->sType),
     descriptorPoolOverallocation(in_struct->descriptorPoolOverallocation)
@@ -68996,6 +69284,12 @@ void *SafePnextCopy(const void *pNext) {
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROPERTIES_FEATURES_EXT:
             safe_pNext = new safe_VkPhysicalDevicePipelinePropertiesFeaturesEXT(reinterpret_cast<const VkPhysicalDevicePipelinePropertiesFeaturesEXT *>(pNext));
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAME_BOUNDARY_FEATURES_EXT:
+            safe_pNext = new safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT(reinterpret_cast<const VkPhysicalDeviceFrameBoundaryFeaturesEXT *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT:
+            safe_pNext = new safe_VkFrameBoundaryEXT(reinterpret_cast<const VkFrameBoundaryEXT *>(pNext));
+            break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT:
             safe_pNext = new safe_VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT(reinterpret_cast<const VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT *>(pNext));
             break;
@@ -69241,6 +69535,9 @@ void *SafePnextCopy(const void *pNext) {
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT:
             safe_pNext = new safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT(reinterpret_cast<const VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT:
+            safe_pNext = new safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT(reinterpret_cast<const VkPhysicalDeviceLayeredDriverPropertiesMSFT *>(pNext));
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_POOL_OVERALLOCATION_FEATURES_NV:
             safe_pNext = new safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(reinterpret_cast<const VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV *>(pNext));
@@ -70614,6 +70911,12 @@ void FreePnextChain(const void *pNext) {
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROPERTIES_FEATURES_EXT:
             delete reinterpret_cast<const safe_VkPhysicalDevicePipelinePropertiesFeaturesEXT *>(header);
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAME_BOUNDARY_FEATURES_EXT:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceFrameBoundaryFeaturesEXT *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT:
+            delete reinterpret_cast<const safe_VkFrameBoundaryEXT *>(header);
+            break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT:
             delete reinterpret_cast<const safe_VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT *>(header);
             break;
@@ -70859,6 +71162,9 @@ void FreePnextChain(const void *pNext) {
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT:
             delete reinterpret_cast<const safe_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceLayeredDriverPropertiesMSFT *>(header);
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_POOL_OVERALLOCATION_FEATURES_NV:
             delete reinterpret_cast<const safe_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV *>(header);
