@@ -1059,8 +1059,10 @@ static void timeline_DestroySemaphore(
     struct device_data *device = object_find(&global_map, _device);
     struct timeline_semaphore *semaphore = object_find(&device->semaphores, (void*)(uintptr_t)_semaphore);
 
-    if (!semaphore)
-        return device->vtable.DestroySemaphore(_device, _semaphore, pAllocator);
+    if (!semaphore) {
+        device->vtable.DestroySemaphore(_device, _semaphore, pAllocator);
+        return;
+    }
 
     pthread_mutex_lock(&device->lock);
 
@@ -2084,9 +2086,9 @@ static void timeline_GetPhysicalDeviceExternalSemaphoreProperties(
         vk_find_struct_const(pExternalSemaphoreInfo->pNext, SEMAPHORE_TYPE_CREATE_INFO_KHR);
 
     if (!type_info || type_info->semaphoreType != VK_SEMAPHORE_TYPE_TIMELINE_KHR) {
-        return instance->vtable.GetPhysicalDeviceExternalSemaphoreProperties(physicalDevice,
-                                                                             pExternalSemaphoreInfo,
-                                                                             pExternalSemaphoreProperties);
+        instance->vtable.GetPhysicalDeviceExternalSemaphoreProperties(physicalDevice, pExternalSemaphoreInfo,
+                                                                      pExternalSemaphoreProperties);
+        return;
     }
 
     pExternalSemaphoreProperties->exportFromImportedHandleTypes = 0;
@@ -2521,8 +2523,7 @@ static void *find_ptr(const char *name, bool isInstance)
 
 VEL_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice _device, const char *funcName) {
     void *ptr = find_ptr(funcName, false);
-    if (ptr)
-        return ptr;
+    if (ptr) return (PFN_vkVoidFunction)ptr;
 
     if (_device == NULL)
         return NULL;
@@ -2534,12 +2535,9 @@ VEL_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice
 
 VEL_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance _instance, const char *funcName) {
     void *ptr = find_ptr(funcName, true);
+    if (!ptr) ptr = find_ptr(funcName, false);
 
-    if (!ptr)
-        ptr = find_ptr(funcName, false);
-
-    if (ptr)
-        return ptr;
+    if (ptr) return (PFN_vkVoidFunction)ptr;
 
     if (_instance == NULL)
         return NULL;

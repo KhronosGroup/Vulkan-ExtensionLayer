@@ -73,28 +73,7 @@ if (BUILD_WERROR)
     add_compile_options("$<IF:$<CXX_COMPILER_ID:MSVC>,/WX,-Werror>")
 endif()
 
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "(GNU|Clang)")
-    add_compile_options(
-        -Wall
-        -Wextra
-        -Wpointer-arith
-    )
-    if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-        add_compile_options(
-            -Wconversion
-            -Wimplicit-fallthrough
-            -Wstring-conversion
-        )
-    endif()
-elseif(MSVC)
-    add_compile_options(
-        /W4
-        /we5038 # Enable warning about MIL ordering in constructors
-    )
-
-    # Enforce stricter ISO C++
-    add_compile_options(/permissive-)
-
+if(MSVC)
     # PDBs aren't generated on Release builds by default.
     add_compile_options("$<$<CONFIG:Release>:/Zi>")
     add_link_options("$<$<CONFIG:Release>:/DEBUG:FULL>")
@@ -105,8 +84,6 @@ elseif(MSVC)
 
     # Allow usage of unsafe CRT functions and minimize what Windows.h leaks
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS NOMINMAX WIN32_LEAN_AND_MEAN)
-
-    add_compile_options($<$<BOOL:${MSVC_IDE}>:/MP>) # Speed up Visual Studio builds
 endif()
 
 option(VEL_CODEGEN "Enable code generation")

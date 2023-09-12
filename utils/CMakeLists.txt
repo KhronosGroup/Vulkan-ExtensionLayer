@@ -24,6 +24,8 @@ target_sources(VkExtLayer_utils PRIVATE
     generated/lvt_function_pointers.cpp
 )
 
+lunarg_target_compiler_configurations(VkExtLayer_utils ${BUILD_WERROR})
+
 # TODO: Fix warnings
 target_compile_options(VkExtLayer_utils PUBLIC "$<IF:$<CXX_COMPILER_ID:MSVC>,/wd4100,-Wno-unused-parameter>")
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "(GNU|Clang)")
