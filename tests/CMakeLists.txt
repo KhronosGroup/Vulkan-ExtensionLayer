@@ -47,6 +47,8 @@ else()
     )
 endif()
 
+lunarg_target_compiler_configurations(vk_extension_layer_tests ${BUILD_WERROR})
+
 target_sources(vk_extension_layer_tests PRIVATE
     extension_layer_tests.cpp
     synchronization2_tests.cpp

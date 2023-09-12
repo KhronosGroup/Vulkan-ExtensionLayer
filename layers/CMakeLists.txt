@@ -45,8 +45,8 @@ if (NOT WIN32)
 endif()
 
 foreach(extension_layer ${EXTENSION_LAYERS})
+    lunarg_target_compiler_configurations(${extension_layer} ${BUILD_WERROR})
     target_include_directories(${extension_layer} PRIVATE .)
-
     target_link_libraries(${extension_layer} PRIVATE VkExtLayer_utils Vulkan::LayerSettings)
 
     if(MSVC)
