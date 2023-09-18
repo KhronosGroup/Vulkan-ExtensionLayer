@@ -21,6 +21,7 @@
 
 #include <vulkan/vk_layer.h>
 #include <vulkan/layer/vk_layer_settings.hpp>
+#include <vulkan/utility/vk_format_utils.h>
 #include <ctype.h>
 #include <cstring>
 #include <algorithm>
@@ -31,7 +32,6 @@
 #include "synchronization2.h"
 #include "allocator.h"
 #include "log.h"
-#include "vk_format_utils.h"
 #include "vk_safe_struct.h"
 #include "vk_util.h"
 
@@ -693,11 +693,11 @@ static VkAccessFlags ConvertAccessMask(VkAccessFlags2KHR flags2, VkPipelineStage
 }
 
 static ImageAspect ImageAspectFromFormat(VkFormat format) {
-    if (FormatIsDepthAndStencil(format)) {
+    if (vkuFormatIsDepthAndStencil(format)) {
         return kDepthAndStencil;
-    } else if (FormatIsDepthOnly(format)) {
+    } else if (vkuFormatIsDepthOnly(format)) {
         return kDepthOnly;
-    } else if (FormatIsStencilOnly(format)) {
+    } else if (vkuFormatIsStencilOnly(format)) {
         return kStencilOnly;
     } else {
         return kColorOnly;
