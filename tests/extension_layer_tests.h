@@ -29,6 +29,7 @@
 
 #include <vulkan/vulkan.h>
 #include <vulkan/layer/vk_layer_settings.hpp>
+#include <vulkan/utility/vk_format_utils.h>
 
 #if defined(ANDROID)
 #include <android/log.h>
@@ -36,7 +37,6 @@
 #endif
 
 #include "test_common.h"
-#include "vk_format_utils.h"
 #include "vkrenderframework.h"
 #include "vk_typemap_helper.h"
 
