@@ -101,20 +101,6 @@ def makeGenOpts(args):
 
     # ValidationLayer Generators
 
-    # Options for dispatch table helper generator
-    genOpts['vk_dispatch_table_helper.h'] = [
-          DispatchTableHelperOutputGenerator,
-          DispatchTableHelperOutputGeneratorOptions(
-            conventions       = conventions,
-            filename          = 'vk_dispatch_table_helper.h',
-            directory         = directory,
-            versions          = featuresPat,
-            emitversions      = featuresPat,
-            addExtensions     = addExtensionsPat,
-            removeExtensions  = removeExtensionsPat,
-            emitExtensions    = emitExtensionsPat)
-        ]
-
     # lvt_file generator options for lvt_function_pointers.h
     genOpts['lvt_function_pointers.h'] = [
           LvtFileOutputGenerator,
@@ -143,35 +129,6 @@ def makeGenOpts(args):
             removeExtensions  = removeExtensionsPat,
             emitExtensions    = emitExtensionsPat,
             lvt_file_type  = 'function_pointer_source')
-        ]
-
-    # Options for Layer dispatch table generator
-    genOpts['vk_layer_dispatch_table.h'] = [
-          LayerDispatchTableOutputGenerator,
-          LayerDispatchTableGeneratorOptions(
-            conventions       = conventions,
-            filename          = 'vk_layer_dispatch_table.h',
-            directory         = directory,
-            versions          = featuresPat,
-            emitversions      = featuresPat,
-            addExtensions     = addExtensionsPat,
-            removeExtensions  = removeExtensionsPat,
-            emitExtensions    = emitExtensionsPat)
-        ]
-
-    # Helper file generator options for vk_enum_string_helper.h
-    genOpts['vk_enum_string_helper.h'] = [
-          HelperFileOutputGenerator,
-          HelperFileOutputGeneratorOptions(
-            conventions       = conventions,
-            filename          = 'vk_enum_string_helper.h',
-            directory         = directory,
-            versions          = featuresPat,
-            emitversions      = featuresPat,
-            addExtensions     = addExtensionsPat,
-            removeExtensions  = removeExtensionsPat,
-            emitExtensions    = emitExtensionsPat,
-            helper_file_type  = 'enum_string_header')
         ]
 
     # Helper file generator options for vk_safe_struct.h
@@ -232,21 +189,6 @@ def makeGenOpts(args):
             removeExtensions  = removeExtensionsPat,
             emitExtensions    = emitExtensionsPat,
             helper_file_type  = 'extension_helper_header')
-        ]
-
-    # Helper file generator options for typemap_helper.h
-    genOpts['vk_typemap_helper.h'] = [
-          HelperFileOutputGenerator,
-          HelperFileOutputGeneratorOptions(
-            conventions       = conventions,
-            filename          = 'vk_typemap_helper.h',
-            directory         = directory,
-            versions          = featuresPat,
-            emitversions      = featuresPat,
-            addExtensions     = addExtensionsPat,
-            removeExtensions  = removeExtensionsPat,
-            emitExtensions    = emitExtensionsPat,
-            helper_file_type  = 'typemap_helper_header')
         ]
 
 # Generate a target based on the options in the matching genOpts{} object.
@@ -376,9 +318,7 @@ if __name__ == '__main__':
     from cgenerator import CGeneratorOptions, COutputGenerator
 
     # ValidationLayer Generator Modifications
-    from dispatch_table_helper_generator import DispatchTableHelperOutputGenerator, DispatchTableHelperOutputGeneratorOptions
     from helper_file_generator import HelperFileOutputGenerator, HelperFileOutputGeneratorOptions
-    from layer_dispatch_table_generator import LayerDispatchTableOutputGenerator, LayerDispatchTableGeneratorOptions
     from lvt_file_generator import LvtFileOutputGenerator, LvtFileOutputGeneratorOptions
 
     # Temporary workaround for vkconventions python2 compatibility

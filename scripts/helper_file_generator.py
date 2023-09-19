@@ -1159,7 +1159,7 @@ class HelperFileOutputGenerator(OutputGenerator):
         safe_struct_helper_source = '\n'
         safe_struct_helper_source += '#include "vk_safe_struct.h"\n'
         safe_struct_helper_source += '#include "vk_concurrent_unordered_map.h"\n'
-        safe_struct_helper_source += '#include "vk_typemap_helper.h"\n'
+        safe_struct_helper_source += '#include <vulkan/utility/vk_struct_helper.hpp>\n'
         safe_struct_helper_source += '\n'
         safe_struct_helper_source += '#include <cstddef>\n'
         safe_struct_helper_source += '#include <cassert>\n'
@@ -1292,7 +1292,7 @@ class HelperFileOutputGenerator(OutputGenerator):
                     '    }\n',
                 # VkGraphicsPipelineCreateInfo is special case because its pointers may be non-null but ignored
                 'VkGraphicsPipelineCreateInfo' :
-                    '    const bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(in_struct->pNext) != nullptr;\n'
+                    '    const bool is_graphics_library = vku::FindStructInPNextChain<VkGraphicsPipelineLibraryCreateInfoEXT>(in_struct->pNext) != nullptr;\n'
                     '    if (stageCount && in_struct->pStages) {\n'
                     '        pStages = new safe_VkPipelineShaderStageCreateInfo[stageCount];\n'
                     '        for (uint32_t i = 0; i < stageCount; ++i) {\n'
@@ -1496,7 +1496,7 @@ class HelperFileOutputGenerator(OutputGenerator):
                 # VkGraphicsPipelineCreateInfo is special case because it has custom construct parameters
                 'VkGraphicsPipelineCreateInfo' :
                     '    pNext = SafePnextCopy(copy_src.pNext);\n'
-                    '    const bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(copy_src.pNext);\n'
+                    '    const bool is_graphics_library = vku::FindStructInPNextChain<VkGraphicsPipelineLibraryCreateInfoEXT>(copy_src.pNext);\n'
                     '    if (stageCount && copy_src.pStages) {\n'
                     '        pStages = new safe_VkPipelineShaderStageCreateInfo[stageCount];\n'
                     '        for (uint32_t i = 0; i < stageCount; ++i) {\n'
@@ -1896,121 +1896,6 @@ class HelperFileOutputGenerator(OutputGenerator):
             if item.ifdef_protect is not None:
                 safe_struct_body.append("#endif // %s\n" % item.ifdef_protect)
         return "\n".join(safe_struct_body)
-    #
-    # Generate the type map
-    def GenerateTypeMapHelperHeader(self):
-        prefix = 'Lvl'
-        typemap = prefix + 'TypeMap'
-        idmap = prefix + 'STypeMap'
-        type_member = 'Type'
-        id_member = 'kSType'
-        id_decl = 'static const VkStructureType '
-        generic_header = 'VkBaseOutStructure'
-
-        explanatory_comment = '\n'.join((
-                '// These empty generic templates are specialized for each type with sType',
-                '// members and for each sType -- providing a two way map between structure',
-                '// types and sTypes'))
-
-        empty_typemap = 'template <typename T> struct ' + typemap + ' {};'
-        typemap_format  = 'template <> struct {template}<{typename}> {{\n'
-        typemap_format += '    {id_decl}{id_member} = {id_value};\n'
-        typemap_format += '}};\n'
-
-        empty_idmap = 'template <VkStructureType id> struct ' + idmap + ' {};'
-        idmap_format = ''.join((
-            'template <> struct {template}<{id_value}> {{\n',
-            '    typedef {typename} {typedef};\n',
-            '}};\n'))
-
-        # Define the utilities (here so any renaming stays consistent), if this grows large, refactor to a fixed .h file
-        utilities_format = '\n'.join((
-            '// Find an entry of the given type in the const pNext chain',
-            'template <typename T> const T *{find_func}(const void *next) {{',
-            '    const {header} *current = reinterpret_cast<const {header} *>(next);',
-            '    const T *found = nullptr;',
-            '    while (current) {{',
-            '        if ({type_map}<T>::{id_member} == current->sType) {{',
-            '            found = reinterpret_cast<const T*>(current);',
-            '            current = nullptr;',
-            '        }} else {{',
-            '            current = current->pNext;',
-            '        }}',
-            '    }}',
-            '    return found;',
-            '}}',
-            '',
-            '// Find an entry of the given type in the pNext chain',
-            'template <typename T> T *{find_mod_func}(void *next) {{',
-            '    {header} *current = reinterpret_cast<{header} *>(next);',
-            '    T *found = nullptr;',
-            '    while (current) {{',
-            '        if ({type_map}<T>::{id_member} == current->sType) {{',
-            '            found = reinterpret_cast<T*>(current);',
-            '            current = nullptr;',
-            '        }} else {{',
-            '            current = current->pNext;',
-            '        }}',
-            '    }}',
-            '    return found;',
-            '}}',
-            '',
-            '// Init the header of an sType struct with pNext and optional fields',
-            'template <typename T, typename... StructFields>',
-            'T {init_func}(void *p_next, StructFields... fields) {{',
-            '    T out = {{{type_map}<T>::kSType, p_next, fields...}};',
-            '    return out;',
-            '}}',
-            '',
-            '// Init the header of an sType struct',
-            'template <typename T>',
-            'T {init_func}(void *p_next = nullptr) {{',
-            '    T out = {{}};',
-            '    out.sType = {type_map}<T>::kSType;',
-            '    out.pNext = p_next;',
-            '    return out;',
-            '}}'
-            ))
-
-        code = []
-
-        # Generate header
-        code.append('\n'.join((
-            '#pragma once',
-            '#include <vulkan/vulkan.h>\n',
-            explanatory_comment, '',
-            empty_idmap,
-            empty_typemap, '')))
-
-        # Generate the specializations for each type and stype
-        for item in self.structMembers:
-            typename = item.name
-            info = self.structTypes.get(typename)
-            if not info:
-                continue
-
-            if item.ifdef_protect is not None:
-                code.append('#ifdef %s' % item.ifdef_protect)
-
-            code.append('// Map type {} to id {}'.format(typename, info.value))
-            code.append(typemap_format.format(template=typemap, typename=typename, id_value=info.value,
-                id_decl=id_decl, id_member=id_member))
-            code.append(idmap_format.format(template=idmap, typename=typename, id_value=info.value, typedef=type_member))
-
-            if item.ifdef_protect is not None:
-                code.append('#endif // %s' % item.ifdef_protect)
-
-        # Generate Generate utilities for all types
-        find_func = 'LvlFindInChain'
-        find_mod_func = 'LvlFindModInChain'
-        init_func = 'LvlInitStruct'
-        code.append('\n'.join((
-            utilities_format.format(id_member=id_member, type_map=typemap,
-                header=generic_header, find_func=find_func,
-                find_mod_func=find_mod_func, init_func=init_func), ''
-            )))
-
-        return "\n".join(code)
 
     #
     # Generate the type map

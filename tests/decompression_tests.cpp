@@ -29,9 +29,8 @@ void DecompressionTest::SetUp() {
     VkLayerSettingEXT settings[] = {
         {"VK_LAYER_KHRONOS_memory_decompression", "force_enable", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &force_enable}};
 
-    VkLayerSettingsCreateInfoEXT layer_settings_create_info{
-        VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT, nullptr,
-        static_cast<uint32_t>(std::size(settings)), &settings[0]};
+    VkLayerSettingsCreateInfoEXT layer_settings_create_info{VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT, nullptr,
+                                                            static_cast<uint32_t>(std::size(settings)), &settings[0]};
 
     VkExtensionLayerTest::SetUp();
     SetTargetApiVersion(VK_API_VERSION_1_2);
@@ -67,14 +66,14 @@ TEST_F(DecompressionTest, DecompressMemory) {
     ASSERT_TRUE(dstBuffer.initialized());
 
     VkCommandPool command_pool;
-    auto pool_create_info = LvlInitStruct<VkCommandPoolCreateInfo>();
+    auto pool_create_info = vku::InitStruct<VkCommandPoolCreateInfo>();
     pool_create_info.queueFamilyIndex = m_device->graphics_queue_node_index_;
     pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     result = vk::CreateCommandPool(m_device->device(), &pool_create_info, nullptr, &command_pool);
     ASSERT_TRUE(result == VK_SUCCESS);
 
     VkCommandBuffer command_buffer;
-    auto command_buffer_allocate_info = LvlInitStruct<VkCommandBufferAllocateInfo>();
+    auto command_buffer_allocate_info = vku::InitStruct<VkCommandBufferAllocateInfo>();
     command_buffer_allocate_info.commandPool = command_pool;
     command_buffer_allocate_info.commandBufferCount = 1;
     command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -101,13 +100,13 @@ TEST_F(DecompressionTest, DecompressMemory) {
         region[1].dstAddress = vk::GetBufferDeviceAddress(m_device->device(), &dstBufferAddr) + DECOMPRESSED_SIZE_ALIGNED;
         region[1].decompressionMethod = VK_MEMORY_DECOMPRESSION_METHOD_GDEFLATE_1_0_BIT_NV;
 
-        auto begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
+        auto begin_info = vku::InitStruct<VkCommandBufferBeginInfo>();
         vk::BeginCommandBuffer(command_buffer, &begin_info);
         vk::CmdDecompressMemoryNV(command_buffer, 2, &region[0]);
         vk::EndCommandBuffer(command_buffer);
     }
     {
-        auto submit_info = LvlInitStruct<VkSubmitInfo>();
+        auto submit_info = vku::InitStruct<VkSubmitInfo>();
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &command_buffer;
 
@@ -182,14 +181,14 @@ TEST_F(DecompressionTest, DecompressMemoryIndirect) {
     ASSERT_TRUE(decompressParamAddr != 0);
 
     VkCommandPool command_pool;
-    auto pool_create_info = LvlInitStruct<VkCommandPoolCreateInfo>();
+    auto pool_create_info = vku::InitStruct<VkCommandPoolCreateInfo>();
     pool_create_info.queueFamilyIndex = m_device->graphics_queue_node_index_;
     pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     result = vk::CreateCommandPool(m_device->device(), &pool_create_info, nullptr, &command_pool);
     ASSERT_TRUE(result == VK_SUCCESS);
 
     VkCommandBuffer command_buffer;
-    auto command_buffer_allocate_info = LvlInitStruct<VkCommandBufferAllocateInfo>();
+    auto command_buffer_allocate_info = vku::InitStruct<VkCommandBufferAllocateInfo>();
     command_buffer_allocate_info.commandPool = command_pool;
     command_buffer_allocate_info.commandBufferCount = 1;
     command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -200,14 +199,14 @@ TEST_F(DecompressionTest, DecompressMemoryIndirect) {
     vk::GetDeviceQueue(m_device->device(), m_device->graphics_queue_node_index_, 0, &queue);
 
     {
-        auto begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
+        auto begin_info = vku::InitStruct<VkCommandBufferBeginInfo>();
         vk::BeginCommandBuffer(command_buffer, &begin_info);
         vk::CmdDecompressMemoryIndirectCountNV(command_buffer, decompressParamAddr, indirectCountAddr,
                                                sizeof(VkDecompressMemoryRegionNV));
         vk::EndCommandBuffer(command_buffer);
     }
     {
-        auto submit_info = LvlInitStruct<VkSubmitInfo>();
+        auto submit_info = vku::InitStruct<VkSubmitInfo>();
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &command_buffer;
 

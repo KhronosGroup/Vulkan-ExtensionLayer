@@ -25,12 +25,10 @@ void ShaderObjectTest::SetUp() {
     VkBool32 force_enable = VK_TRUE;
 
     VkLayerSettingEXT settings[] = {
-        {"VK_LAYER_KHRONOS_shader_object", "force_enable", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &force_enable}
-    };
+        {"VK_LAYER_KHRONOS_shader_object", "force_enable", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &force_enable}};
 
-    VkLayerSettingsCreateInfoEXT layer_settings_create_info{
-        VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT, nullptr,
-        static_cast<uint32_t>(std::size(settings)), &settings[0]};
+    VkLayerSettingsCreateInfoEXT layer_settings_create_info{VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT, nullptr,
+                                                            static_cast<uint32_t>(std::size(settings)), &settings[0]};
 
     VkExtensionLayerTest::SetUp();
     SetTargetApiVersion(VK_API_VERSION_1_1);
@@ -168,7 +166,7 @@ void ShaderObjectTest::BindDefaultDynamicStates(VkBuffer buffer, bool tessellati
 
 void ShaderObjectTest::SubmitAndWait() {
     VkCommandBuffer commandBufferHandle = m_commandBuffer->handle();
-    VkSubmitInfo submitInfo = LvlInitStruct<VkSubmitInfo>();
+    VkSubmitInfo submitInfo = vku::InitStructHelper();
     submitInfo.commandBufferCount = 1u;
     submitInfo.pCommandBuffers = &commandBufferHandle;
     vk::QueueSubmit(m_device->m_queue, 1, &submitInfo, VK_NULL_HANDLE);
@@ -214,7 +212,7 @@ TEST_F(ShaderObjectTest, VertFragShader) {
     VkShaderEXT shaders[2];
     VkShaderCreateInfoEXT createInfos[2];
     for (uint32_t i = 0; i < 2; ++i) {
-        createInfos[i] = LvlInitStruct<VkShaderCreateInfoEXT>();
+        createInfos[i] = vku::InitStructHelper();
         createInfos[i].stage = shaderStages[i];
         createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
         createInfos[i].codeSize = spv[i].size() * sizeof(unsigned int);
@@ -232,7 +230,7 @@ TEST_F(ShaderObjectTest, VertFragShader) {
     vertexBuffer.init(*m_device, sizeof(float), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-    VkImageCreateInfo imageInfo = LvlInitStruct<VkImageCreateInfo>();
+    VkImageCreateInfo imageInfo = vku::InitStructHelper();
     imageInfo.flags = 0;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
@@ -250,11 +248,11 @@ TEST_F(ShaderObjectTest, VertFragShader) {
     image.init(&imageInfo);
     VkImageView view = image.targetView(imageInfo.format);
 
-    VkRenderingAttachmentInfo color_attachment = LvlInitStruct<VkRenderingAttachmentInfo>();
+    VkRenderingAttachmentInfo color_attachment = vku::InitStructHelper();
     color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     color_attachment.imageView = view;
 
-    VkRenderingInfo begin_rendering_info = LvlInitStruct<VkRenderingInfo>();
+    VkRenderingInfo begin_rendering_info = vku::InitStructHelper();
     begin_rendering_info.flags = 0u;
     begin_rendering_info.renderArea.offset.x = 0;
     begin_rendering_info.renderArea.offset.y = 0;
@@ -273,7 +271,7 @@ TEST_F(ShaderObjectTest, VertFragShader) {
     m_commandBuffer->begin();
 
     {
-        VkImageMemoryBarrier imageMemoryBarrier = LvlInitStruct<VkImageMemoryBarrier>();
+        VkImageMemoryBarrier imageMemoryBarrier = vku::InitStructHelper();
         imageMemoryBarrier.srcAccessMask = VK_ACCESS_NONE;
         imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -301,7 +299,7 @@ TEST_F(ShaderObjectTest, VertFragShader) {
     vkCmdEndRenderingKHR(m_commandBuffer->handle());
 
     {
-        VkImageMemoryBarrier imageMemoryBarrier = LvlInitStruct<VkImageMemoryBarrier>();
+        VkImageMemoryBarrier imageMemoryBarrier = vku::InitStructHelper();
         imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
         imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -388,7 +386,7 @@ TEST_F(ShaderObjectTest, LinkedShadersDraw) {
     VkShaderEXT shaders[2];
     VkShaderCreateInfoEXT createInfos[2];
     for (uint32_t i = 0; i < 2; ++i) {
-        createInfos[i] = LvlInitStruct<VkShaderCreateInfoEXT>();
+        createInfos[i] = vku::InitStructHelper();
         createInfos[i].flags = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT;
         createInfos[i].stage = shaderStages[i];
         createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
@@ -403,7 +401,7 @@ TEST_F(ShaderObjectTest, LinkedShadersDraw) {
     vertexBuffer.init(*m_device, sizeof(float), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-    VkImageCreateInfo imageInfo = LvlInitStruct<VkImageCreateInfo>();
+    VkImageCreateInfo imageInfo = vku::InitStructHelper();
     imageInfo.flags = 0;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
@@ -421,11 +419,11 @@ TEST_F(ShaderObjectTest, LinkedShadersDraw) {
     image.init(&imageInfo);
     VkImageView view = image.targetView(imageInfo.format);
 
-    VkRenderingAttachmentInfo color_attachment = LvlInitStruct<VkRenderingAttachmentInfo>();
+    VkRenderingAttachmentInfo color_attachment = vku::InitStructHelper();
     color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     color_attachment.imageView = view;
 
-    VkRenderingInfo begin_rendering_info = LvlInitStruct<VkRenderingInfo>();
+    VkRenderingInfo begin_rendering_info = vku::InitStructHelper();
     begin_rendering_info.flags = 0u;
     begin_rendering_info.renderArea.offset.x = 0;
     begin_rendering_info.renderArea.offset.y = 0;
@@ -444,7 +442,7 @@ TEST_F(ShaderObjectTest, LinkedShadersDraw) {
     m_commandBuffer->begin();
 
     {
-        VkImageMemoryBarrier imageMemoryBarrier = LvlInitStruct<VkImageMemoryBarrier>();
+        VkImageMemoryBarrier imageMemoryBarrier = vku::InitStructHelper();
         imageMemoryBarrier.srcAccessMask = VK_ACCESS_NONE;
         imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -570,7 +568,7 @@ TEST_F(ShaderObjectTest, AllShadersDraw) {
     VkShaderEXT shaders[5];
     VkShaderCreateInfoEXT createInfos[5];
     for (uint32_t i = 0; i < 5; ++i) {
-        createInfos[i] = LvlInitStruct<VkShaderCreateInfoEXT>();
+        createInfos[i] = vku::InitStructHelper();
         createInfos[i].stage = shaderStages[i];
         createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
         createInfos[i].codeSize = spv[i].size() * sizeof(unsigned int);
@@ -584,7 +582,7 @@ TEST_F(ShaderObjectTest, AllShadersDraw) {
     vertexBuffer.init(*m_device, sizeof(float), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-    VkImageCreateInfo imageInfo = LvlInitStruct<VkImageCreateInfo>();
+    VkImageCreateInfo imageInfo = vku::InitStructHelper();
     imageInfo.flags = 0;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
@@ -602,11 +600,11 @@ TEST_F(ShaderObjectTest, AllShadersDraw) {
     image.init(&imageInfo);
     VkImageView view = image.targetView(imageInfo.format);
 
-    VkRenderingAttachmentInfo color_attachment = LvlInitStruct<VkRenderingAttachmentInfo>();
+    VkRenderingAttachmentInfo color_attachment = vku::InitStructHelper();
     color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     color_attachment.imageView = view;
 
-    VkRenderingInfo begin_rendering_info = LvlInitStruct<VkRenderingInfo>();
+    VkRenderingInfo begin_rendering_info = vku::InitStructHelper();
     begin_rendering_info.flags = 0u;
     begin_rendering_info.renderArea.offset.x = 0;
     begin_rendering_info.renderArea.offset.y = 0;
@@ -625,7 +623,7 @@ TEST_F(ShaderObjectTest, AllShadersDraw) {
     m_commandBuffer->begin();
 
     {
-        VkImageMemoryBarrier imageMemoryBarrier = LvlInitStruct<VkImageMemoryBarrier>();
+        VkImageMemoryBarrier imageMemoryBarrier = vku::InitStructHelper();
         imageMemoryBarrier.srcAccessMask = VK_ACCESS_NONE;
         imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -751,7 +749,7 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
     VkShaderEXT shaders[5];
     VkShaderCreateInfoEXT createInfos[5];
     for (uint32_t i = 0; i < 5; ++i) {
-        createInfos[i] = LvlInitStruct<VkShaderCreateInfoEXT>();
+        createInfos[i] = vku::InitStructHelper();
         createInfos[i].stage = shaderStages[i];
         createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
         createInfos[i].codeSize = spv[i].size() * sizeof(unsigned int);
@@ -770,7 +768,7 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
         binaryData[i].resize(dataSize[i]);
         vk::GetShaderBinaryDataEXT(m_device->handle(), shaders[i], &dataSize[i], binaryData[i].data());
 
-        binaryCreateInfos[i] = LvlInitStruct<VkShaderCreateInfoEXT>();
+        binaryCreateInfos[i] = vku::InitStructHelper();
         binaryCreateInfos[i].stage = shaderStages[i];
         binaryCreateInfos[i].codeType = VK_SHADER_CODE_TYPE_BINARY_EXT;
         binaryCreateInfos[i].codeSize = dataSize[i];
@@ -784,7 +782,7 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
     vertexBuffer.init(*m_device, sizeof(float), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-    VkImageCreateInfo imageInfo = LvlInitStruct<VkImageCreateInfo>();
+    VkImageCreateInfo imageInfo = vku::InitStructHelper();
     imageInfo.flags = 0;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
@@ -802,11 +800,11 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
     image.init(&imageInfo);
     VkImageView view = image.targetView(imageInfo.format);
 
-    VkRenderingAttachmentInfo color_attachment = LvlInitStruct<VkRenderingAttachmentInfo>();
+    VkRenderingAttachmentInfo color_attachment = vku::InitStructHelper();
     color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     color_attachment.imageView = view;
 
-    VkRenderingInfo begin_rendering_info = LvlInitStruct<VkRenderingInfo>();
+    VkRenderingInfo begin_rendering_info = vku::InitStructHelper();
     begin_rendering_info.flags = 0u;
     begin_rendering_info.renderArea.offset.x = 0;
     begin_rendering_info.renderArea.offset.y = 0;
@@ -825,7 +823,7 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
     m_commandBuffer->begin();
 
     {
-        VkImageMemoryBarrier imageMemoryBarrier = LvlInitStruct<VkImageMemoryBarrier>();
+        VkImageMemoryBarrier imageMemoryBarrier = vku::InitStructHelper();
         imageMemoryBarrier.srcAccessMask = VK_ACCESS_NONE;
         imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -895,13 +893,13 @@ TEST_F(ShaderObjectTest, ComputeShader) {
 
     VkBufferObj storageBuffer;
     storageBuffer.init(*m_device, sizeof(float), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                      VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+                       VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 
     VkDescriptorPoolSize ds_type_count = {};
     ds_type_count.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     ds_type_count.descriptorCount = 1;
 
-    VkDescriptorPoolCreateInfo ds_pool_ci = LvlInitStruct<VkDescriptorPoolCreateInfo>();
+    VkDescriptorPoolCreateInfo ds_pool_ci = vku::InitStructHelper();
     ds_pool_ci.maxSets = 1;
     ds_pool_ci.poolSizeCount = 1;
     ds_pool_ci.flags = 0;
@@ -921,7 +919,7 @@ TEST_F(ShaderObjectTest, ComputeShader) {
     const VkDescriptorSetLayoutObj ds_layout(m_device, {dsl_binding});
 
     VkDescriptorSet descriptorSet;
-    VkDescriptorSetAllocateInfo alloc_info = LvlInitStruct<VkDescriptorSetAllocateInfo>();
+    VkDescriptorSetAllocateInfo alloc_info = vku::InitStructHelper();
     alloc_info.descriptorSetCount = 1;
     alloc_info.descriptorPool = ds_pool.handle();
     alloc_info.pSetLayouts = &ds_layout.handle();
@@ -929,8 +927,8 @@ TEST_F(ShaderObjectTest, ComputeShader) {
 
     VkDescriptorBufferInfo storage_buffer_info = {storageBuffer.handle(), 0, sizeof(uint32_t)};
 
-    VkWriteDescriptorSet descriptorWrite = LvlInitStruct<VkWriteDescriptorSet>();
-    descriptorWrite = LvlInitStruct<VkWriteDescriptorSet>();
+    VkWriteDescriptorSet descriptorWrite = vku::InitStructHelper();
+    descriptorWrite = vku::InitStructHelper();
     descriptorWrite.dstSet = descriptorSet;
     descriptorWrite.dstBinding = 0;
     descriptorWrite.descriptorCount = 1;
@@ -945,7 +943,7 @@ TEST_F(ShaderObjectTest, ComputeShader) {
     VkDescriptorSetLayout descriptorSetLayout = descriptor_set_layout.handle();
 
     VkShaderEXT shader;
-    VkShaderCreateInfoEXT createInfo = LvlInitStruct<VkShaderCreateInfoEXT>();
+    VkShaderCreateInfoEXT createInfo = vku::InitStructHelper();
     createInfo.stage = shaderStages[0];
     createInfo.codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
     createInfo.codeSize = spv[0].size() * sizeof(unsigned int);
@@ -993,9 +991,9 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
         GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
-    auto maintenance_4_features = LvlInitStruct<VkPhysicalDeviceMaintenance4Features>();
-    auto mesh_shader_features = LvlInitStruct<VkPhysicalDeviceMeshShaderFeaturesEXT>(&maintenance_4_features);
-    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&mesh_shader_features);
+    auto maintenance_4_features = vku::InitStruct<VkPhysicalDeviceMaintenance4Features>();
+    auto mesh_shader_features = vku::InitStruct<VkPhysicalDeviceMeshShaderFeaturesEXT>(&maintenance_4_features);
+    auto features2 = vku::InitStruct<VkPhysicalDeviceFeatures2KHR>(&mesh_shader_features);
     if (DeviceExtensionSupported(VK_EXT_MESH_SHADER_EXTENSION_NAME, 0)) {
         vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
     }
@@ -1041,7 +1039,8 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
         }
     )glsl";
 
-    VkShaderStageFlagBits shaderStages[] = {VK_SHADER_STAGE_TASK_BIT_EXT, VK_SHADER_STAGE_MESH_BIT_EXT, VK_SHADER_STAGE_FRAGMENT_BIT};
+    VkShaderStageFlagBits shaderStages[] = {VK_SHADER_STAGE_TASK_BIT_EXT, VK_SHADER_STAGE_MESH_BIT_EXT,
+                                            VK_SHADER_STAGE_FRAGMENT_BIT};
 
     std::vector<unsigned int> spv[3];
     GLSLtoSPV(&m_device->props.limits, VK_SHADER_STAGE_TASK_BIT_EXT, taskSource, spv[0], false, 4);
@@ -1051,7 +1050,7 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
     VkShaderEXT shaders[3];
     VkShaderCreateInfoEXT createInfos[3];
     for (uint32_t i = 0; i < 3; ++i) {
-        createInfos[i] = LvlInitStruct<VkShaderCreateInfoEXT>();
+        createInfos[i] = vku::InitStructHelper();
         createInfos[i].stage = shaderStages[i];
         createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
         createInfos[i].codeSize = spv[i].size() * sizeof(unsigned int);
@@ -1065,7 +1064,7 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
     vertexBuffer.init(*m_device, sizeof(float), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-    VkImageCreateInfo imageInfo = LvlInitStruct<VkImageCreateInfo>();
+    VkImageCreateInfo imageInfo = vku::InitStructHelper();
     imageInfo.flags = 0;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
@@ -1083,11 +1082,11 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
     image.init(&imageInfo);
     VkImageView view = image.targetView(imageInfo.format);
 
-    VkRenderingAttachmentInfo color_attachment = LvlInitStruct<VkRenderingAttachmentInfo>();
+    VkRenderingAttachmentInfo color_attachment = vku::InitStructHelper();
     color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     color_attachment.imageView = view;
 
-    VkRenderingInfo begin_rendering_info = LvlInitStruct<VkRenderingInfo>();
+    VkRenderingInfo begin_rendering_info = vku::InitStructHelper();
     begin_rendering_info.flags = 0u;
     begin_rendering_info.renderArea.offset.x = 0;
     begin_rendering_info.renderArea.offset.y = 0;
@@ -1108,7 +1107,7 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
     m_commandBuffer->begin();
 
     {
-        VkImageMemoryBarrier imageMemoryBarrier = LvlInitStruct<VkImageMemoryBarrier>();
+        VkImageMemoryBarrier imageMemoryBarrier = vku::InitStructHelper();
         imageMemoryBarrier.srcAccessMask = VK_ACCESS_NONE;
         imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -1252,7 +1251,7 @@ TEST_F(ShaderObjectTest, FailCreateShaders) {
 
     VkShaderCreateInfoEXT createInfos[shaders_count];
     for (uint32_t i = 0; i < shaders_count; ++i) {
-        createInfos[i] = LvlInitStruct<VkShaderCreateInfoEXT>();
+        createInfos[i] = vku::InitStructHelper();
         createInfos[i].stage = shaderStages[i % stages_count];
         createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
         createInfos[i].codeSize = spv[i % stages_count].size() * sizeof(unsigned int);
