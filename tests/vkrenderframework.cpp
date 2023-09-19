@@ -31,7 +31,7 @@
 
 #include <vulkan/utility/vk_format_utils.h>
 
-#include "vk_typemap_helper.h"
+#include <vulkan/utility/vk_struct_helper.hpp>
 
 using std::string;
 using std::strncmp;
@@ -310,9 +310,9 @@ VkRenderFramework::VkRenderFramework()
       m_depth_clear_color(1.0),
       m_stencil_clear_color(0),
       m_depthStencil(NULL) {
-    m_framebuffer_info = LvlInitStruct<VkFramebufferCreateInfo>();
-    m_renderPass_info = LvlInitStruct<VkRenderPassCreateInfo>();
-    m_renderPassBeginInfo = LvlInitStruct<VkRenderPassBeginInfo>();
+    m_framebuffer_info = vku::InitStructHelper();
+    m_renderPass_info = vku::InitStructHelper();
+    m_renderPassBeginInfo = vku::InitStructHelper();
 
     // clear the back buffer to dark grey
     m_clear_color.float32[0] = 0.25f;

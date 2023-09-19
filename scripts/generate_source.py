@@ -50,7 +50,7 @@ def main(argv):
                                               "vk_safe_struct.h",
                                               "lvt_function_pointers.cpp",
                                               "lvt_function_pointers.h",
-                                              "vk_typemap_helper.h"]]]
+                                              ]]]
 
     repo_dir = common_codegen.repo_relative('utils/generated')
 

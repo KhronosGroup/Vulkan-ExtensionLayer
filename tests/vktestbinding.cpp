@@ -28,7 +28,8 @@
 #include <vector>
 
 #include "test_common.h"
-#include "vk_typemap_helper.h"
+
+#include <vulkan/utility/vk_struct_helper.hpp>
 
 namespace {
 
@@ -275,7 +276,7 @@ void Device::init(std::vector<const char *> &extensions, VkPhysicalDeviceFeature
     // Let VkPhysicalDeviceFeatures2 take priority over VkPhysicalDeviceFeatures,
     // since it supports extensions
 
-    if (!(LvlFindInChain<VkPhysicalDeviceFeatures2>(dev_info.pNext))) {
+    if (!(vku::FindStructInPNextChain<VkPhysicalDeviceFeatures2>(dev_info.pNext))) {
         if (features) {
             dev_info.pEnabledFeatures = features;
         } else {

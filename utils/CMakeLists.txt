@@ -53,7 +53,7 @@ if (MSVC)
     )
 endif()
 
-target_link_libraries(VkExtLayer_utils PUBLIC Vulkan::Headers)
+target_link_libraries(VkExtLayer_utils PUBLIC Vulkan::Headers Vulkan::UtilityHeaders)
 
 if(ANDROID)
     target_link_libraries(VkExtLayer_utils PUBLIC log)

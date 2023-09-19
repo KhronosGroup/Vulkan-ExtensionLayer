@@ -26,7 +26,7 @@
  * Author: Vikram Kushwaha <vkushwaha@nvidia.com>
  */
 #include "extension_layer_tests.h"
-#include "vk_typemap_helper.h"
+#include <vulkan/utility/vk_struct_helper.hpp>
 
 #if !defined(ANDROID)
 #include "test_layer_location.h"
@@ -191,8 +191,8 @@ bool CheckTimelineSemaphoreSupportAndInitState(VkRenderFramework *renderFramewor
     PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
         (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(renderFramework->instance(),
                                                                      "vkGetPhysicalDeviceFeatures2KHR");
-    auto timeline_semaphore_features = LvlInitStruct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
-    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&timeline_semaphore_features);
+    auto timeline_semaphore_features = vku::InitStruct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
+    auto features2 = vku::InitStruct<VkPhysicalDeviceFeatures2KHR>(&timeline_semaphore_features);
     vkGetPhysicalDeviceFeatures2KHR(renderFramework->gpu(), &features2);
     if (!timeline_semaphore_features.timelineSemaphore) {
         return false;
@@ -215,8 +215,8 @@ bool VkExtensionLayerTest::CheckDecompressionSupportAndInitState() {
         m_device_extension_names.push_back(VK_NV_MEMORY_DECOMPRESSION_EXTENSION_NAME);
     }
 
-    auto decompress_features = LvlInitStruct<VkPhysicalDeviceMemoryDecompressionFeaturesNV>();
-    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&decompress_features);
+    auto decompress_features = vku::InitStruct<VkPhysicalDeviceMemoryDecompressionFeaturesNV>();
+    auto features2 = vku::InitStruct<VkPhysicalDeviceFeatures2KHR>(&decompress_features);
     vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
 
     VkPhysicalDeviceFeatures2 devFeatures = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
@@ -260,11 +260,11 @@ bool VkExtensionLayerTest::CheckShaderObjectSupportAndInitState() {
     m_device_extension_names.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
     m_device_extension_names.push_back(VK_EXT_SHADER_OBJECT_EXTENSION_NAME);
 
-    auto mesh_shader_features = LvlInitStruct<VkPhysicalDeviceMeshShaderFeaturesEXT>();
+    auto mesh_shader_features = vku::InitStruct<VkPhysicalDeviceMeshShaderFeaturesEXT>();
 
-    auto shader_object_features = LvlInitStruct<VkPhysicalDeviceShaderObjectFeaturesEXT>();
-    auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>(&shader_object_features);
-    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&dynamic_rendering_features);
+    auto shader_object_features = vku::InitStruct<VkPhysicalDeviceShaderObjectFeaturesEXT>();
+    auto dynamic_rendering_features = vku::InitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>(&shader_object_features);
+    auto features2 = vku::InitStruct<VkPhysicalDeviceFeatures2KHR>(&dynamic_rendering_features);
 
     if (DeviceExtensionSupported(VK_EXT_MESH_SHADER_EXTENSION_NAME, 0)) {
         m_device_extension_names.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
@@ -281,7 +281,8 @@ bool VkExtensionLayerTest::CheckShaderObjectSupportAndInitState() {
     vk::CmdBindShadersEXT = reinterpret_cast<PFN_vkCmdBindShadersEXT>(vk::GetDeviceProcAddr(device(), "vkCmdBindShadersEXT"));
     vk::CreateShadersEXT = reinterpret_cast<PFN_vkCreateShadersEXT>(vk::GetDeviceProcAddr(device(), "vkCreateShadersEXT"));
     vk::DestroyShaderEXT = reinterpret_cast<PFN_vkDestroyShaderEXT>(vk::GetDeviceProcAddr(device(), "vkDestroyShaderEXT"));
-    vk::GetShaderBinaryDataEXT = reinterpret_cast<PFN_vkGetShaderBinaryDataEXT>(vk::GetDeviceProcAddr(device(), "vkGetShaderBinaryDataEXT"));
+    vk::GetShaderBinaryDataEXT =
+        reinterpret_cast<PFN_vkGetShaderBinaryDataEXT>(vk::GetDeviceProcAddr(device(), "vkGetShaderBinaryDataEXT"));
 
     return true;
 }
@@ -300,9 +301,9 @@ bool VkExtensionLayerTest::CheckSynchronization2SupportAndInitState() {
         m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
     }
 
-    auto timeline_features = LvlInitStruct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
-    auto sync2_features = LvlInitStruct<VkPhysicalDeviceSynchronization2FeaturesKHR>(&timeline_features);
-    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&sync2_features);
+    auto timeline_features = vku::InitStruct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
+    auto sync2_features = vku::InitStruct<VkPhysicalDeviceSynchronization2FeaturesKHR>(&timeline_features);
+    auto features2 = vku::InitStruct<VkPhysicalDeviceFeatures2KHR>(&sync2_features);
     vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
     if (!sync2_features.synchronization2) {
         return false;
