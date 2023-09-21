@@ -947,6 +947,9 @@
                     "EnumerateDeviceExtensionProperties"
                 ],
                 [
+                    "EnumerateInstanceExtensionProperties"
+                ],
+                [
                     "GetPhysicalDeviceFeatures2",
                     "GetPhysicalDeviceFeatures2KHR"
                 ],

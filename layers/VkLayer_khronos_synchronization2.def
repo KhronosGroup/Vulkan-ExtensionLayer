@@ -26,4 +26,5 @@ LIBRARY VkLayer_khronos_synchronization2
 EXPORTS
 vkGetInstanceProcAddr
 vkGetDeviceProcAddr
+vkEnumerateInstanceExtensionProperties
 vkNegotiateLoaderLayerInterfaceVersion
