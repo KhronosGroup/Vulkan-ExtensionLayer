@@ -25,6 +25,7 @@ endif()
 
 target_sources(VkLayer_khronos_synchronization2 PRIVATE
     synchronization2.cpp
+    synchronization2.h
 )
 
 
@@ -42,6 +43,7 @@ target_sources(VkLayer_khronos_shader_object PRIVATE
 add_library(VkLayer_khronos_memory_decompression MODULE)
 target_sources(VkLayer_khronos_memory_decompression PRIVATE
     decompression/decompression.cpp
+    decompression/decompression.h
 )
 
 set(EXTENSION_LAYERS VkLayer_khronos_synchronization2 VkLayer_khronos_shader_object VkLayer_khronos_memory_decompression)

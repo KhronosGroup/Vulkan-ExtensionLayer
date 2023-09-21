@@ -22,6 +22,7 @@
     ENTRY_POINT(CreateInstance)\
     ENTRY_POINT(DestroyInstance)\
     ENTRY_POINT(EnumerateDeviceExtensionProperties)\
+    ENTRY_POINT(EnumerateInstanceExtensionProperties)\
     ENTRY_POINT(GetPhysicalDeviceFeatures2)\
     ENTRY_POINT_ALIAS(GetPhysicalDeviceFeatures2KHR, GetPhysicalDeviceFeatures2)\
     ENTRY_POINT(GetPhysicalDeviceProperties2)\
