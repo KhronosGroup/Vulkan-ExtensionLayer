@@ -27,14 +27,15 @@ on:
 
 env:
   CMAKE_GENERATOR: Ninja
-  CMAKE_C_COMPILER_LAUNCHER: ccache
-  CMAKE_CXX_COMPILER_LAUNCHER: ccache
 
 permissions:
     contents: read
 
 jobs:
   linux:
+    env:
+      CMAKE_C_COMPILER_LAUNCHER: ccache
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -94,6 +95,9 @@ jobs:
         run: python scripts/github_ci_build_desktop.py --config release 
 
   macos:
+    env:
+      CMAKE_C_COMPILER_LAUNCHER: ccache
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
@@ -115,6 +119,9 @@ jobs:
         run: cmake --install build --prefix build/install
 
   android_cmake:
+    env:
+      CMAKE_C_COMPILER_LAUNCHER: ccache
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
     runs-on: ubuntu-22.04
     strategy:
       matrix:
