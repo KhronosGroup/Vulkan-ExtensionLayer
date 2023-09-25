@@ -182,10 +182,10 @@ static VkLayerInstanceCreateInfo* GetChainInfo(const VkInstanceCreateInfo* pCrea
 void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, LayerSettings* layer_settings) {
     assert(layer_settings != nullptr);
 
-    const VkLayerSettingsCreateInfoEXT* create_info = vlFindLayerSettingsCreateInfo(pCreateInfo);
+    const VkLayerSettingsCreateInfoEXT* create_info = vkuFindLayerSettingsCreateInfo(pCreateInfo);
 
-    VlLayerSettingSet layer_setting_set = VK_NULL_HANDLE;
-    vlCreateLayerSettingSet(kGlobalLayer.layerName, create_info, pAllocator, nullptr, &layer_setting_set);
+    VkuLayerSettingSet layer_setting_set = VK_NULL_HANDLE;
+    vkuCreateLayerSettingSet(kGlobalLayer.layerName, create_info, pAllocator, nullptr, &layer_setting_set);
 
     static const char* setting_names[] = {
         kLayerSettingsForceEnable,
@@ -194,13 +194,13 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
     uint32_t setting_name_count = static_cast<uint32_t>(std::size(setting_names));
 
     uint32_t unknown_setting_count = 0;
-    vlGetUnknownSettings(create_info, setting_name_count, setting_names, &unknown_setting_count, nullptr);
+    vkuGetUnknownSettings(create_info, setting_name_count, setting_names, &unknown_setting_count, nullptr);
 
     if (unknown_setting_count > 0) {
         std::vector<const char*> unknown_settings;
         unknown_settings.resize(unknown_setting_count);
 
-        vlGetUnknownSettings(create_info, setting_name_count, setting_names, &unknown_setting_count,
+        vkuGetUnknownSettings(create_info, setting_name_count, setting_names, &unknown_setting_count,
                              &unknown_settings[0]);
 
         for (std::size_t i = 0, n = unknown_settings.size(); i < n; ++i) {
@@ -208,15 +208,15 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
         }
     }
 
-    if (vlHasLayerSetting(layer_setting_set, kLayerSettingsForceEnable)) {
-        vlGetLayerSettingValue(layer_setting_set, kLayerSettingsForceEnable, layer_settings->force_enable);
+    if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsForceEnable)) {
+        vkuGetLayerSettingValue(layer_setting_set, kLayerSettingsForceEnable, layer_settings->force_enable);
     }
 
-    if (vlHasLayerSetting(layer_setting_set, kLayerSettingsCustomSTypeInfo)) {
-        vlGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, custom_stype_info);
+    if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsCustomSTypeInfo)) {
+        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, custom_stype_info);
     }
 
-    vlDestroyLayerSettingSet(layer_setting_set, pAllocator);
+    vkuDestroyLayerSettingSet(layer_setting_set, pAllocator);
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkInstance* pInstance) {
