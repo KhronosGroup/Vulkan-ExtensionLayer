@@ -905,7 +905,7 @@ struct FullDrawStateData {
 
 #include "generated/shader_object_full_draw_state_utility_functions.inl"
 
-    static void InitializeMemory(void* memory, VkPhysicalDeviceProperties const& properties) {
+    static void InitializeMemory(void* memory, VkPhysicalDeviceProperties const& properties, bool dynamic_rendering_unused_attachments) {
         FullDrawStateData* state = new (memory) FullDrawStateData{};
         Limits limits(properties);
         SetInternalArrayPointers(state, limits);
@@ -934,9 +934,19 @@ struct FullDrawStateData {
         state->SetDepthBoundsTestEnable(VK_TRUE);
         state->SetStencilTestEnable(VK_TRUE);
         state->SetPatchControlPoints(1);
+        state->SetDynamicRenderingUnusedAttachments(dynamic_rendering_unused_attachments);
+        if (dynamic_rendering_unused_attachments) {
+            for (uint32_t i = 0; i < limits.max_color_attachments; ++i) {
+                state->SetColorBlendAttachmentState(i, color_blend_attachment_state);
+                state->SetColorAttachmentFormat(i, VK_FORMAT_R8G8B8A8_UNORM);
+            }
+
+            state->SetDepthAttachmentFormat(VK_FORMAT_D24_UNORM_S8_UINT);
+            state->SetStencilAttachmentFormat(VK_FORMAT_D24_UNORM_S8_UINT);
+        }
     }
 
-    static FullDrawStateData* Create(VkPhysicalDeviceProperties const& properties, VkAllocationCallbacks const& allocator) {
+    static FullDrawStateData* Create(VkPhysicalDeviceProperties const& properties, VkAllocationCallbacks const& allocator, bool dynamic_rendering_unused_attachments) {
         AlignedMemory aligned_memory;
         ReserveMemory(aligned_memory, properties);
         
@@ -946,7 +956,7 @@ struct FullDrawStateData {
         }
         
         auto state = aligned_memory.GetNextAlignedPtr<FullDrawStateData>();
-        InitializeMemory(state, properties);
+        InitializeMemory(state, properties, dynamic_rendering_unused_attachments);
         state->allocator_ = allocator;
         return state;
     }
@@ -1003,6 +1013,13 @@ struct FullDrawStateData {
 
     void MarkDirty() { is_dirty_ = true; }
 
+    void SetDynamicRenderingUnusedAttachments(bool dynamic_rendering_unused_attachments) {
+        dynamic_rendering_unused_attachments_ = dynamic_rendering_unused_attachments;
+    }
+    uint32_t GetDynamicRenderingUnusedAttachments() const {
+        return dynamic_rendering_unused_attachments_;
+    }
+
 #include "generated/shader_object_full_draw_state_struct_members.inl"
 
   private:
@@ -1012,6 +1029,8 @@ struct FullDrawStateData {
 
     Limits limits_;
     VkAllocationCallbacks allocator_;
+
+    bool dynamic_rendering_unused_attachments_ = false;
 
     mutable size_t final_hash_ = 0;
     mutable size_t partial_hashes_[NUM_STATE_GROUPS]{};
@@ -1273,7 +1292,7 @@ CommandBufferData* CommandBufferData::Create(DeviceData* data, VkAllocationCallb
     cmd_data->device_data      = data;
     cmd_data->allocator        = allocator;
     cmd_data->draw_state_data_ = aligned_memory.GetNextAlignedPtr<FullDrawStateData>();
-    FullDrawStateData::InitializeMemory(cmd_data->draw_state_data_, data->properties);
+    FullDrawStateData::InitializeMemory(cmd_data->draw_state_data_, data->properties, cmd_data->device_data->enabled_extensions & DYNAMIC_RENDERING_UNUSED_ATTACHMENTS);
     return cmd_data;
 }
 
@@ -1708,6 +1727,8 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
         pipeline_layout = cmd_data.device_data->dummy_pipeline_layout;
     }
 
+    const uint32_t num_color_attachments = state->GetDynamicRenderingUnusedAttachments() ? device_data.properties.limits.maxColorAttachments : state->GetNumColorAttachments();
+
     VkPipelineViewportStateCreateInfo viewport_state{};
     viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewport_state.viewportCount = cmd_data.device_data->HasDynamicState(VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT) ? 0u : state->GetNumViewports();
@@ -1904,7 +1925,7 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
     color_blend_state.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     color_blend_state.logicOpEnable = state->GetLogicOpEnable();
     color_blend_state.logicOp = state->GetLogicOp();
-    color_blend_state.attachmentCount = state->GetNumColorAttachments();
+    color_blend_state.attachmentCount = num_color_attachments;
     color_blend_state.pAttachments = state->GetColorBlendAttachmentStatePtr();
 
     VkPipelineDynamicStateCreateInfo dynamic_state{};
@@ -1937,11 +1958,23 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
         prev_next = prev_next->pNext;
     };
 
+    if (state->GetDynamicRenderingUnusedAttachments()) {
+        VkFormat lastFormat = VK_FORMAT_R8G8B8A8_UNORM;
+        for (uint32_t i = 0; i < num_color_attachments; ++i) {
+            VkFormat format = state->GetColorAttachmentFormatPtr()[i];
+            if (format == VK_FORMAT_UNDEFINED) {
+                state->SetColorAttachmentFormat(i, lastFormat);
+            } else {
+                lastFormat = format;
+            }
+        }
+    }
+
     VkPipelineRenderingCreateInfo rendering_create_info{
         VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
         nullptr,
         0,
-        state->GetNumColorAttachments(),
+        num_color_attachments,
         state->GetColorAttachmentFormatPtr(),
         state->GetDepthAttachmentFormat(),
         state->GetStencilAttachmentFormat()
@@ -2230,7 +2263,7 @@ PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, Vk
     }
     PartialPipeline partial_pipeline{
         VK_NULL_HANDLE,
-        FullDrawStateData::Create(deviceData.properties, allocator),
+        FullDrawStateData::Create(deviceData.properties, allocator, deviceData.enabled_extensions & DYNAMIC_RENDERING_UNUSED_ATTACHMENTS),
         pipelineLibraryFlags,
         shader_stage_flags
     };

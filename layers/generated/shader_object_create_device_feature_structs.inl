@@ -104,6 +104,18 @@ if (graphics_pipeline_library_ptr == nullptr && (physical_device_data->supported
         appended_features_chain_last = appended_features_chain_last->pNext;
     }
 }
+auto dynamic_rendering_unused_attachments_ptr = reinterpret_cast<VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT*>(FindStructureInChain(device_next_chain, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT));
+VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT dynamic_rendering_unused_attachments_local{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT};
+if (dynamic_rendering_unused_attachments_ptr == nullptr && (physical_device_data->supported_additional_extensions & DYNAMIC_RENDERING_UNUSED_ATTACHMENTS) != 0) {
+    dynamic_rendering_unused_attachments_ptr = &dynamic_rendering_unused_attachments_local;
+    if (appended_features_chain_last == nullptr) {
+        appended_features_chain = (VkBaseOutStructure*)dynamic_rendering_unused_attachments_ptr;
+        appended_features_chain_last = appended_features_chain;
+    } else {
+        appended_features_chain_last->pNext = (VkBaseOutStructure*)dynamic_rendering_unused_attachments_ptr;
+        appended_features_chain_last = appended_features_chain_last->pNext;
+    }
+}
 auto transform_feedback_ptr = reinterpret_cast<VkPhysicalDeviceTransformFeedbackFeaturesEXT*>(FindStructureInChain(device_next_chain, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT));
 VkPhysicalDeviceTransformFeedbackFeaturesEXT transform_feedback_local{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT};
 if (transform_feedback_ptr == nullptr) {

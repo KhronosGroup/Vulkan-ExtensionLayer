@@ -717,11 +717,11 @@ public:
     }
     
     bool operator==(FullDrawStateData const& o) const {
-        if (!(o.depth_attachment_format_ == depth_attachment_format_)) {
+        if (!(o.depth_attachment_format_ == depth_attachment_format_) && (!o.dynamic_rendering_unused_attachments_ || o.depth_attachment_format_ != VK_FORMAT_UNDEFINED) && (!dynamic_rendering_unused_attachments_ || depth_attachment_format_ != VK_FORMAT_UNDEFINED)) {
             return false;
         }
 
-        if (!(o.stencil_attachment_format_ == stencil_attachment_format_)) {
+        if (!(o.stencil_attachment_format_ == stencil_attachment_format_) && (!o.dynamic_rendering_unused_attachments_ || o.stencil_attachment_format_ != VK_FORMAT_UNDEFINED) && (!dynamic_rendering_unused_attachments_ || stencil_attachment_format_ != VK_FORMAT_UNDEFINED)) {
             return false;
         }
 
@@ -729,12 +729,12 @@ public:
             return false;
         }
         for (uint32_t i = 0; i < limits_.max_color_attachments; ++i) {
-            if (!(o.color_attachment_formats_[i] == color_attachment_formats_[i])) {
+            if (!(o.color_attachment_formats_[i] == color_attachment_formats_[i]) && (!o.dynamic_rendering_unused_attachments_ || o.color_attachment_formats_[i] != VK_FORMAT_UNDEFINED) && (!dynamic_rendering_unused_attachments_ || color_attachment_formats_[i] != VK_FORMAT_UNDEFINED)) {
                 return false;
             }
         }
 
-        if (!(o.num_color_attachments_ == num_color_attachments_)) {
+        if (!(o.num_color_attachments_ == num_color_attachments_) && (!o.dynamic_rendering_unused_attachments_ && !dynamic_rendering_unused_attachments_)) {
             return false;
         }
 
