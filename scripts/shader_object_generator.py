@@ -302,7 +302,10 @@ def generate_full_draw_state_struct_members(data):
             comparison_code.append(f'    return false;\n')
             comparison_code.append('}\n')
             comparison_code.append(f'for (uint32_t i = 0; i < {length}; ++i) {{\n')
-            comparison_code.append(f'    if (!(o.{var_name_private}[i] == {var_name_private}[i])) {{\n')
+            if var_type == 'VkFormat':
+                comparison_code.append(f'    if (!(o.{var_name_private}[i] == {var_name_private}[i]) && (!o.dynamic_rendering_unused_attachments_ || o.{var_name_private}[i] != VK_FORMAT_UNDEFINED) && (!dynamic_rendering_unused_attachments_ || {var_name_private}[i] != VK_FORMAT_UNDEFINED)) {{\n')
+            else:
+                comparison_code.append(f'    if (!(o.{var_name_private}[i] == {var_name_private}[i])) {{\n')
             comparison_code.append(f'        return false;\n')
             comparison_code.append(f'    }}\n')
             comparison_code.append(f'}}\n\n')
@@ -323,7 +326,12 @@ def generate_full_draw_state_struct_members(data):
         else:
             # value member
             member_variables_section.append(f'{var_type} {var_name_private}{{}};\n')
-            comparison_code.append(f'if (!(o.{var_name_private} == {var_name_private})) {{\n')
+            if var_type == 'VkFormat':
+                comparison_code.append(f'if (!(o.{var_name_private} == {var_name_private}) && (!o.dynamic_rendering_unused_attachments_ || o.{var_name_private} != VK_FORMAT_UNDEFINED) && (!dynamic_rendering_unused_attachments_ || {var_name_private} != VK_FORMAT_UNDEFINED)) {{\n')
+            elif var_name_private == 'num_color_attachments_':
+                comparison_code.append(f'if (!(o.{var_name_private} == {var_name_private}) && (!o.dynamic_rendering_unused_attachments_ && !dynamic_rendering_unused_attachments_)) {{\n')
+            else:
+                comparison_code.append(f'if (!(o.{var_name_private} == {var_name_private})) {{\n')
             comparison_code.append('    return false;\n')
             comparison_code.append('}\n\n')
 
