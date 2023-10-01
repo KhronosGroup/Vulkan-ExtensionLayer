@@ -63,7 +63,15 @@ uint broadcast(uint value, uint idx) {
 	barrier();
 	if (tid() == idx) g_tmp1[0] = value;
 	barrier();
-	return g_tmp1[0];
+	uint result = g_tmp1[0];
+#if SIMD_WIDTH < NUM_THREADS
+		// When there are multiple subgroups in-flight (SIMD width < the number of threads
+		// needed for GDeflate) there might be a race condition accessing g_tmp1[0]: the subgroup
+		// 0 may override g_tmp[0] in vote() method while another subgroup did not finish the broadcast().
+		// Adding a barrier to avoid this situation. Thanks to Mariusz Merecki.
+		barrier();
+#endif
+	return result;
 }
 
 bool all(bool p) {
