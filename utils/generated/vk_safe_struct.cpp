@@ -61955,6 +61955,130 @@ void safe_VkPhysicalDeviceImageProcessingPropertiesQCOM::initialize(const safe_V
     pNext = SafePnextCopy(copy_src->pNext);
 }
 
+safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT::safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT(const VkPhysicalDeviceNestedCommandBufferFeaturesEXT* in_struct) :
+    sType(in_struct->sType),
+    nestedCommandBuffer(in_struct->nestedCommandBuffer),
+    nestedCommandBufferRendering(in_struct->nestedCommandBufferRendering),
+    nestedCommandBufferSimultaneousUse(in_struct->nestedCommandBufferSimultaneousUse)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT::safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT),
+    pNext(nullptr),
+    nestedCommandBuffer(),
+    nestedCommandBufferRendering(),
+    nestedCommandBufferSimultaneousUse()
+{}
+
+safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT::safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT(const safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT& copy_src)
+{
+    sType = copy_src.sType;
+    nestedCommandBuffer = copy_src.nestedCommandBuffer;
+    nestedCommandBufferRendering = copy_src.nestedCommandBufferRendering;
+    nestedCommandBufferSimultaneousUse = copy_src.nestedCommandBufferSimultaneousUse;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT& safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT::operator=(const safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    nestedCommandBuffer = copy_src.nestedCommandBuffer;
+    nestedCommandBufferRendering = copy_src.nestedCommandBufferRendering;
+    nestedCommandBufferSimultaneousUse = copy_src.nestedCommandBufferSimultaneousUse;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT::~safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT::initialize(const VkPhysicalDeviceNestedCommandBufferFeaturesEXT* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    nestedCommandBuffer = in_struct->nestedCommandBuffer;
+    nestedCommandBufferRendering = in_struct->nestedCommandBufferRendering;
+    nestedCommandBufferSimultaneousUse = in_struct->nestedCommandBufferSimultaneousUse;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT::initialize(const safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT* copy_src)
+{
+    sType = copy_src->sType;
+    nestedCommandBuffer = copy_src->nestedCommandBuffer;
+    nestedCommandBufferRendering = copy_src->nestedCommandBufferRendering;
+    nestedCommandBufferSimultaneousUse = copy_src->nestedCommandBufferSimultaneousUse;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
+safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT::safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT(const VkPhysicalDeviceNestedCommandBufferPropertiesEXT* in_struct) :
+    sType(in_struct->sType),
+    maxCommandBufferNestingLevel(in_struct->maxCommandBufferNestingLevel)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT::safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT),
+    pNext(nullptr),
+    maxCommandBufferNestingLevel()
+{}
+
+safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT::safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT(const safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT& copy_src)
+{
+    sType = copy_src.sType;
+    maxCommandBufferNestingLevel = copy_src.maxCommandBufferNestingLevel;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT& safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT::operator=(const safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    maxCommandBufferNestingLevel = copy_src.maxCommandBufferNestingLevel;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT::~safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT::initialize(const VkPhysicalDeviceNestedCommandBufferPropertiesEXT* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    maxCommandBufferNestingLevel = in_struct->maxCommandBufferNestingLevel;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT::initialize(const safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT* copy_src)
+{
+    sType = copy_src->sType;
+    maxCommandBufferNestingLevel = copy_src->maxCommandBufferNestingLevel;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
 safe_VkExternalMemoryAcquireUnmodifiedEXT::safe_VkExternalMemoryAcquireUnmodifiedEXT(const VkExternalMemoryAcquireUnmodifiedEXT* in_struct) :
     sType(in_struct->sType),
     acquireUnmodifiedMemory(in_struct->acquireUnmodifiedMemory)
@@ -64606,6 +64730,130 @@ void safe_VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV::initialize(cons
 {
     sType = copy_src->sType;
     rayTracingInvocationReorder = copy_src->rayTracingInvocationReorder;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
+safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV::safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV(const VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV* in_struct) :
+    sType(in_struct->sType),
+    extendedSparseAddressSpace(in_struct->extendedSparseAddressSpace)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV::safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_FEATURES_NV),
+    pNext(nullptr),
+    extendedSparseAddressSpace()
+{}
+
+safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV::safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV(const safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV& copy_src)
+{
+    sType = copy_src.sType;
+    extendedSparseAddressSpace = copy_src.extendedSparseAddressSpace;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV& safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV::operator=(const safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    extendedSparseAddressSpace = copy_src.extendedSparseAddressSpace;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV::~safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV::initialize(const VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    extendedSparseAddressSpace = in_struct->extendedSparseAddressSpace;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV::initialize(const safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV* copy_src)
+{
+    sType = copy_src->sType;
+    extendedSparseAddressSpace = copy_src->extendedSparseAddressSpace;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
+safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV::safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV(const VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV* in_struct) :
+    sType(in_struct->sType),
+    extendedSparseAddressSpaceSize(in_struct->extendedSparseAddressSpaceSize),
+    extendedSparseImageUsageFlags(in_struct->extendedSparseImageUsageFlags),
+    extendedSparseBufferUsageFlags(in_struct->extendedSparseBufferUsageFlags)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV::safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_PROPERTIES_NV),
+    pNext(nullptr),
+    extendedSparseAddressSpaceSize(),
+    extendedSparseImageUsageFlags(),
+    extendedSparseBufferUsageFlags()
+{}
+
+safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV::safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV(const safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV& copy_src)
+{
+    sType = copy_src.sType;
+    extendedSparseAddressSpaceSize = copy_src.extendedSparseAddressSpaceSize;
+    extendedSparseImageUsageFlags = copy_src.extendedSparseImageUsageFlags;
+    extendedSparseBufferUsageFlags = copy_src.extendedSparseBufferUsageFlags;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV& safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV::operator=(const safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    extendedSparseAddressSpaceSize = copy_src.extendedSparseAddressSpaceSize;
+    extendedSparseImageUsageFlags = copy_src.extendedSparseImageUsageFlags;
+    extendedSparseBufferUsageFlags = copy_src.extendedSparseBufferUsageFlags;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV::~safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV::initialize(const VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    extendedSparseAddressSpaceSize = in_struct->extendedSparseAddressSpaceSize;
+    extendedSparseImageUsageFlags = in_struct->extendedSparseImageUsageFlags;
+    extendedSparseBufferUsageFlags = in_struct->extendedSparseBufferUsageFlags;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV::initialize(const safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV* copy_src)
+{
+    sType = copy_src->sType;
+    extendedSparseAddressSpaceSize = copy_src->extendedSparseAddressSpaceSize;
+    extendedSparseImageUsageFlags = copy_src->extendedSparseImageUsageFlags;
+    extendedSparseBufferUsageFlags = copy_src->extendedSparseBufferUsageFlags;
     pNext = SafePnextCopy(copy_src->pNext);
 }
 
@@ -70259,6 +70507,12 @@ void *SafePnextCopy(const void *pNext) {
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_PROPERTIES_QCOM:
             safe_pNext = new safe_VkPhysicalDeviceImageProcessingPropertiesQCOM(reinterpret_cast<const VkPhysicalDeviceImageProcessingPropertiesQCOM *>(pNext));
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT:
+            safe_pNext = new safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT(reinterpret_cast<const VkPhysicalDeviceNestedCommandBufferFeaturesEXT *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT:
+            safe_pNext = new safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT(reinterpret_cast<const VkPhysicalDeviceNestedCommandBufferPropertiesEXT *>(pNext));
+            break;
         case VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT:
             safe_pNext = new safe_VkExternalMemoryAcquireUnmodifiedEXT(reinterpret_cast<const VkExternalMemoryAcquireUnmodifiedEXT *>(pNext));
             break;
@@ -70333,6 +70587,12 @@ void *SafePnextCopy(const void *pNext) {
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_FEATURES_NV:
             safe_pNext = new safe_VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV(reinterpret_cast<const VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_FEATURES_NV:
+            safe_pNext = new safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV(reinterpret_cast<const VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_PROPERTIES_NV:
+            safe_pNext = new safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV(reinterpret_cast<const VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV *>(pNext));
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_FEATURES_ARM:
             safe_pNext = new safe_VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM(reinterpret_cast<const VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM *>(pNext));
@@ -71904,6 +72164,12 @@ void FreePnextChain(const void *pNext) {
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_PROPERTIES_QCOM:
             delete reinterpret_cast<const safe_VkPhysicalDeviceImageProcessingPropertiesQCOM *>(header);
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceNestedCommandBufferFeaturesEXT *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceNestedCommandBufferPropertiesEXT *>(header);
+            break;
         case VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT:
             delete reinterpret_cast<const safe_VkExternalMemoryAcquireUnmodifiedEXT *>(header);
             break;
@@ -71978,6 +72244,12 @@ void FreePnextChain(const void *pNext) {
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_FEATURES_NV:
             delete reinterpret_cast<const safe_VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_FEATURES_NV:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_PROPERTIES_NV:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV *>(header);
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_FEATURES_ARM:
             delete reinterpret_cast<const safe_VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM *>(header);
