@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2022 The Khronos Group Inc.
- * Copyright (c) 2015-2022 Valve Corporation
- * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2023 The Khronos Group Inc.
+ * Copyright (c) 2015-2023 Valve Corporation
+ * Copyright (c) 2015-2023 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,10 +126,6 @@ static inline const char *vk_result_string(VkResult err) {
         default:
             return "UNKNOWN_RESULT";
     }
-}
-
-static inline void test_error_callback(const char *expr, const char *file, unsigned int line, const char *function) {
-    ADD_FAILURE_AT(file, line) << "Assertion: `" << expr << "'";
 }
 
 #if defined(__linux__) || defined(__APPLE__)
