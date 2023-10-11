@@ -159,6 +159,7 @@ void DecoderPair_setBaseCodes(uint value, uint idx) {
 	g_DecoderPair.baseCodes = value;
 #else
 	g_DecoderPair[idx].baseCodes = value;
+	barrier();
 #endif
 }
 
@@ -167,6 +168,7 @@ void DecoderPair_setOffsets(uint value, uint idx) {
 	g_DecoderPair.offsets = value;
 #else
 	g_DecoderPair[idx].offsets = value;
+	barrier();
 #endif
 }
 
@@ -176,22 +178,12 @@ void DecoderPair_init(uint counts, uint maxlen) {
 	// Calculate offsets into the symbol table
 	DecoderPair_setOffsets(scan16(counts), tid());
 
-#ifndef IN_REGISTER_DECODER
-	g_tmp1[tid()] = counts;
-	groupMemoryBarrier();
-	barrier();
-#endif
-
 	// Calculate base codes
 	uint baseCode = 0;
 	for (uint i = 1; i < maxlen; i++) {
 		uint lane = tid() & 15;
 
-#ifndef IN_REGISTER_DECODER
-		uint cnt = g_tmp1[(tid() & 16) + i];
-#else
 		uint cnt = shuffle(counts, (tid() & 16) + i);
-#endif
 
 		if (lane >= i) baseCode += cnt << (lane - i);
 	}

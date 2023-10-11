@@ -36,34 +36,36 @@ void sync() {}
 
 #else
 
-shared uint g_tmp1[NUM_THREADS];
+// Temp space for group-synchronous operations
+shared uint g_tmpGroupSync[NUM_THREADS];
 
 uint vote(bool p) {
-	g_tmp1[tid()] = p ? 1 : 0;
+	g_tmpGroupSync[tid()] = p ? 1 : 0;
 	barrier();
 
-	uint ballot = g_tmp1[0];
+	uint ballot = g_tmpGroupSync[0];
 
 	for (uint i = 1; i < NUM_THREADS; i++)
-		ballot |= g_tmp1[i] << i;
+		ballot |= g_tmpGroupSync[i] << i;
 
 	barrier();
 	return ballot;
 }
 
 uint shuffle(uint value, uint idx) {
-	g_tmp1[tid()] = value;
+	g_tmpGroupSync[tid()] = value;
 	barrier();
-	uint res = g_tmp1[idx];
+	uint res = g_tmpGroupSync[idx];
 	barrier();
 	return res;
 }
 
 uint broadcast(uint value, uint idx) {
+	if (tid() == idx) g_tmpGroupSync[0] = value;
 	barrier();
-	if (tid() == idx) g_tmp1[0] = value;
+	uint res = g_tmpGroupSync[0];
 	barrier();
-	return g_tmp1[0];
+	return res;
 }
 
 bool all(bool p) {
@@ -76,9 +78,10 @@ uint scan(uint value) {
 
 #if SIMD_WIDTH == 16
 	uint sum = subgroupExclusiveAdd(value);
-	if (tid == SIMD_WIDTH - 1) g_tmp1[0] = sum + value;
+	if (tid == SIMD_WIDTH - 1) g_tmpGroupSync[0] = sum + value;
 	barrier();
-	if (tid >= SIMD_WIDTH) sum += g_tmp1[0];
+	if (tid >= SIMD_WIDTH) sum += g_tmpGroupSync[0];
+	barrier();
 	return sum;
 #else
 	uint sum = value;
@@ -119,11 +122,11 @@ uint match(uint value) {
 	for (uint k = 0; k < NUM_THREADS; k++)
 		mask |= (subgroupShuffle(value, k) == value ? 1 : 0) << k;
 #else
-	g_tmp1[tid()] = value;
+	g_tmpGroupSync[tid()] = value;
 	barrier();
 
 	for (uint i = 0; i < NUM_THREADS; i++)
-		mask |= g_tmp1[i] == value ? (1<<i) : 0;
+		mask |= g_tmpGroupSync[i] == value ? (1<<i) : 0;
 
 	barrier();
 #endif
