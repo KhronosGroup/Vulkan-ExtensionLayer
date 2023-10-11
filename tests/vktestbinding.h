@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2016, 2020-2022 The Khronos Group Inc.
- * Copyright (c) 2015-2016, 2020-2022 Valve Corporation
- * Copyright (c) 2015-2016, 2020-2022 LunarG, Inc.
+ * Copyright (c) 2015-2016, 2020-2023 The Khronos Group Inc.
+ * Copyright (c) 2015-2016, 2020-2023 Valve Corporation
+ * Copyright (c) 2015-2016, 2020-2023 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ std::vector<Dst> MakeVkHandles(const std::vector<Src *> &v) {
 }
 
 typedef void (*ErrorCallback)(const char *expr, const char *file, unsigned int line, const char *function);
-void set_error_callback(ErrorCallback callback);
 
 class PhysicalDevice;
 class Device;
