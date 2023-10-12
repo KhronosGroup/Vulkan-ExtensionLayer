@@ -21,10 +21,8 @@ static bool logging_enabled = false;
 
 #define PRINT(...)                        \
     {                                     \
-        if (logging_enabled) {            \
             fprintf(stdout, __VA_ARGS__); \
             fflush(stdout);               \
-        }                                 \
     }
 
 #include <vulkan/vk_layer.h>
@@ -691,6 +689,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
     PFN_vkCreateDevice create_device = (PFN_vkCreateDevice)instance_proc_addr(instance_data->instance, "vkCreateDevice");
     PFN_vkGetDeviceProcAddr gdpa = chain_info->u.pLayerInfo->pfnNextGetDeviceProcAddr;
     if (instance_data->vtable.CreateDevice == NULL) {
+        PRINT("returning VK_ERROR_INITIALIZATION_FAILED 1\n");
         return VK_ERROR_INITIALIZATION_FAILED;
     }
     uint32_t effective_api_version =
@@ -755,8 +754,10 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
 
             RemoveDeviceFeature(&create_info, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV);
 
+            PRINT("creating device with layer support   \n   ");
             result = create_device(physicalDevice, create_info.ptr(), pAllocator, pDevice);
         } else {
+            PRINT("creating device without layer support  \n    ");
             result = create_device(physicalDevice, pCreateInfo, pAllocator, pDevice);
         }
         if (result != VK_SUCCESS) {
