@@ -484,6 +484,10 @@ TEST_F(ShaderObjectTest, AllShadersDraw) {
         GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
+    if (!m_device->phy().features().tessellationShader || !m_device->phy().features().geometryShader) {
+        GTEST_SKIP() << "Tessellation or geometry shader not supported";
+    }
+
     m_errorMonitor->ExpectSuccess();
 
     static const char vertSource[] = R"glsl(
@@ -663,6 +667,9 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
     }
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
         GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+    if (!m_device->phy().features().tessellationShader || !m_device->phy().features().geometryShader) {
+        GTEST_SKIP() << "Tessellation or geometry shader not supported";
     }
 
     m_errorMonitor->ExpectSuccess();
@@ -1158,6 +1165,9 @@ TEST_F(ShaderObjectTest, FailCreateShaders) {
     }
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
         GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+    if (!m_device->phy().features().tessellationShader || !m_device->phy().features().geometryShader) {
+        GTEST_SKIP() << "Tessellation or geometry shader not supported";
     }
 
     TEST_DESCRIPTION("Test drawing using task and mesh shaders");
