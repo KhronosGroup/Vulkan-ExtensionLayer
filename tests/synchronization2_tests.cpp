@@ -1220,7 +1220,7 @@ TEST_F(Sync2CompatTest, Vulkan10) {
 
 #ifdef __APPLE__
     // Apple devices must enable portability
-    std::vector<const char *> requiredExtensions;                 // List of extensions we must have
+    std::vector<const char *> requiredExtensions; 
     requiredExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
     inst_info.enabledExtensionCount = (int)requiredExtensions.size();
     inst_info.ppEnabledExtensionNames = requiredExtensions.data();
