@@ -1225,7 +1225,6 @@ TEST_F(Sync2CompatTest, Vulkan10) {
     inst_info.enabledExtensionCount = (int)requiredExtensions.size();
     inst_info.ppEnabledExtensionNames = requiredExtensions.data();
     inst_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-    
 #endif
     
     VkInstance instance;
