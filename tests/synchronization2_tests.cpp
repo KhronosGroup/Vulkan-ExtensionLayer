@@ -1223,7 +1223,7 @@ TEST_F(Sync2CompatTest, Vulkan10) {
     std::vector<const char *> requiredExtensions;                 // List of extensions we must have
     requiredExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
     inst_info.enabledExtensionCount = (int)requiredExtensions.size();
-    inst_info.ppEnabledExtensionNames = requiredExtensions.data();;
+    inst_info.ppEnabledExtensionNames = requiredExtensions.data();
     inst_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     
 #endif
