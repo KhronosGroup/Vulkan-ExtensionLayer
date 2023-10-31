@@ -52,7 +52,7 @@ jobs:
             compiler: {cc: clang, cxx: clang++}
             config: release
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: '3.8'
@@ -82,7 +82,7 @@ jobs:
       matrix:
         arch: [ amd64, amd64_x86 ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: '3.8'
@@ -100,7 +100,7 @@ jobs:
       CMAKE_CXX_COMPILER_LAUNCHER: ccache
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: '3.8'
@@ -134,7 +134,7 @@ jobs:
           stl_type: c++_static
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: lukka/get-cmake@latest
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
