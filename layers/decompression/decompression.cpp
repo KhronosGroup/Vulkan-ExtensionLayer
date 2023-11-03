@@ -34,6 +34,7 @@ static bool logging_enabled = false;
 #include "vk_safe_struct.h"
 #include "vk_util.h"
 #include "decompression.h"
+#include "vk_common.h"
 
 #include "shaders/spirv/copyCount_vk.h"
 
@@ -130,6 +131,11 @@ static const VkLayerProperties kGlobalLayer = {
     1,
     "Default memory decompression layer",
 };
+
+// Instance extensions that this layer provides:
+const VkExtensionProperties kInstanceExtensionProperties[] = {
+    VkExtensionProperties{VK_EXT_LAYER_SETTINGS_EXTENSION_NAME, VK_EXT_LAYER_SETTINGS_SPEC_VERSION}};
+const uint32_t kInstanceExtensionPropertiesCount = static_cast<uint32_t>(std::size(kInstanceExtensionProperties));
 
 static const VkExtensionProperties kDeviceExtension = {VK_NV_MEMORY_DECOMPRESSION_EXTENSION_NAME,
                                                        VK_NV_MEMORY_DECOMPRESSION_SPEC_VERSION};
@@ -229,6 +235,7 @@ InstanceData::InstanceData(VkInstance inst, PFN_vkGetInstanceProcAddr gpa, const
     INIT_HOOK(vtable, instance, CreateDevice);
     INIT_HOOK(vtable, instance, EnumeratePhysicalDevices);
     INIT_HOOK(vtable, instance, EnumerateDeviceExtensionProperties);
+    INIT_HOOK(vtable, instance, EnumerateInstanceExtensionProperties);
     INIT_HOOK(vtable, instance, GetPhysicalDeviceProperties2);
     INIT_HOOK(vtable, instance, GetPhysicalDeviceFeatures2);
     INIT_HOOK(vtable, instance, GetPhysicalDeviceProperties);
@@ -1015,9 +1022,8 @@ extern "C" VEL_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensio
                                                                                             uint32_t* pPropertyCount,
                                                                                             VkExtensionProperties* pProperties) {
     if (pLayerName && strncmp(pLayerName, memory_decompression::kGlobalLayer.layerName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
-        // VK_NV_memory_decompression is a device extension and don't want to have it labeled as both instance and device extension
-        *pPropertyCount = 0;
-        return VK_SUCCESS;
+        return EnumerateProperties(memory_decompression::kInstanceExtensionPropertiesCount,
+                                   memory_decompression::kInstanceExtensionProperties, pPropertyCount, pProperties);
     }
     return VK_ERROR_LAYER_NOT_PRESENT;
 }

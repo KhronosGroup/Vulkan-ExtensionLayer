@@ -37,6 +37,8 @@
 #include "log.h"
 #include "vk_safe_struct.h"
 #include "vk_api_hash.h"
+#include "vk_util.h"
+#include "vk_common.h"
 
 #define kLayerSettingsForceEnable "force_enable"
 #define kLayerSettingsCustomSTypeInfo "custom_stype_list"
@@ -82,6 +84,11 @@ namespace shader_object {
 
 static const char* kLayerName = "VK_LAYER_KHRONOS_shader_object";
 static const VkExtensionProperties kExtensionProperties = {VK_EXT_SHADER_OBJECT_EXTENSION_NAME, VK_EXT_SHADER_OBJECT_SPEC_VERSION};
+
+// Instance extensions that this layer provides:
+const VkExtensionProperties kInstanceExtensionProperties[] = {
+    VkExtensionProperties{VK_EXT_LAYER_SETTINGS_EXTENSION_NAME, VK_EXT_LAYER_SETTINGS_SPEC_VERSION}};
+const uint32_t kInstanceExtensionPropertiesCount = static_cast<uint32_t>(std::size(kInstanceExtensionProperties));
 
 class AlignedMemory {
   public:
@@ -2889,6 +2896,15 @@ static VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysi
     *pPropertyCount = write_index;
     kDefaultAllocator.pfnFree(nullptr, all_properties);
     return VK_SUCCESS;
+}
+
+static VKAPI_ATTR VkResult VKAPI_CALL EnumerateInstanceExtensionProperties(const char* pLayerName, uint32_t* pPropertyCount,
+                                                                    VkExtensionProperties* pProperties) {
+    if (pLayerName && strncmp(pLayerName, shader_object::kLayerName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
+        return EnumerateProperties(shader_object::kInstanceExtensionPropertiesCount,
+                                   shader_object::kInstanceExtensionProperties, pPropertyCount, pProperties);
+    }
+    return VK_ERROR_LAYER_NOT_PRESENT;
 }
 
 static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, const VkDeviceCreateInfo* pCreateInfo,
