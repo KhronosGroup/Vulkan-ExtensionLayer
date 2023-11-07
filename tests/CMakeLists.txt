@@ -104,9 +104,6 @@ target_link_libraries(vk_extension_layer_tests PRIVATE
     glslang::HLSL
     glslang::SPIRV
     glslang::SPVRemapper
-    $<TARGET_NAME_IF_EXISTS:PkgConfig::XCB>
-    $<TARGET_NAME_IF_EXISTS:PkgConfig::X11>
-    $<TARGET_NAME_IF_EXISTS:PkgConfig::WAYlAND_CLIENT>
     ${CMAKE_DL_LIBS}
 )
 

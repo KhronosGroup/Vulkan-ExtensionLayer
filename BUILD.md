@@ -79,19 +79,7 @@ This repository is regularly built and tested on the two most recent Ubuntu LTS 
 
 ```bash
 sudo apt-get install git build-essential python3 cmake
-
-# Linux WSI system libraries
-sudo apt-get install libwayland-dev xorg-dev
 ```
-
-### WSI Support Build Options
-
-By default, the repository components are built with support for the
-Vulkan-defined WSI display servers: Xcb, Xlib, and Wayland. It is recommended
-to build the repository components with support for these display servers to
-maximize their usability across Linux platforms. If it is necessary to build
-these modules without support for one of the display servers, the appropriate
-CMake option of the form `BUILD_WSI_xxx_SUPPORT` can be set to `OFF`.
 
 ### Linux 32-bit support
 

@@ -59,11 +59,7 @@ jobs:
       - uses: lukka/get-cmake@latest
         with:
           cmakeVersion: 3.17.2
-      - name: Install build dependencies
-        run: |
-            python -m pip install jsonschema pyparsing
-            sudo apt-get -qq update
-            sudo apt-get install -y libwayland-dev xorg-dev
+      - run: python -m pip install jsonschema pyparsing
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
