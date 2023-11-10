@@ -114,7 +114,7 @@ jobs:
       - name: Install
         run: cmake --install build --prefix build/install
 
-  android_cmake:
+  android:
     env:
       CMAKE_C_COMPILER_LAUNCHER: ccache
       CMAKE_CXX_COMPILER_LAUNCHER: ccache
