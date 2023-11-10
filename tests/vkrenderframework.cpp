@@ -444,7 +444,7 @@ void VkRenderFramework::InitFramework(void * /*unused compatibility parameter*/,
     };
 
     // This has to be ahead of the GetInstanceCreateInfo() call, or it doesn't get registered
-#ifdef VK_USE_PLATFORM_MACOS_MVK
+#ifdef __APPLE__
     instance_extensions_.push_back("VK_KHR_portability_enumeration");
 #endif
 
@@ -453,9 +453,8 @@ void VkRenderFramework::InitFramework(void * /*unused compatibility parameter*/,
 
     auto ici = GetInstanceCreateInfo();
 
-#ifdef VK_USE_PLATFORM_MACOS_MVK
+#ifdef __APPLE__
     ici.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-
 #endif
 
     // concatenate pNexts
@@ -544,7 +543,7 @@ void VkRenderFramework::InitState(VkPhysicalDeviceFeatures *features, void *crea
 
     RemoveIf(m_device_extension_names, ExtensionNotSupportedWithReporting);
 
-#ifdef VK_USE_PLATFORM_MACOS_MVK
+#ifdef __APPLE__
     m_device_extension_names.push_back("VK_KHR_portability_subset");
 #endif
 

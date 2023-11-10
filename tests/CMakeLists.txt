@@ -47,6 +47,9 @@ else()
     )
 endif()
 
+# Needed for VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
+target_compile_definitions(vk_extension_layer_tests PRIVATE VK_ENABLE_BETA_EXTENSIONS)
+
 lunarg_target_compiler_configurations(vk_extension_layer_tests ${BUILD_WERROR})
 
 target_sources(vk_extension_layer_tests PRIVATE

@@ -114,6 +114,24 @@ jobs:
       - name: Install
         run: cmake --install build --prefix build/install
 
+  iOS:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lukka/get-cmake@latest
+      - name: Configure for iOS
+        run: |
+          cmake -S . -B build/ \
+          -D CMAKE_SYSTEM_NAME=iOS \
+          -D CMAKE_OSX_ARCHITECTURES=arm64 \
+          -D BUILD_WERROR=ON \
+          -D UPDATE_DEPS=ON \
+          -D CMAKE_BUILD_TYPE=Debug
+        env:
+          LDFLAGS: -Wl,-fatal_warnings
+      - run: cmake --build build
+      - run: cmake --install build --prefix /tmp
+
   android:
     env:
       CMAKE_C_COMPILER_LAUNCHER: ccache
