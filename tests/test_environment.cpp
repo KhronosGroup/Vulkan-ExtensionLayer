@@ -85,7 +85,7 @@ void Environment::SetUp() {
 #ifdef VK_USE_PLATFORM_XCB_KHR
     instance_extension_names.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
-#ifdef VK_USE_PLATFORM_MACOS_MVK
+#ifdef __APPLE__
     device_extension_names.push_back("VK_VK_KHR_portability_subset");
     instance_extension_names.push_back("VK_KHR_portability_enumeration");
 #endif
@@ -108,7 +108,7 @@ void Environment::SetUp() {
     inst_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     inst_info.pNext = NULL;
     inst_info.pApplicationInfo = &app_;
-#ifdef VK_USE_PLATFORM_MACOS_MVK
+#ifdef __APPLE__
     inst_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 #endif
     inst_info.enabledExtensionCount = instance_extension_names.size();

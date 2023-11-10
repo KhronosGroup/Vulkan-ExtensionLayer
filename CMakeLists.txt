@@ -32,20 +32,11 @@ include(GNUInstallDirs)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-if (NOT TARGET Vulkan::Headers)
-    find_package(VulkanHeaders CONFIG REQUIRED QUIET)
-endif()
-
-target_compile_definitions(Vulkan::Headers INTERFACE VK_ENABLE_BETA_EXTENSIONS) # Enable beta Vulkan extensions
 if(WIN32)
-    target_compile_definitions(Vulkan::Headers INTERFACE VK_USE_PLATFORM_WIN32_KHR)
+    add_compile_definitions(VK_USE_PLATFORM_WIN32_KHR)
 elseif(ANDROID)
-    target_compile_definitions(Vulkan::Headers INTERFACE VK_USE_PLATFORM_ANDROID_KHR)
-elseif(APPLE)
-    target_compile_definitions(Vulkan::Headers INTERFACE VK_USE_PLATFORM_MACOS_MVK VK_USE_PLATFORM_METAL_EXT)
+    add_compile_definitions(VK_USE_PLATFORM_ANDROID_KHR)
 endif()
-
-find_package(VulkanUtilityLibraries CONFIG REQUIRED)
 
 option(BUILD_WERROR "Treat compiler warnings as errors")
 if (BUILD_WERROR)
@@ -74,6 +65,9 @@ if (VEL_CODEGEN)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/utils/generated
     )
 endif()
+
+find_package(VulkanHeaders CONFIG)
+find_package(VulkanUtilityLibraries CONFIG)
 
 add_subdirectory(layers)
 add_subdirectory(utils)
