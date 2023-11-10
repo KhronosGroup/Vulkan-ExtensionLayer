@@ -91,28 +91,18 @@ jobs:
         run: python scripts/github_ci_build_desktop.py --config release 
 
   macos:
-    env:
-      CMAKE_C_COMPILER_LAUNCHER: ccache
-      CMAKE_CXX_COMPILER_LAUNCHER: ccache
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.8'
       - uses: lukka/get-cmake@latest
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
-        with:
-            key: macos-ccache
-      - name: Configure
-        run: cmake -S. -B build -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=ON -D BUILD_WERROR=ON -D UPDATE_DEPS=ON
+      - run: cmake -S. -B build -D CMAKE_BUILD_TYPE=Debug -D BUILD_TESTS=ON -D BUILD_WERROR=ON -D UPDATE_DEPS=ON
         env:
-          MACOSX_DEPLOYMENT_TARGET: 10.15
-      - name: Build
-        run: cmake --build build
-      - name: Install
-        run: cmake --install build --prefix build/install
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+      - run: cmake --build build
+      - run: cmake --install build --prefix /tmp
 
   iOS:
     runs-on: macos-13
