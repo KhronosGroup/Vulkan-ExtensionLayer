@@ -51425,6 +51425,406 @@ void safe_VkDeviceDiagnosticsConfigCreateInfoNV::initialize(const safe_VkDeviceD
     pNext = SafePnextCopy(copy_src->pNext);
 }
 
+safe_VkCudaModuleCreateInfoNV::safe_VkCudaModuleCreateInfoNV(const VkCudaModuleCreateInfoNV* in_struct) :
+    sType(in_struct->sType),
+    dataSize(in_struct->dataSize),
+    pData(nullptr)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+    if (in_struct->pData != nullptr) {
+        auto temp = new std::byte[in_struct->dataSize];
+        std::memcpy(temp, in_struct->pData, in_struct->dataSize);
+        pData = temp;
+    }
+}
+
+safe_VkCudaModuleCreateInfoNV::safe_VkCudaModuleCreateInfoNV() :
+    sType(VK_STRUCTURE_TYPE_CUDA_MODULE_CREATE_INFO_NV),
+    pNext(nullptr),
+    dataSize(),
+    pData(nullptr)
+{}
+
+safe_VkCudaModuleCreateInfoNV::safe_VkCudaModuleCreateInfoNV(const safe_VkCudaModuleCreateInfoNV& copy_src)
+{
+    sType = copy_src.sType;
+    dataSize = copy_src.dataSize;
+    pNext = SafePnextCopy(copy_src.pNext);
+    if (copy_src.pData != nullptr) {
+        auto temp = new std::byte[copy_src.dataSize];
+        std::memcpy(temp, copy_src.pData, copy_src.dataSize);
+        pData = temp;
+    }
+}
+
+safe_VkCudaModuleCreateInfoNV& safe_VkCudaModuleCreateInfoNV::operator=(const safe_VkCudaModuleCreateInfoNV& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    dataSize = copy_src.dataSize;
+    pNext = SafePnextCopy(copy_src.pNext);
+    if (copy_src.pData != nullptr) {
+        auto temp = new std::byte[copy_src.dataSize];
+        std::memcpy(temp, copy_src.pData, copy_src.dataSize);
+        pData = temp;
+    }
+
+    return *this;
+}
+
+safe_VkCudaModuleCreateInfoNV::~safe_VkCudaModuleCreateInfoNV()
+{
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkCudaModuleCreateInfoNV::initialize(const VkCudaModuleCreateInfoNV* in_struct)
+{
+    if (pData != nullptr) {
+        auto temp = reinterpret_cast<const std::byte*>(pData);
+        delete [] temp;
+    }
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    dataSize = in_struct->dataSize;
+    pNext = SafePnextCopy(in_struct->pNext);
+    if (in_struct->pData != nullptr) {
+        auto temp = new std::byte[in_struct->dataSize];
+        std::memcpy(temp, in_struct->pData, in_struct->dataSize);
+        pData = temp;
+    }
+}
+
+void safe_VkCudaModuleCreateInfoNV::initialize(const safe_VkCudaModuleCreateInfoNV* copy_src)
+{
+    sType = copy_src->sType;
+    dataSize = copy_src->dataSize;
+    pNext = SafePnextCopy(copy_src->pNext);
+    if (copy_src->pData != nullptr) {
+        auto temp = new std::byte[copy_src->dataSize];
+        std::memcpy(temp, copy_src->pData, copy_src->dataSize);
+        pData = temp;
+    }
+}
+
+safe_VkCudaFunctionCreateInfoNV::safe_VkCudaFunctionCreateInfoNV(const VkCudaFunctionCreateInfoNV* in_struct) :
+    sType(in_struct->sType),
+    module(in_struct->module)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+    pName = SafeStringCopy(in_struct->pName);
+}
+
+safe_VkCudaFunctionCreateInfoNV::safe_VkCudaFunctionCreateInfoNV() :
+    sType(VK_STRUCTURE_TYPE_CUDA_FUNCTION_CREATE_INFO_NV),
+    pNext(nullptr),
+    module(),
+    pName(nullptr)
+{}
+
+safe_VkCudaFunctionCreateInfoNV::safe_VkCudaFunctionCreateInfoNV(const safe_VkCudaFunctionCreateInfoNV& copy_src)
+{
+    sType = copy_src.sType;
+    module = copy_src.module;
+    pNext = SafePnextCopy(copy_src.pNext);
+    pName = SafeStringCopy(copy_src.pName);
+}
+
+safe_VkCudaFunctionCreateInfoNV& safe_VkCudaFunctionCreateInfoNV::operator=(const safe_VkCudaFunctionCreateInfoNV& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pName) delete [] pName;
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    module = copy_src.module;
+    pNext = SafePnextCopy(copy_src.pNext);
+    pName = SafeStringCopy(copy_src.pName);
+
+    return *this;
+}
+
+safe_VkCudaFunctionCreateInfoNV::~safe_VkCudaFunctionCreateInfoNV()
+{
+    if (pName) delete [] pName;
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkCudaFunctionCreateInfoNV::initialize(const VkCudaFunctionCreateInfoNV* in_struct)
+{
+    if (pName) delete [] pName;
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    module = in_struct->module;
+    pNext = SafePnextCopy(in_struct->pNext);
+    pName = SafeStringCopy(in_struct->pName);
+}
+
+void safe_VkCudaFunctionCreateInfoNV::initialize(const safe_VkCudaFunctionCreateInfoNV* copy_src)
+{
+    sType = copy_src->sType;
+    module = copy_src->module;
+    pNext = SafePnextCopy(copy_src->pNext);
+    pName = SafeStringCopy(copy_src->pName);
+}
+
+safe_VkCudaLaunchInfoNV::safe_VkCudaLaunchInfoNV(const VkCudaLaunchInfoNV* in_struct) :
+    sType(in_struct->sType),
+    function(in_struct->function),
+    gridDimX(in_struct->gridDimX),
+    gridDimY(in_struct->gridDimY),
+    gridDimZ(in_struct->gridDimZ),
+    blockDimX(in_struct->blockDimX),
+    blockDimY(in_struct->blockDimY),
+    blockDimZ(in_struct->blockDimZ),
+    sharedMemBytes(in_struct->sharedMemBytes),
+    paramCount(in_struct->paramCount),
+    pParams(in_struct->pParams),
+    extraCount(in_struct->extraCount),
+    pExtras(in_struct->pExtras)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkCudaLaunchInfoNV::safe_VkCudaLaunchInfoNV() :
+    sType(VK_STRUCTURE_TYPE_CUDA_LAUNCH_INFO_NV),
+    pNext(nullptr),
+    function(),
+    gridDimX(),
+    gridDimY(),
+    gridDimZ(),
+    blockDimX(),
+    blockDimY(),
+    blockDimZ(),
+    sharedMemBytes(),
+    paramCount(),
+    pParams(nullptr),
+    extraCount(),
+    pExtras(nullptr)
+{}
+
+safe_VkCudaLaunchInfoNV::safe_VkCudaLaunchInfoNV(const safe_VkCudaLaunchInfoNV& copy_src)
+{
+    sType = copy_src.sType;
+    function = copy_src.function;
+    gridDimX = copy_src.gridDimX;
+    gridDimY = copy_src.gridDimY;
+    gridDimZ = copy_src.gridDimZ;
+    blockDimX = copy_src.blockDimX;
+    blockDimY = copy_src.blockDimY;
+    blockDimZ = copy_src.blockDimZ;
+    sharedMemBytes = copy_src.sharedMemBytes;
+    paramCount = copy_src.paramCount;
+    pParams = copy_src.pParams;
+    extraCount = copy_src.extraCount;
+    pExtras = copy_src.pExtras;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkCudaLaunchInfoNV& safe_VkCudaLaunchInfoNV::operator=(const safe_VkCudaLaunchInfoNV& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    function = copy_src.function;
+    gridDimX = copy_src.gridDimX;
+    gridDimY = copy_src.gridDimY;
+    gridDimZ = copy_src.gridDimZ;
+    blockDimX = copy_src.blockDimX;
+    blockDimY = copy_src.blockDimY;
+    blockDimZ = copy_src.blockDimZ;
+    sharedMemBytes = copy_src.sharedMemBytes;
+    paramCount = copy_src.paramCount;
+    pParams = copy_src.pParams;
+    extraCount = copy_src.extraCount;
+    pExtras = copy_src.pExtras;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkCudaLaunchInfoNV::~safe_VkCudaLaunchInfoNV()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkCudaLaunchInfoNV::initialize(const VkCudaLaunchInfoNV* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    function = in_struct->function;
+    gridDimX = in_struct->gridDimX;
+    gridDimY = in_struct->gridDimY;
+    gridDimZ = in_struct->gridDimZ;
+    blockDimX = in_struct->blockDimX;
+    blockDimY = in_struct->blockDimY;
+    blockDimZ = in_struct->blockDimZ;
+    sharedMemBytes = in_struct->sharedMemBytes;
+    paramCount = in_struct->paramCount;
+    pParams = in_struct->pParams;
+    extraCount = in_struct->extraCount;
+    pExtras = in_struct->pExtras;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkCudaLaunchInfoNV::initialize(const safe_VkCudaLaunchInfoNV* copy_src)
+{
+    sType = copy_src->sType;
+    function = copy_src->function;
+    gridDimX = copy_src->gridDimX;
+    gridDimY = copy_src->gridDimY;
+    gridDimZ = copy_src->gridDimZ;
+    blockDimX = copy_src->blockDimX;
+    blockDimY = copy_src->blockDimY;
+    blockDimZ = copy_src->blockDimZ;
+    sharedMemBytes = copy_src->sharedMemBytes;
+    paramCount = copy_src->paramCount;
+    pParams = copy_src->pParams;
+    extraCount = copy_src->extraCount;
+    pExtras = copy_src->pExtras;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
+safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV::safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV(const VkPhysicalDeviceCudaKernelLaunchFeaturesNV* in_struct) :
+    sType(in_struct->sType),
+    cudaKernelLaunchFeatures(in_struct->cudaKernelLaunchFeatures)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV::safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_FEATURES_NV),
+    pNext(nullptr),
+    cudaKernelLaunchFeatures()
+{}
+
+safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV::safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV(const safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV& copy_src)
+{
+    sType = copy_src.sType;
+    cudaKernelLaunchFeatures = copy_src.cudaKernelLaunchFeatures;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV& safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV::operator=(const safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    cudaKernelLaunchFeatures = copy_src.cudaKernelLaunchFeatures;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV::~safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV::initialize(const VkPhysicalDeviceCudaKernelLaunchFeaturesNV* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    cudaKernelLaunchFeatures = in_struct->cudaKernelLaunchFeatures;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV::initialize(const safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV* copy_src)
+{
+    sType = copy_src->sType;
+    cudaKernelLaunchFeatures = copy_src->cudaKernelLaunchFeatures;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
+safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV::safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV(const VkPhysicalDeviceCudaKernelLaunchPropertiesNV* in_struct) :
+    sType(in_struct->sType),
+    computeCapabilityMinor(in_struct->computeCapabilityMinor),
+    computeCapabilityMajor(in_struct->computeCapabilityMajor)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV::safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_PROPERTIES_NV),
+    pNext(nullptr),
+    computeCapabilityMinor(),
+    computeCapabilityMajor()
+{}
+
+safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV::safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV(const safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV& copy_src)
+{
+    sType = copy_src.sType;
+    computeCapabilityMinor = copy_src.computeCapabilityMinor;
+    computeCapabilityMajor = copy_src.computeCapabilityMajor;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV& safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV::operator=(const safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    computeCapabilityMinor = copy_src.computeCapabilityMinor;
+    computeCapabilityMajor = copy_src.computeCapabilityMajor;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV::~safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV::initialize(const VkPhysicalDeviceCudaKernelLaunchPropertiesNV* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    computeCapabilityMinor = in_struct->computeCapabilityMinor;
+    computeCapabilityMajor = in_struct->computeCapabilityMajor;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV::initialize(const safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV* copy_src)
+{
+    sType = copy_src->sType;
+    computeCapabilityMinor = copy_src->computeCapabilityMinor;
+    computeCapabilityMajor = copy_src->computeCapabilityMajor;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
 safe_VkQueryLowLatencySupportNV::safe_VkQueryLowLatencySupportNV(const VkQueryLowLatencySupportNV* in_struct) :
     sType(in_struct->sType),
     pQueriedLowLatencyData(in_struct->pQueriedLowLatencyData)
@@ -60592,6 +60992,174 @@ void safe_VkPhysicalDeviceShaderCorePropertiesARM::initialize(const safe_VkPhysi
     pixelRate = copy_src->pixelRate;
     texelRate = copy_src->texelRate;
     fmaRate = copy_src->fmaRate;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
+safe_VkDeviceQueueShaderCoreControlCreateInfoARM::safe_VkDeviceQueueShaderCoreControlCreateInfoARM(const VkDeviceQueueShaderCoreControlCreateInfoARM* in_struct) :
+    sType(in_struct->sType),
+    shaderCoreCount(in_struct->shaderCoreCount)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkDeviceQueueShaderCoreControlCreateInfoARM::safe_VkDeviceQueueShaderCoreControlCreateInfoARM() :
+    sType(VK_STRUCTURE_TYPE_DEVICE_QUEUE_SHADER_CORE_CONTROL_CREATE_INFO_ARM),
+    pNext(nullptr),
+    shaderCoreCount()
+{}
+
+safe_VkDeviceQueueShaderCoreControlCreateInfoARM::safe_VkDeviceQueueShaderCoreControlCreateInfoARM(const safe_VkDeviceQueueShaderCoreControlCreateInfoARM& copy_src)
+{
+    sType = copy_src.sType;
+    shaderCoreCount = copy_src.shaderCoreCount;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkDeviceQueueShaderCoreControlCreateInfoARM& safe_VkDeviceQueueShaderCoreControlCreateInfoARM::operator=(const safe_VkDeviceQueueShaderCoreControlCreateInfoARM& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    shaderCoreCount = copy_src.shaderCoreCount;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkDeviceQueueShaderCoreControlCreateInfoARM::~safe_VkDeviceQueueShaderCoreControlCreateInfoARM()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkDeviceQueueShaderCoreControlCreateInfoARM::initialize(const VkDeviceQueueShaderCoreControlCreateInfoARM* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    shaderCoreCount = in_struct->shaderCoreCount;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkDeviceQueueShaderCoreControlCreateInfoARM::initialize(const safe_VkDeviceQueueShaderCoreControlCreateInfoARM* copy_src)
+{
+    sType = copy_src->sType;
+    shaderCoreCount = copy_src->shaderCoreCount;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
+safe_VkPhysicalDeviceSchedulingControlsFeaturesARM::safe_VkPhysicalDeviceSchedulingControlsFeaturesARM(const VkPhysicalDeviceSchedulingControlsFeaturesARM* in_struct) :
+    sType(in_struct->sType),
+    schedulingControls(in_struct->schedulingControls)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceSchedulingControlsFeaturesARM::safe_VkPhysicalDeviceSchedulingControlsFeaturesARM() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_FEATURES_ARM),
+    pNext(nullptr),
+    schedulingControls()
+{}
+
+safe_VkPhysicalDeviceSchedulingControlsFeaturesARM::safe_VkPhysicalDeviceSchedulingControlsFeaturesARM(const safe_VkPhysicalDeviceSchedulingControlsFeaturesARM& copy_src)
+{
+    sType = copy_src.sType;
+    schedulingControls = copy_src.schedulingControls;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceSchedulingControlsFeaturesARM& safe_VkPhysicalDeviceSchedulingControlsFeaturesARM::operator=(const safe_VkPhysicalDeviceSchedulingControlsFeaturesARM& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    schedulingControls = copy_src.schedulingControls;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceSchedulingControlsFeaturesARM::~safe_VkPhysicalDeviceSchedulingControlsFeaturesARM()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceSchedulingControlsFeaturesARM::initialize(const VkPhysicalDeviceSchedulingControlsFeaturesARM* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    schedulingControls = in_struct->schedulingControls;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceSchedulingControlsFeaturesARM::initialize(const safe_VkPhysicalDeviceSchedulingControlsFeaturesARM* copy_src)
+{
+    sType = copy_src->sType;
+    schedulingControls = copy_src->schedulingControls;
+    pNext = SafePnextCopy(copy_src->pNext);
+}
+
+safe_VkPhysicalDeviceSchedulingControlsPropertiesARM::safe_VkPhysicalDeviceSchedulingControlsPropertiesARM(const VkPhysicalDeviceSchedulingControlsPropertiesARM* in_struct) :
+    sType(in_struct->sType),
+    schedulingControlsFlags(in_struct->schedulingControlsFlags)
+{
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+safe_VkPhysicalDeviceSchedulingControlsPropertiesARM::safe_VkPhysicalDeviceSchedulingControlsPropertiesARM() :
+    sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_PROPERTIES_ARM),
+    pNext(nullptr),
+    schedulingControlsFlags()
+{}
+
+safe_VkPhysicalDeviceSchedulingControlsPropertiesARM::safe_VkPhysicalDeviceSchedulingControlsPropertiesARM(const safe_VkPhysicalDeviceSchedulingControlsPropertiesARM& copy_src)
+{
+    sType = copy_src.sType;
+    schedulingControlsFlags = copy_src.schedulingControlsFlags;
+    pNext = SafePnextCopy(copy_src.pNext);
+}
+
+safe_VkPhysicalDeviceSchedulingControlsPropertiesARM& safe_VkPhysicalDeviceSchedulingControlsPropertiesARM::operator=(const safe_VkPhysicalDeviceSchedulingControlsPropertiesARM& copy_src)
+{
+    if (&copy_src == this) return *this;
+
+    if (pNext)
+        FreePnextChain(pNext);
+
+    sType = copy_src.sType;
+    schedulingControlsFlags = copy_src.schedulingControlsFlags;
+    pNext = SafePnextCopy(copy_src.pNext);
+
+    return *this;
+}
+
+safe_VkPhysicalDeviceSchedulingControlsPropertiesARM::~safe_VkPhysicalDeviceSchedulingControlsPropertiesARM()
+{
+    if (pNext)
+        FreePnextChain(pNext);
+}
+
+void safe_VkPhysicalDeviceSchedulingControlsPropertiesARM::initialize(const VkPhysicalDeviceSchedulingControlsPropertiesARM* in_struct)
+{
+    if (pNext)
+        FreePnextChain(pNext);
+    sType = in_struct->sType;
+    schedulingControlsFlags = in_struct->schedulingControlsFlags;
+    pNext = SafePnextCopy(in_struct->pNext);
+}
+
+void safe_VkPhysicalDeviceSchedulingControlsPropertiesARM::initialize(const safe_VkPhysicalDeviceSchedulingControlsPropertiesARM* copy_src)
+{
+    sType = copy_src->sType;
+    schedulingControlsFlags = copy_src->schedulingControlsFlags;
     pNext = SafePnextCopy(copy_src->pNext);
 }
 
@@ -70249,6 +70817,12 @@ void *SafePnextCopy(const void *pNext) {
         case VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV:
             safe_pNext = new safe_VkDeviceDiagnosticsConfigCreateInfoNV(reinterpret_cast<const VkDeviceDiagnosticsConfigCreateInfoNV *>(pNext));
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_FEATURES_NV:
+            safe_pNext = new safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV(reinterpret_cast<const VkPhysicalDeviceCudaKernelLaunchFeaturesNV *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_PROPERTIES_NV:
+            safe_pNext = new safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV(reinterpret_cast<const VkPhysicalDeviceCudaKernelLaunchPropertiesNV *>(pNext));
+            break;
         case VK_STRUCTURE_TYPE_QUERY_LOW_LATENCY_SUPPORT_NV:
             safe_pNext = new safe_VkQueryLowLatencySupportNV(reinterpret_cast<const VkQueryLowLatencySupportNV *>(pNext));
             break;
@@ -70452,6 +71026,15 @@ void *SafePnextCopy(const void *pNext) {
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_ARM:
             safe_pNext = new safe_VkPhysicalDeviceShaderCorePropertiesARM(reinterpret_cast<const VkPhysicalDeviceShaderCorePropertiesARM *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_DEVICE_QUEUE_SHADER_CORE_CONTROL_CREATE_INFO_ARM:
+            safe_pNext = new safe_VkDeviceQueueShaderCoreControlCreateInfoARM(reinterpret_cast<const VkDeviceQueueShaderCoreControlCreateInfoARM *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_FEATURES_ARM:
+            safe_pNext = new safe_VkPhysicalDeviceSchedulingControlsFeaturesARM(reinterpret_cast<const VkPhysicalDeviceSchedulingControlsFeaturesARM *>(pNext));
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_PROPERTIES_ARM:
+            safe_pNext = new safe_VkPhysicalDeviceSchedulingControlsPropertiesARM(reinterpret_cast<const VkPhysicalDeviceSchedulingControlsPropertiesARM *>(pNext));
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_SLICED_VIEW_OF_3D_FEATURES_EXT:
             safe_pNext = new safe_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT(reinterpret_cast<const VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT *>(pNext));
@@ -71906,6 +72489,12 @@ void FreePnextChain(const void *pNext) {
         case VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV:
             delete reinterpret_cast<const safe_VkDeviceDiagnosticsConfigCreateInfoNV *>(header);
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_FEATURES_NV:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceCudaKernelLaunchFeaturesNV *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_PROPERTIES_NV:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceCudaKernelLaunchPropertiesNV *>(header);
+            break;
         case VK_STRUCTURE_TYPE_QUERY_LOW_LATENCY_SUPPORT_NV:
             delete reinterpret_cast<const safe_VkQueryLowLatencySupportNV *>(header);
             break;
@@ -72109,6 +72698,15 @@ void FreePnextChain(const void *pNext) {
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_ARM:
             delete reinterpret_cast<const safe_VkPhysicalDeviceShaderCorePropertiesARM *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_DEVICE_QUEUE_SHADER_CORE_CONTROL_CREATE_INFO_ARM:
+            delete reinterpret_cast<const safe_VkDeviceQueueShaderCoreControlCreateInfoARM *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_FEATURES_ARM:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceSchedulingControlsFeaturesARM *>(header);
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_PROPERTIES_ARM:
+            delete reinterpret_cast<const safe_VkPhysicalDeviceSchedulingControlsPropertiesARM *>(header);
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_SLICED_VIEW_OF_3D_FEATURES_EXT:
             delete reinterpret_cast<const safe_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT *>(header);
