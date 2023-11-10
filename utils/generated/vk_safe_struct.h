@@ -8060,6 +8060,21 @@ struct safe_VkHdrMetadataEXT {
     VkHdrMetadataEXT const *ptr() const { return reinterpret_cast<VkHdrMetadataEXT const *>(this); }
 };
 
+struct safe_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG {
+    VkStructureType sType;
+    void* pNext{};
+    VkBool32 relaxedLineRasterization;
+    safe_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG(const VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG* in_struct);
+    safe_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG(const safe_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG& copy_src);
+    safe_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG& operator=(const safe_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG& copy_src);
+    safe_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG();
+    ~safe_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG();
+    void initialize(const VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG* in_struct);
+    void initialize(const safe_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG* copy_src);
+    VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG *ptr() { return reinterpret_cast<VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG *>(this); }
+    VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG const *ptr() const { return reinterpret_cast<VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG const *>(this); }
+};
+
 #ifdef VK_USE_PLATFORM_IOS_MVK
 struct safe_VkIOSSurfaceCreateInfoMVK {
     VkStructureType sType;
@@ -13900,7 +13915,7 @@ struct safe_VkDirectDriverLoadingInfoLUNARG {
 
 struct safe_VkDirectDriverLoadingListLUNARG {
     VkStructureType sType;
-    void* pNext{};
+    const void* pNext{};
     VkDirectDriverLoadingModeLUNARG mode;
     uint32_t driverCount;
     safe_VkDirectDriverLoadingInfoLUNARG* pDrivers{};
