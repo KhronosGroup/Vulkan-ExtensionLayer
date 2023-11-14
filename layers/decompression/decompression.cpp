@@ -83,12 +83,12 @@ static const ByteCode kGInflateBytecode[] = {
     {(const uint8_t*)kGInflate64_HAVE_INT16, sizeof(kGInflate64_HAVE_INT16)},
 
     {(const uint8_t*)kGInflate8_HAVE_INT64, sizeof(kGInflate8_HAVE_INT64)},
-    {(const uint8_t*)kGInflate64_HAVE_INT64, sizeof(kGInflate64_HAVE_INT64)},
+    {(const uint8_t*)kGInflate16_HAVE_INT64, sizeof(kGInflate16_HAVE_INT64)},
     {(const uint8_t*)kGInflate32_HAVE_INT64, sizeof(kGInflate32_HAVE_INT64)},
     {(const uint8_t*)kGInflate64_HAVE_INT64, sizeof(kGInflate64_HAVE_INT64)},
 
     {(const uint8_t*)kGInflate8_HAVE_INT16_HAVE_INT64, sizeof(kGInflate8_HAVE_INT16_HAVE_INT64)},
-    {(const uint8_t*)kGInflate64_HAVE_INT16_HAVE_INT64, sizeof(kGInflate64_HAVE_INT16_HAVE_INT64)},
+    {(const uint8_t*)kGInflate16_HAVE_INT16_HAVE_INT64, sizeof(kGInflate16_HAVE_INT16_HAVE_INT64)},
     {(const uint8_t*)kGInflate32_HAVE_INT16_HAVE_INT64, sizeof(kGInflate32_HAVE_INT16_HAVE_INT64)},
     {(const uint8_t*)kGInflate64_HAVE_INT16_HAVE_INT64, sizeof(kGInflate64_HAVE_INT16_HAVE_INT64)},
 };
@@ -105,12 +105,12 @@ static const ByteCode kIndirectGInflateBytecode[] = {
     {(const uint8_t*)kIndirectGInflate64_HAVE_INT16, sizeof(kIndirectGInflate64_HAVE_INT16)},
 
     {(const uint8_t*)kIndirectGInflate8_HAVE_INT64, sizeof(kIndirectGInflate8_HAVE_INT64)},
-    {(const uint8_t*)kIndirectGInflate64_HAVE_INT64, sizeof(kIndirectGInflate64_HAVE_INT64)},
+    {(const uint8_t*)kIndirectGInflate16_HAVE_INT64, sizeof(kIndirectGInflate16_HAVE_INT64)},
     {(const uint8_t*)kIndirectGInflate32_HAVE_INT64, sizeof(kIndirectGInflate32_HAVE_INT64)},
     {(const uint8_t*)kIndirectGInflate64_HAVE_INT64, sizeof(kIndirectGInflate64_HAVE_INT64)},
 
     {(const uint8_t*)kIndirectGInflate8_HAVE_INT16_HAVE_INT64, sizeof(kIndirectGInflate8_HAVE_INT16_HAVE_INT64)},
-    {(const uint8_t*)kIndirectGInflate64_HAVE_INT16_HAVE_INT64, sizeof(kIndirectGInflate64_HAVE_INT16_HAVE_INT64)},
+    {(const uint8_t*)kIndirectGInflate16_HAVE_INT16_HAVE_INT64, sizeof(kIndirectGInflate16_HAVE_INT16_HAVE_INT64)},
     {(const uint8_t*)kIndirectGInflate32_HAVE_INT16_HAVE_INT64, sizeof(kIndirectGInflate32_HAVE_INT16_HAVE_INT64)},
     {(const uint8_t*)kIndirectGInflate64_HAVE_INT16_HAVE_INT64, sizeof(kIndirectGInflate64_HAVE_INT16_HAVE_INT64)},
 };
