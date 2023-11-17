@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef VK_ALLOC_H_
-#define VK_ALLOC_H_
+#pragma once
 
 #include <assert.h>
 #include <string.h>
@@ -58,4 +57,3 @@ static inline void vk_free2(const VkAllocationCallbacks *alloc,
     vk_free(user_alloc ? user_alloc : alloc, ptr);
 }
 
-#endif /* VK_ALLOC_H_ */

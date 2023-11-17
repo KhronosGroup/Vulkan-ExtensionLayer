@@ -24,8 +24,7 @@
  * Author: John Zulauf <jzulauf@lunarg.com>
  */
 
-#ifndef VKLAYERTEST_H
-#define VKLAYERTEST_H
+#pragma once
 
 #include <vulkan/vulkan.h>
 #include <vulkan/layer/vk_layer_settings.hpp>
@@ -125,4 +124,3 @@ bool operator==(const VkDebugUtilsLabelEXT &rhs, const VkDebugUtilsLabelEXT &lhs
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                   VkDebugUtilsMessageTypeFlagsEXT messageTypes,
                                                   const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData);
-#endif  // VKLAYERTEST_H

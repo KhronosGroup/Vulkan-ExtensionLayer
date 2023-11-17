@@ -20,8 +20,7 @@
  * Author: John Zulauf <jzulauf@lunarg.com>
  */
 
-#ifndef VKTESTBINDING_H
-#define VKTESTBINDING_H
+#pragma once
 
 #include <algorithm>
 #include <cassert>
@@ -1047,5 +1046,3 @@ inline VkCommandBufferAllocateInfo CommandBuffer::create_info(VkCommandPool cons
 }
 
 }  // namespace vk_testing
-
-#endif  // VKTESTBINDING_H
