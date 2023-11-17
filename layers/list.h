@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef LIST_H_
-#define LIST_H_
+#pragma once
 
 /**
  * @file list.h
@@ -88,4 +87,3 @@ static inline bool list_empty(struct list_head *list)
 #define list_first_entry(__list, __type, __field)       \
     list_entry(__type, (__list)->next, __field)
 
-#endif /* LIST_H_ */

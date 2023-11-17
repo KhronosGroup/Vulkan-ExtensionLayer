@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HASH_TABLE_H_
-#define HASH_TABLE_H_
+#pragma once
 
 /**
  * @file hash_table.h
@@ -34,4 +33,3 @@ void hash_table_insert(struct hash_table *table, uint64_t key, void *data);
 void *hash_table_search(struct hash_table *table, uint64_t key);
 void hash_table_remove(struct hash_table *table, uint64_t key);
 
-#endif /* HASH_TABLE_H_ */

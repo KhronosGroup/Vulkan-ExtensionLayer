@@ -24,8 +24,7 @@
  * Author: Tony Barbour <tony@LunarG.com>
  */
 
-#ifndef TEST_COMMON_H
-#define TEST_COMMON_H
+#pragma once
 
 #include <assert.h>
 #include <stdbool.h>
@@ -206,4 +205,3 @@ static void test_platform_thread_cond_broadcast(test_platform_thread_cond *pCond
 
 #endif  // defined(_WIN32)
 
-#endif  // TEST_COMMON_H

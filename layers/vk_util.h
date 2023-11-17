@@ -16,9 +16,7 @@
  * Author: Jason Ekstrand <jason@jlekstrand.net>
  */
 
-#ifndef VK_UTIL_H_
-#define VK_UTIL_H_
-
+#pragma once
 #include <vulkan/vulkan.h>
 
 #include "vk_alloc.h"
@@ -334,4 +332,3 @@ FORCE_INLINE void *vk_multialloc_alloc2(struct vk_multialloc *ma, const VkAlloca
     return vk_multialloc_alloc(ma, alloc ? alloc : parent_alloc, scope);
 }
 
-#endif /* VK_UTIL_H_ */
