@@ -10,7 +10,7 @@ adb install -r -g --no-incremental bin/VulkanExtensionLayerTests.apk
 
 adb shell am start -a android.intent.action.MAIN -c android-intent.category.LAUNCH -n com.example.VulkanExtensionLayerTests/android.app.NativeActivity --es args --gtest_filter="*Decompression*"
 
-adb shell am start -a android.intent.action.MAIN -c android-intent.category.LAUNCH -n com.example.VulkanExtensionLayerTests/android.app.NativeActivity --es args --gtest_filter="*Sync2Test*"
+adb shell am start -a android.intent.action.MAIN -c android-intent.category.LAUNCH -n com.example.VulkanExtensionLayerTests/android.app.NativeActivity --es args --gtest_filter="*Sync2*"
 
 adb shell am start -a android.intent.action.MAIN -c android-intent.category.LAUNCH -n com.example.VulkanExtensionLayerTests/android.app.NativeActivity --es args --gtest_filter="*ShaderObject*"
 ```
