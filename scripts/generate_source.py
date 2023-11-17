@@ -48,8 +48,6 @@ def main(argv):
                    '-quiet',
                    filename] for filename in ["vk_safe_struct.cpp",
                                               "vk_safe_struct.h",
-                                              "lvt_function_pointers.cpp",
-                                              "lvt_function_pointers.h",
                                               ]]]
 
     repo_dir = common_codegen.repo_relative('utils/generated')

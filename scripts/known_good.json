@@ -79,6 +79,26 @@
             "optional": [
                 "tests"
             ]
+        },
+        {
+            "name": "volk",
+            "url": "https://github.com/zeux/volk",
+            "sub_dir": "volk",
+            "build_dir": "volk/build",
+            "install_dir": "volk/build/install",
+            "cmake_options": [
+                "-DVOLK_INSTALL=ON"
+            ],
+            "commit": "vulkan-sdk-1.3.268",
+            "optional": [
+                "tests"
+            ],
+            "deps": [
+                {
+                    "var_name": "VULKAN_HEADERS_INSTALL_DIR",
+                    "repo_name": "Vulkan-Headers"
+                }
+            ]
         }
     ],
     "install_names": {
@@ -87,6 +107,7 @@
         "glslang": "GLSLANG_INSTALL_DIR",
         "SPIRV-Headers": "SPIRV_HEADERS_INSTALL_DIR",
         "SPIRV-Tools": "SPIRV_TOOLS_INSTALL_DIR",
-        "googletest": "GOOGLETEST_INSTALL_DIR"
+        "googletest": "GOOGLETEST_INSTALL_DIR",
+        "volk": "VOLK_INSTALL_DIR"
     }
 }

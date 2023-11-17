@@ -39,7 +39,7 @@ VkFormat FindSupportedDepthOnlyFormat(VkPhysicalDevice phy) {
     const VkFormat ds_formats[] = {VK_FORMAT_D16_UNORM, VK_FORMAT_X8_D24_UNORM_PACK32, VK_FORMAT_D32_SFLOAT};
     for (uint32_t i = 0; i < size(ds_formats); ++i) {
         VkFormatProperties format_props;
-        vk::GetPhysicalDeviceFormatProperties(phy, ds_formats[i], &format_props);
+        vkGetPhysicalDeviceFormatProperties(phy, ds_formats[i], &format_props);
 
         if (format_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
             return ds_formats[i];
@@ -52,7 +52,7 @@ VkFormat FindSupportedStencilOnlyFormat(VkPhysicalDevice phy) {
     const VkFormat ds_formats[] = {VK_FORMAT_S8_UINT};
     for (uint32_t i = 0; i < size(ds_formats); ++i) {
         VkFormatProperties format_props;
-        vk::GetPhysicalDeviceFormatProperties(phy, ds_formats[i], &format_props);
+        vkGetPhysicalDeviceFormatProperties(phy, ds_formats[i], &format_props);
 
         if (format_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
             return ds_formats[i];
@@ -65,7 +65,7 @@ VkFormat FindSupportedDepthStencilFormat(VkPhysicalDevice phy) {
     const VkFormat ds_formats[] = {VK_FORMAT_D16_UNORM_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D32_SFLOAT_S8_UINT};
     for (uint32_t i = 0; i < size(ds_formats); ++i) {
         VkFormatProperties format_props;
-        vk::GetPhysicalDeviceFormatProperties(phy, ds_formats[i], &format_props);
+        vkGetPhysicalDeviceFormatProperties(phy, ds_formats[i], &format_props);
 
         if (format_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
             return ds_formats[i];
@@ -76,7 +76,7 @@ VkFormat FindSupportedDepthStencilFormat(VkPhysicalDevice phy) {
 
 bool ImageFormatIsSupported(VkPhysicalDevice phy, VkFormat format, VkImageTiling tiling, VkFormatFeatureFlags features) {
     VkFormatProperties format_props;
-    vk::GetPhysicalDeviceFormatProperties(phy, format, &format_props);
+    vkGetPhysicalDeviceFormatProperties(phy, format, &format_props);
     VkFormatFeatureFlags phy_features =
         (VK_IMAGE_TILING_OPTIMAL == tiling ? format_props.optimalTilingFeatures : format_props.linearTilingFeatures);
     return (0 != (phy_features & features));
@@ -84,7 +84,7 @@ bool ImageFormatIsSupported(VkPhysicalDevice phy, VkFormat format, VkImageTiling
 
 bool ImageFormatAndFeaturesSupported(VkPhysicalDevice phy, VkFormat format, VkImageTiling tiling, VkFormatFeatureFlags features) {
     VkFormatProperties format_props;
-    vk::GetPhysicalDeviceFormatProperties(phy, format, &format_props);
+    vkGetPhysicalDeviceFormatProperties(phy, format, &format_props);
     VkFormatFeatureFlags phy_features =
         (VK_IMAGE_TILING_OPTIMAL == tiling ? format_props.optimalTilingFeatures : format_props.linearTilingFeatures);
     return (features == (phy_features & features));
@@ -100,7 +100,7 @@ bool ImageFormatAndFeaturesSupported(const VkInstance inst, const VkPhysicalDevi
     // Verify that PhysDevImageFormatProp() also claims support for the specific usage
     VkImageFormatProperties props;
     VkResult err =
-        vk::GetPhysicalDeviceImageFormatProperties(phy, info.format, info.imageType, info.tiling, info.usage, info.flags, &props);
+        vkGetPhysicalDeviceImageFormatProperties(phy, info.format, info.imageType, info.tiling, info.usage, info.flags, &props);
     if (VK_SUCCESS != err) {
         return false;
     }
@@ -110,10 +110,7 @@ bool ImageFormatAndFeaturesSupported(const VkInstance inst, const VkPhysicalDevi
 
     // Verify again using version 2, if supported, which *can* return more property data than the original...
     // (It's not clear that this is any more definitive than using the original version - but no harm)
-    PFN_vkGetPhysicalDeviceImageFormatProperties2KHR p_GetPDIFP2KHR =
-        (PFN_vkGetPhysicalDeviceImageFormatProperties2KHR)vk::GetInstanceProcAddr(inst,
-                                                                                "vkGetPhysicalDeviceImageFormatProperties2KHR");
-    if (NULL != p_GetPDIFP2KHR) {
+    if (NULL != vkGetPhysicalDeviceImageFormatProperties2KHR) {
         VkPhysicalDeviceImageFormatInfo2KHR fmt_info{};
         fmt_info.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2_KHR;
         fmt_info.pNext = nullptr;
@@ -125,7 +122,7 @@ bool ImageFormatAndFeaturesSupported(const VkInstance inst, const VkPhysicalDevi
 
         VkImageFormatProperties2KHR fmt_props = {};
         fmt_props.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2_KHR;
-        err = p_GetPDIFP2KHR(phy, &fmt_info, &fmt_props);
+        err = vkGetPhysicalDeviceImageFormatProperties2KHR(phy, &fmt_info, &fmt_props);
         if (VK_SUCCESS != err) {
             return false;
         }
@@ -188,9 +185,6 @@ bool CheckDescriptorIndexingSupportAndInitFramework(VkRenderFramework *renderFra
 }
 
 bool CheckTimelineSemaphoreSupportAndInitState(VkRenderFramework *renderFramework) {
-    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
-        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(renderFramework->instance(),
-                                                                     "vkGetPhysicalDeviceFeatures2KHR");
     auto timeline_semaphore_features = vku::InitStruct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
     auto features2 = vku::InitStruct<VkPhysicalDeviceFeatures2KHR>(&timeline_semaphore_features);
     vkGetPhysicalDeviceFeatures2KHR(renderFramework->gpu(), &features2);
@@ -217,13 +211,13 @@ bool VkExtensionLayerTest::CheckDecompressionSupportAndInitState() {
 
     auto decompress_features = vku::InitStruct<VkPhysicalDeviceMemoryDecompressionFeaturesNV>();
     auto features2 = vku::InitStruct<VkPhysicalDeviceFeatures2KHR>(&decompress_features);
-    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    vkGetPhysicalDeviceFeatures2(gpu(), &features2);
 
     VkPhysicalDeviceFeatures2 devFeatures = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
     VkPhysicalDeviceMemoryDecompressionFeaturesNV decompressionFeature = {
         VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV};
     devFeatures.pNext = &decompressionFeature;
-    vk::GetPhysicalDeviceFeatures2(gpu(), &devFeatures);
+    vkGetPhysicalDeviceFeatures2(gpu(), &devFeatures);
 
     // Unsupported when neither the driver supports it nor the layer is present
     if (!decompressionFeature.memoryDecompression && !decompressionExtensionFound) {
@@ -231,13 +225,6 @@ bool VkExtensionLayerTest::CheckDecompressionSupportAndInitState() {
     }
 
     InitState(nullptr, &features2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-
-    vk::QueueSubmit2KHR = reinterpret_cast<PFN_vkQueueSubmit2KHR>(vk::GetDeviceProcAddr(device(), "vkQueueSubmit2KHR"));
-
-    vk::CmdDecompressMemoryNV =
-        reinterpret_cast<PFN_vkCmdDecompressMemoryNV>(vk::GetDeviceProcAddr(device(), "vkCmdDecompressMemoryNV"));
-    vk::CmdDecompressMemoryIndirectCountNV = reinterpret_cast<PFN_vkCmdDecompressMemoryIndirectCountNV>(
-        vk::GetDeviceProcAddr(device(), "vkCmdDecompressMemoryIndirectCountNV"));
 
     return true;
 }
@@ -273,16 +260,11 @@ bool VkExtensionLayerTest::CheckShaderObjectSupportAndInitState() {
         shader_object_features.pNext = &mesh_shader_features;
     }
 
-    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    vkGetPhysicalDeviceFeatures2(gpu(), &features2);
     if (!shader_object_features.shaderObject || !dynamic_rendering_features.dynamicRendering) {
         return false;
     }
     InitState(nullptr, &features2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-    vk::CmdBindShadersEXT = reinterpret_cast<PFN_vkCmdBindShadersEXT>(vk::GetDeviceProcAddr(device(), "vkCmdBindShadersEXT"));
-    vk::CreateShadersEXT = reinterpret_cast<PFN_vkCreateShadersEXT>(vk::GetDeviceProcAddr(device(), "vkCreateShadersEXT"));
-    vk::DestroyShaderEXT = reinterpret_cast<PFN_vkDestroyShaderEXT>(vk::GetDeviceProcAddr(device(), "vkDestroyShaderEXT"));
-    vk::GetShaderBinaryDataEXT =
-        reinterpret_cast<PFN_vkGetShaderBinaryDataEXT>(vk::GetDeviceProcAddr(device(), "vkGetShaderBinaryDataEXT"));
 
     return true;
 }
@@ -304,44 +286,11 @@ bool VkExtensionLayerTest::CheckSynchronization2SupportAndInitState() {
     auto timeline_features = vku::InitStruct<VkPhysicalDeviceTimelineSemaphoreFeatures>();
     auto sync2_features = vku::InitStruct<VkPhysicalDeviceSynchronization2FeaturesKHR>(&timeline_features);
     auto features2 = vku::InitStruct<VkPhysicalDeviceFeatures2KHR>(&sync2_features);
-    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    vkGetPhysicalDeviceFeatures2(gpu(), &features2);
     if (!sync2_features.synchronization2) {
         return false;
     }
     InitState(nullptr, &features2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-    vk::GetSemaphoreCounterValueKHR =
-        reinterpret_cast<PFN_vkGetSemaphoreCounterValueKHR>(vk::GetDeviceProcAddr(device(), "vkGetSemaphoreCounterValueKHR"));
-    vk::WaitSemaphoresKHR = reinterpret_cast<PFN_vkWaitSemaphoresKHR>(vk::GetDeviceProcAddr(device(), "vkWaitSemaphoresKHR"));
-    vk::SignalSemaphoreKHR = reinterpret_cast<PFN_vkSignalSemaphoreKHR>(vk::GetDeviceProcAddr(device(), "vkSignalSemaphoreKHR"));
-    vk::CmdSetEvent2KHR = reinterpret_cast<PFN_vkCmdSetEvent2KHR>(vk::GetDeviceProcAddr(device(), "vkCmdSetEvent2KHR"));
-    vk::CmdResetEvent2KHR = reinterpret_cast<PFN_vkCmdResetEvent2KHR>(vk::GetDeviceProcAddr(device(), "vkCmdResetEvent2KHR"));
-    vk::CmdWaitEvents2KHR = reinterpret_cast<PFN_vkCmdWaitEvents2KHR>(vk::GetDeviceProcAddr(device(), "vkCmdWaitEvents2KHR"));
-    vk::CmdPipelineBarrier2KHR =
-        reinterpret_cast<PFN_vkCmdPipelineBarrier2KHR>(vk::GetDeviceProcAddr(device(), "vkCmdPipelineBarrier2KHR"));
-    vk::CmdWriteTimestamp2KHR =
-        reinterpret_cast<PFN_vkCmdWriteTimestamp2KHR>(vk::GetDeviceProcAddr(device(), "vkCmdWriteTimestamp2KHR"));
-    vk::QueueSubmit2KHR = reinterpret_cast<PFN_vkQueueSubmit2KHR>(vk::GetDeviceProcAddr(device(), "vkQueueSubmit2KHR"));
-    vk::CmdWriteBufferMarker2AMD =
-        reinterpret_cast<PFN_vkCmdWriteBufferMarker2AMD>(vk::GetDeviceProcAddr(device(), "vkCmdWriteBufferMarker2AMD"));
-    vk::GetQueueCheckpointData2NV =
-        reinterpret_cast<PFN_vkGetQueueCheckpointData2NV>(vk::GetDeviceProcAddr(device(), "vkGetQueueCheckpointData2NV"));
-
-    // Since signature are the same, make simple and override the core version if device in not 1.2
-
-    if (DeviceValidationVersion() <= VK_API_VERSION_1_2) {
-        vk::CmdBeginRenderPass2 =
-            reinterpret_cast<PFN_vkCmdBeginRenderPass2>(vk::GetDeviceProcAddr(device(), "vkCmdBeginRenderPass2KHR"));
-        vk::CmdEndRenderPass2 =
-            reinterpret_cast<PFN_vkCmdEndRenderPass2>(vk::GetDeviceProcAddr(device(), "vkCmdEndRenderPass2KHR"));
-        vk::CmdNextSubpass2 = reinterpret_cast<PFN_vkCmdNextSubpass2>(vk::GetDeviceProcAddr(device(), "vkCmdNextSubpass2KHR"));
-        vk::CreateRenderPass2 =
-            reinterpret_cast<PFN_vkCreateRenderPass2>(vk::GetDeviceProcAddr(device(), "vkCreateRenderPass2KHR"));
-    }
-    vk::CreateSwapchainKHR = reinterpret_cast<PFN_vkCreateSwapchainKHR>(vk::GetDeviceProcAddr(device(), "vkCreateSwapchainKHR"));
-    vk::GetSwapchainImagesKHR =
-        reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(vk::GetDeviceProcAddr(device(), "vkGetSwapchainImagesKHR"));
-    vk::DestroySwapchainKHR = reinterpret_cast<PFN_vkDestroySwapchainKHR>(vk::GetDeviceProcAddr(device(), "vkDestroySwapchainKHR"));
-    vk::AcquireNextImageKHR = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vk::GetDeviceProcAddr(device(), "vkAcquireNextImageKHR"));
 
     return true;
 }
@@ -370,9 +319,8 @@ VkExtensionLayerTest::VkExtensionLayerTest() {
     app_info_.apiVersion = VK_API_VERSION_1_0;
 
     // Find out what version the instance supports and record the default target instance
-    auto enumerateInstanceVersion = (PFN_vkEnumerateInstanceVersion)vk::GetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion");
-    if (enumerateInstanceVersion) {
-        enumerateInstanceVersion(&m_instance_api_version);
+    if (vkEnumerateInstanceVersion) {
+        vkEnumerateInstanceVersion(&m_instance_api_version);
     } else {
         m_instance_api_version = VK_API_VERSION_1_0;
     }

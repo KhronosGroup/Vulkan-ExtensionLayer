@@ -101,36 +101,6 @@ def makeGenOpts(args):
 
     # ValidationLayer Generators
 
-    # lvt_file generator options for lvt_function_pointers.h
-    genOpts['lvt_function_pointers.h'] = [
-          LvtFileOutputGenerator,
-          LvtFileOutputGeneratorOptions(
-            conventions       = conventions,
-            filename          = 'lvt_function_pointers.h',
-            directory         = directory,
-            versions          = featuresPat,
-            emitversions      = featuresPat,
-            addExtensions     = addExtensionsPat,
-            removeExtensions  = removeExtensionsPat,
-            emitExtensions    = emitExtensionsPat,
-            lvt_file_type  = 'function_pointer_header')
-        ]
-
-    # lvt_file generator options for lvt_function_pointers.cpp
-    genOpts['lvt_function_pointers.cpp'] = [
-          LvtFileOutputGenerator,
-          LvtFileOutputGeneratorOptions(
-            conventions       = conventions,
-            filename          = 'lvt_function_pointers.cpp',
-            directory         = directory,
-            versions          = featuresPat,
-            emitversions      = featuresPat,
-            addExtensions     = addExtensionsPat,
-            removeExtensions  = removeExtensionsPat,
-            emitExtensions    = emitExtensionsPat,
-            lvt_file_type  = 'function_pointer_source')
-        ]
-
     # Helper file generator options for vk_safe_struct.h
     genOpts['vk_safe_struct.h'] = [
           HelperFileOutputGenerator,
@@ -319,7 +289,6 @@ if __name__ == '__main__':
 
     # ValidationLayer Generator Modifications
     from helper_file_generator import HelperFileOutputGenerator, HelperFileOutputGeneratorOptions
-    from lvt_file_generator import LvtFileOutputGenerator, LvtFileOutputGeneratorOptions
 
     # Temporary workaround for vkconventions python2 compatibility
     import abc; abc.ABC = abc.ABCMeta('ABC', (object,), {})

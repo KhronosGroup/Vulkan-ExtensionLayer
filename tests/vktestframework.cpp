@@ -102,7 +102,7 @@ int fopen_s(FILE **pFile, const char *filename, const char *mode) {
 void TestEnvironment::SetUp() {
     // Initialize GLSL to SPV compiler utility
     glslang::InitializeProcess();
-    vk::InitDispatchTable();
+    ASSERT_TRUE(0 == volkInitialize());
 }
 
 void TestEnvironment::TearDown() { glslang::FinalizeProcess(); }
@@ -188,12 +188,12 @@ void VkTestFramework::InitArgs(int *argc, char *argv[]) {
 VkFormat VkTestFramework::GetFormat(VkInstance instance, vk_testing::Device *device) {
     VkFormatProperties format_props;
 
-    vk::GetPhysicalDeviceFormatProperties(device->phy().handle(), VK_FORMAT_B8G8R8A8_UNORM, &format_props);
+    vkGetPhysicalDeviceFormatProperties(device->phy().handle(), VK_FORMAT_B8G8R8A8_UNORM, &format_props);
     if (format_props.linearTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT ||
         format_props.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT) {
         return VK_FORMAT_B8G8R8A8_UNORM;
     }
-    vk::GetPhysicalDeviceFormatProperties(device->phy().handle(), VK_FORMAT_R8G8B8A8_UNORM, &format_props);
+    vkGetPhysicalDeviceFormatProperties(device->phy().handle(), VK_FORMAT_R8G8B8A8_UNORM, &format_props);
     if (format_props.linearTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT ||
         format_props.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT) {
         return VK_FORMAT_R8G8B8A8_UNORM;

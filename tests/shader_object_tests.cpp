@@ -42,64 +42,6 @@ void ShaderObjectTest::SetUp() {
 void ShaderObjectTest::TearDown() {}
 
 void ShaderObjectTest::BindDefaultDynamicStates(VkBuffer buffer, bool tessellation) {
-    PFN_vkCmdSetViewportWithCountEXT vkCmdSetViewportWithCountEXT =
-        (PFN_vkCmdSetViewportWithCountEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetViewportWithCountEXT");
-    PFN_vkCmdSetScissorWithCountEXT vkCmdSetScissorWithCountEXT =
-        (PFN_vkCmdSetScissorWithCountEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetScissorWithCountEXT");
-    PFN_vkCmdBindVertexBuffers2EXT vkCmdBindVertexBuffers2EXT =
-        (PFN_vkCmdBindVertexBuffers2EXT)vk::GetInstanceProcAddr(instance(), "vkCmdBindVertexBuffers2EXT");
-    PFN_vkCmdSetCullModeEXT vkCmdSetCullModeEXT =
-        (PFN_vkCmdSetCullModeEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetCullModeEXT");
-    PFN_vkCmdSetDepthBoundsTestEnableEXT vkCmdSetDepthBoundsTestEnableEXT =
-        (PFN_vkCmdSetDepthBoundsTestEnableEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetDepthBoundsTestEnableEXT");
-    PFN_vkCmdSetDepthCompareOpEXT vkCmdSetDepthCompareOpEXT =
-        (PFN_vkCmdSetDepthCompareOpEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetDepthCompareOpEXT");
-    PFN_vkCmdSetDepthTestEnableEXT vkCmdSetDepthTestEnableEXT =
-        (PFN_vkCmdSetDepthTestEnableEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetDepthTestEnableEXT");
-    PFN_vkCmdSetDepthWriteEnableEXT vkCmdSetDepthWriteEnableEXT =
-        (PFN_vkCmdSetDepthWriteEnableEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetDepthWriteEnableEXT");
-    PFN_vkCmdSetFrontFaceEXT vkCmdSetFrontFaceEXT =
-        (PFN_vkCmdSetFrontFaceEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetFrontFaceEXT");
-    PFN_vkCmdSetPrimitiveTopologyEXT vkCmdSetPrimitiveTopologyEXT =
-        (PFN_vkCmdSetPrimitiveTopologyEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetPrimitiveTopologyEXT");
-    PFN_vkCmdSetStencilOpEXT vkCmdSetStencilOpEXT =
-        (PFN_vkCmdSetStencilOpEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetStencilOpEXT");
-    PFN_vkCmdSetStencilTestEnableEXT vkCmdSetStencilTestEnableEXT =
-        (PFN_vkCmdSetStencilTestEnableEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetStencilTestEnableEXT");
-    PFN_vkCmdSetDepthBiasEnableEXT vkCmdSetDepthBiasEnableEXT =
-        (PFN_vkCmdSetDepthBiasEnableEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetDepthBiasEnableEXT");
-    PFN_vkCmdSetPrimitiveRestartEnableEXT vkCmdSetPrimitiveRestartEnableEXT =
-        (PFN_vkCmdSetPrimitiveRestartEnableEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetPrimitiveRestartEnableEXT");
-    PFN_vkCmdSetRasterizerDiscardEnableEXT vkCmdSetRasterizerDiscardEnableEXT =
-        (PFN_vkCmdSetRasterizerDiscardEnableEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetRasterizerDiscardEnableEXT");
-    PFN_vkCmdSetVertexInputEXT vkCmdSetVertexInputEXT =
-        (PFN_vkCmdSetVertexInputEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetVertexInputEXT");
-    PFN_vkCmdSetLogicOpEXT vkCmdSetLogicOpEXT = (PFN_vkCmdSetLogicOpEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetLogicOpEXT");
-    PFN_vkCmdSetPatchControlPointsEXT vkCmdSetPatchControlPointsEXT =
-        (PFN_vkCmdSetPatchControlPointsEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetPatchControlPointsEXT");
-    PFN_vkCmdSetTessellationDomainOriginEXT vkCmdSetTessellationDomainOriginEXT =
-        (PFN_vkCmdSetTessellationDomainOriginEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetTessellationDomainOriginEXT");
-    PFN_vkCmdSetDepthClampEnableEXT vkCmdSetDepthClampEnableEXT =
-        (PFN_vkCmdSetDepthClampEnableEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetDepthClampEnableEXT");
-    PFN_vkCmdSetPolygonModeEXT vkCmdSetPolygonModeEXT =
-        (PFN_vkCmdSetPolygonModeEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetPolygonModeEXT");
-    PFN_vkCmdSetRasterizationSamplesEXT vkCmdSetRasterizationSamplesEXT =
-        (PFN_vkCmdSetRasterizationSamplesEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetRasterizationSamplesEXT");
-    PFN_vkCmdSetSampleMaskEXT vkCmdSetSampleMaskEXT =
-        (PFN_vkCmdSetSampleMaskEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetSampleMaskEXT");
-    PFN_vkCmdSetAlphaToCoverageEnableEXT vkCmdSetAlphaToCoverageEnableEXT =
-        (PFN_vkCmdSetAlphaToCoverageEnableEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetAlphaToCoverageEnableEXT");
-    PFN_vkCmdSetAlphaToOneEnableEXT vkCmdSetAlphaToOneEnableEXT =
-        (PFN_vkCmdSetAlphaToOneEnableEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetAlphaToOneEnableEXT");
-    PFN_vkCmdSetLogicOpEnableEXT vkCmdSetLogicOpEnableEXT =
-        (PFN_vkCmdSetLogicOpEnableEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetLogicOpEnableEXT");
-    PFN_vkCmdSetColorBlendEnableEXT vkCmdSetColorBlendEnableEXT =
-        (PFN_vkCmdSetColorBlendEnableEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetColorBlendEnableEXT");
-    PFN_vkCmdSetColorBlendEquationEXT vkCmdSetColorBlendEquationEXT =
-        (PFN_vkCmdSetColorBlendEquationEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetColorBlendEquationEXT");
-    PFN_vkCmdSetColorWriteMaskEXT vkCmdSetColorWriteMaskEXT =
-        (PFN_vkCmdSetColorWriteMaskEXT)vk::GetInstanceProcAddr(instance(), "vkCmdSetColorWriteMaskEXT");
-
     VkCommandBuffer cmdBuffer = m_commandBuffer->handle();
     VkViewport viewport = {0, 0, m_width, m_height, 0.0f, 1.0f};
     VkRect2D scissor = {{
@@ -112,14 +54,14 @@ void ShaderObjectTest::BindDefaultDynamicStates(VkBuffer buffer, bool tessellati
                         }};
     vkCmdSetViewportWithCountEXT(cmdBuffer, 1u, &viewport);
     vkCmdSetScissorWithCountEXT(cmdBuffer, 1u, &scissor);
-    vk::CmdSetLineWidth(cmdBuffer, 1.0f);
-    vk::CmdSetDepthBias(cmdBuffer, 1.0f, 1.0f, 1.0f);
+    vkCmdSetLineWidth(cmdBuffer, 1.0f);
+    vkCmdSetDepthBias(cmdBuffer, 1.0f, 1.0f, 1.0f);
     float blendConstants[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-    vk::CmdSetBlendConstants(cmdBuffer, blendConstants);
-    vk::CmdSetDepthBounds(cmdBuffer, 0.0f, 1.0f);
-    vk::CmdSetStencilCompareMask(cmdBuffer, VK_STENCIL_FACE_FRONT_AND_BACK, 0xFFFFFFFF);
-    vk::CmdSetStencilWriteMask(cmdBuffer, VK_STENCIL_FACE_FRONT_AND_BACK, 0xFFFFFFFF);
-    vk::CmdSetStencilReference(cmdBuffer, VK_STENCIL_FACE_FRONT_AND_BACK, 0xFFFFFFFF);
+    vkCmdSetBlendConstants(cmdBuffer, blendConstants);
+    vkCmdSetDepthBounds(cmdBuffer, 0.0f, 1.0f);
+    vkCmdSetStencilCompareMask(cmdBuffer, VK_STENCIL_FACE_FRONT_AND_BACK, 0xFFFFFFFF);
+    vkCmdSetStencilWriteMask(cmdBuffer, VK_STENCIL_FACE_FRONT_AND_BACK, 0xFFFFFFFF);
+    vkCmdSetStencilReference(cmdBuffer, VK_STENCIL_FACE_FRONT_AND_BACK, 0xFFFFFFFF);
     VkDeviceSize offset = 0u;
     VkDeviceSize size = sizeof(float);
     vkCmdBindVertexBuffers2EXT(cmdBuffer, 0, 1, &buffer, &offset, &size, &size);
@@ -169,8 +111,8 @@ void ShaderObjectTest::SubmitAndWait() {
     VkSubmitInfo submitInfo = vku::InitStructHelper();
     submitInfo.commandBufferCount = 1u;
     submitInfo.pCommandBuffers = &commandBufferHandle;
-    vk::QueueSubmit(m_device->m_queue, 1, &submitInfo, VK_NULL_HANDLE);
-    vk::QueueWaitIdle(m_device->m_queue);
+    vkQueueSubmit(m_device->m_queue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(m_device->m_queue);
 }
 
 TEST_F(ShaderObjectTest, VertFragShader) {
@@ -220,7 +162,7 @@ TEST_F(ShaderObjectTest, VertFragShader) {
         createInfos[i].pName = "main";
     }
 
-    vk::CreateShadersEXT(m_device->handle(), 2u, createInfos, nullptr, shaders);
+    vkCreateShadersEXT(m_device->handle(), 2u, createInfos, nullptr, shaders);
 
     VkBufferObj buffer;
     buffer.init(*m_device, sizeof(float) * 4u, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -263,11 +205,6 @@ TEST_F(ShaderObjectTest, VertFragShader) {
     begin_rendering_info.colorAttachmentCount = 1u;
     begin_rendering_info.pColorAttachments = &color_attachment;
 
-    PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR =
-        (PFN_vkCmdBeginRenderingKHR)vk::GetDeviceProcAddr(device(), "vkCmdBeginRenderingKHR");
-    PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR =
-        (PFN_vkCmdEndRenderingKHR)vk::GetDeviceProcAddr(device(), "vkCmdEndRenderingKHR");
-
     m_commandBuffer->begin();
 
     {
@@ -284,18 +221,18 @@ TEST_F(ShaderObjectTest, VertFragShader) {
         imageMemoryBarrier.subresourceRange.levelCount = 1u;
         imageMemoryBarrier.subresourceRange.baseArrayLayer = 0u;
         imageMemoryBarrier.subresourceRange.layerCount = 1u;
-        vk::CmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u,
                                &imageMemoryBarrier);
     }
     vkCmdBeginRenderingKHR(m_commandBuffer->handle(), &begin_rendering_info);
-    vk::CmdBindShadersEXT(m_commandBuffer->handle(), 2u, shaderStages, shaders);
+    vkCmdBindShadersEXT(m_commandBuffer->handle(), 2u, shaderStages, shaders);
     for (const auto& unusedShader : unusedShaderStages) {
         VkShaderEXT null_shader = VK_NULL_HANDLE;
-        vk::CmdBindShadersEXT(m_commandBuffer->handle(), 1u, &unusedShader, &null_shader);
+        vkCmdBindShadersEXT(m_commandBuffer->handle(), 1u, &unusedShader, &null_shader);
     }
     BindDefaultDynamicStates(vertexBuffer.handle(), false);
-    vk::CmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
+    vkCmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
     vkCmdEndRenderingKHR(m_commandBuffer->handle());
 
     {
@@ -312,7 +249,7 @@ TEST_F(ShaderObjectTest, VertFragShader) {
         imageMemoryBarrier.subresourceRange.levelCount = 1u;
         imageMemoryBarrier.subresourceRange.baseArrayLayer = 0u;
         imageMemoryBarrier.subresourceRange.layerCount = 1u;
-        vk::CmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                                VK_PIPELINE_STAGE_TRANSFER_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u, &imageMemoryBarrier);
     }
 
@@ -327,24 +264,24 @@ TEST_F(ShaderObjectTest, VertFragShader) {
     copyRegion.imageExtent.height = 1u;
     copyRegion.imageExtent.depth = 1u;
 
-    vk::CmdCopyImageToBuffer(m_commandBuffer->handle(), image.handle(), VK_IMAGE_LAYOUT_GENERAL, buffer.handle(), 1u, &copyRegion);
+    vkCmdCopyImageToBuffer(m_commandBuffer->handle(), image.handle(), VK_IMAGE_LAYOUT_GENERAL, buffer.handle(), 1u, &copyRegion);
 
     m_commandBuffer->end();
 
     SubmitAndWait();
 
     float* data;
-    vk::MapMemory(m_device->handle(), buffer.memory().handle(), 0u, sizeof(float) * 4u, 0u, (void**)&data);
+    vkMapMemory(m_device->handle(), buffer.memory().handle(), 0u, sizeof(float) * 4u, 0u, (void**)&data);
     for (uint32_t i = 0; i < 4; ++i) {
         if (data[i] != 0.2f + i * 0.2f) {
             m_errorMonitor->SetError("Wrong pixel value");
         }
     }
 
-    vk::UnmapMemory(m_device->handle(), buffer.memory().handle());
+    vkUnmapMemory(m_device->handle(), buffer.memory().handle());
 
-    vk::DestroyShaderEXT(m_device->handle(), shaders[0], nullptr);
-    vk::DestroyShaderEXT(m_device->handle(), shaders[1], nullptr);
+    vkDestroyShaderEXT(m_device->handle(), shaders[0], nullptr);
+    vkDestroyShaderEXT(m_device->handle(), shaders[1], nullptr);
 
     m_errorMonitor->VerifyNotFound();
 }
@@ -395,7 +332,7 @@ TEST_F(ShaderObjectTest, LinkedShadersDraw) {
         createInfos[i].pName = "main";
     }
 
-    vk::CreateShadersEXT(m_device->handle(), 2u, createInfos, nullptr, shaders);
+    vkCreateShadersEXT(m_device->handle(), 2u, createInfos, nullptr, shaders);
 
     VkBufferObj vertexBuffer;
     vertexBuffer.init(*m_device, sizeof(float), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -434,11 +371,6 @@ TEST_F(ShaderObjectTest, LinkedShadersDraw) {
     begin_rendering_info.colorAttachmentCount = 1u;
     begin_rendering_info.pColorAttachments = &color_attachment;
 
-    PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR =
-        (PFN_vkCmdBeginRenderingKHR)vk::GetDeviceProcAddr(device(), "vkCmdBeginRenderingKHR");
-    PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR =
-        (PFN_vkCmdEndRenderingKHR)vk::GetDeviceProcAddr(device(), "vkCmdEndRenderingKHR");
-
     m_commandBuffer->begin();
 
     {
@@ -455,21 +387,21 @@ TEST_F(ShaderObjectTest, LinkedShadersDraw) {
         imageMemoryBarrier.subresourceRange.levelCount = 1u;
         imageMemoryBarrier.subresourceRange.baseArrayLayer = 0u;
         imageMemoryBarrier.subresourceRange.layerCount = 1u;
-        vk::CmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u,
                                &imageMemoryBarrier);
     }
     vkCmdBeginRenderingKHR(m_commandBuffer->handle(), &begin_rendering_info);
-    vk::CmdBindShadersEXT(m_commandBuffer->handle(), 2u, shaderStages, shaders);
+    vkCmdBindShadersEXT(m_commandBuffer->handle(), 2u, shaderStages, shaders);
     BindDefaultDynamicStates(vertexBuffer.handle(), false);
-    vk::CmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
+    vkCmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
     vkCmdEndRenderingKHR(m_commandBuffer->handle());
 
     m_commandBuffer->end();
 
     SubmitAndWait();
 
-    for (uint32_t i = 0; i < 2; ++i) vk::DestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
+    for (uint32_t i = 0; i < 2; ++i) vkDestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
 
     m_errorMonitor->VerifyNotFound();
 }
@@ -580,7 +512,7 @@ TEST_F(ShaderObjectTest, AllShadersDraw) {
         createInfos[i].pName = "main";
     }
 
-    vk::CreateShadersEXT(m_device->handle(), 5u, createInfos, nullptr, shaders);
+    vkCreateShadersEXT(m_device->handle(), 5u, createInfos, nullptr, shaders);
 
     VkBufferObj vertexBuffer;
     vertexBuffer.init(*m_device, sizeof(float), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -619,11 +551,6 @@ TEST_F(ShaderObjectTest, AllShadersDraw) {
     begin_rendering_info.colorAttachmentCount = 1u;
     begin_rendering_info.pColorAttachments = &color_attachment;
 
-    PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR =
-        (PFN_vkCmdBeginRenderingKHR)vk::GetDeviceProcAddr(device(), "vkCmdBeginRenderingKHR");
-    PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR =
-        (PFN_vkCmdEndRenderingKHR)vk::GetDeviceProcAddr(device(), "vkCmdEndRenderingKHR");
-
     m_commandBuffer->begin();
 
     {
@@ -640,21 +567,21 @@ TEST_F(ShaderObjectTest, AllShadersDraw) {
         imageMemoryBarrier.subresourceRange.levelCount = 1u;
         imageMemoryBarrier.subresourceRange.baseArrayLayer = 0u;
         imageMemoryBarrier.subresourceRange.layerCount = 1u;
-        vk::CmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u,
                                &imageMemoryBarrier);
     }
     vkCmdBeginRenderingKHR(m_commandBuffer->handle(), &begin_rendering_info);
-    vk::CmdBindShadersEXT(m_commandBuffer->handle(), 5u, shaderStages, shaders);
+    vkCmdBindShadersEXT(m_commandBuffer->handle(), 5u, shaderStages, shaders);
     BindDefaultDynamicStates(vertexBuffer.handle(), true);
-    vk::CmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
+    vkCmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
     vkCmdEndRenderingKHR(m_commandBuffer->handle());
 
     m_commandBuffer->end();
 
     SubmitAndWait();
 
-    for (uint32_t i = 0; i < 5; ++i) vk::DestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
+    for (uint32_t i = 0; i < 5; ++i) vkDestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
 
     m_errorMonitor->VerifyNotFound();
 }
@@ -764,16 +691,16 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
         createInfos[i].pName = "main";
     }
 
-    vk::CreateShadersEXT(m_device->handle(), 5u, createInfos, nullptr, shaders);
+    vkCreateShadersEXT(m_device->handle(), 5u, createInfos, nullptr, shaders);
 
     VkShaderEXT binaryShaders[5];
     VkShaderCreateInfoEXT binaryCreateInfos[5];
     size_t dataSize[5];
     std::vector<uint8_t> binaryData[5];
     for (uint32_t i = 0; i < 5; ++i) {
-        vk::GetShaderBinaryDataEXT(m_device->handle(), shaders[i], &dataSize[i], nullptr);
+        vkGetShaderBinaryDataEXT(m_device->handle(), shaders[i], &dataSize[i], nullptr);
         binaryData[i].resize(dataSize[i]);
-        vk::GetShaderBinaryDataEXT(m_device->handle(), shaders[i], &dataSize[i], binaryData[i].data());
+        vkGetShaderBinaryDataEXT(m_device->handle(), shaders[i], &dataSize[i], binaryData[i].data());
 
         binaryCreateInfos[i] = vku::InitStructHelper();
         binaryCreateInfos[i].stage = shaderStages[i];
@@ -783,7 +710,7 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
         binaryCreateInfos[i].pName = "main";
     }
 
-    vk::CreateShadersEXT(m_device->handle(), 5u, binaryCreateInfos, nullptr, binaryShaders);
+    vkCreateShadersEXT(m_device->handle(), 5u, binaryCreateInfos, nullptr, binaryShaders);
 
     VkBufferObj vertexBuffer;
     vertexBuffer.init(*m_device, sizeof(float), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -822,11 +749,6 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
     begin_rendering_info.colorAttachmentCount = 1u;
     begin_rendering_info.pColorAttachments = &color_attachment;
 
-    PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR =
-        (PFN_vkCmdBeginRenderingKHR)vk::GetDeviceProcAddr(device(), "vkCmdBeginRenderingKHR");
-    PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR =
-        (PFN_vkCmdEndRenderingKHR)vk::GetDeviceProcAddr(device(), "vkCmdEndRenderingKHR");
-
     m_commandBuffer->begin();
 
     {
@@ -843,14 +765,14 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
         imageMemoryBarrier.subresourceRange.levelCount = 1u;
         imageMemoryBarrier.subresourceRange.baseArrayLayer = 0u;
         imageMemoryBarrier.subresourceRange.layerCount = 1u;
-        vk::CmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u,
                                &imageMemoryBarrier);
     }
     vkCmdBeginRenderingKHR(m_commandBuffer->handle(), &begin_rendering_info);
-    vk::CmdBindShadersEXT(m_commandBuffer->handle(), 5u, shaderStages, binaryShaders);
+    vkCmdBindShadersEXT(m_commandBuffer->handle(), 5u, shaderStages, binaryShaders);
     BindDefaultDynamicStates(vertexBuffer.handle(), true);
-    vk::CmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
+    vkCmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
     vkCmdEndRenderingKHR(m_commandBuffer->handle());
 
     m_commandBuffer->end();
@@ -858,8 +780,8 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
     SubmitAndWait();
 
     for (uint32_t i = 0; i < 5; ++i) {
-        vk::DestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
-        vk::DestroyShaderEXT(m_device->handle(), binaryShaders[i], nullptr);
+        vkDestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
+        vkDestroyShaderEXT(m_device->handle(), binaryShaders[i], nullptr);
     }
 
     m_errorMonitor->VerifyNotFound();
@@ -930,7 +852,7 @@ TEST_F(ShaderObjectTest, ComputeShader) {
     alloc_info.descriptorSetCount = 1;
     alloc_info.descriptorPool = ds_pool.handle();
     alloc_info.pSetLayouts = &ds_layout.handle();
-    vk::AllocateDescriptorSets(m_device->device(), &alloc_info, &descriptorSet);
+    vkAllocateDescriptorSets(m_device->device(), &alloc_info, &descriptorSet);
 
     VkDescriptorBufferInfo storage_buffer_info = {storageBuffer.handle(), 0, sizeof(uint32_t)};
 
@@ -942,7 +864,7 @@ TEST_F(ShaderObjectTest, ComputeShader) {
     descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     descriptorWrite.pBufferInfo = &storage_buffer_info;
 
-    vk::UpdateDescriptorSets(m_device->handle(), 1u, &descriptorWrite, 0u, nullptr);
+    vkUpdateDescriptorSets(m_device->handle(), 1u, &descriptorWrite, 0u, nullptr);
 
     const VkDescriptorSetLayoutObj descriptor_set_layout(m_device, {dsl_binding});
     const VkPipelineLayoutObj pipeline_layout(DeviceObj(), {&descriptor_set_layout});
@@ -959,22 +881,22 @@ TEST_F(ShaderObjectTest, ComputeShader) {
     createInfo.setLayoutCount = 1u;
     createInfo.pSetLayouts = &descriptorSetLayout;
 
-    vk::CreateShadersEXT(m_device->handle(), 1u, &createInfo, nullptr, &shader);
+    vkCreateShadersEXT(m_device->handle(), 1u, &createInfo, nullptr, &shader);
 
     m_commandBuffer->begin();
 
-    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline_layout.handle(), 0u, 1u,
+    vkCmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline_layout.handle(), 0u, 1u,
                               &descriptorSet, 0u, nullptr);
 
-    vk::CmdBindShadersEXT(m_commandBuffer->handle(), 1u, shaderStages, &shader);
+    vkCmdBindShadersEXT(m_commandBuffer->handle(), 1u, shaderStages, &shader);
     BindDefaultDynamicStates(vertexBuffer.handle(), false);
-    vk::CmdDispatch(m_commandBuffer->handle(), 1, 1, 1);
+    vkCmdDispatch(m_commandBuffer->handle(), 1, 1, 1);
 
     m_commandBuffer->end();
 
     SubmitAndWait();
 
-    vk::DestroyShaderEXT(m_device->handle(), shader, nullptr);
+    vkDestroyShaderEXT(m_device->handle(), shader, nullptr);
 
     m_errorMonitor->VerifyNotFound();
 }
@@ -1002,7 +924,7 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
     auto mesh_shader_features = vku::InitStruct<VkPhysicalDeviceMeshShaderFeaturesEXT>(&maintenance_4_features);
     auto features2 = vku::InitStruct<VkPhysicalDeviceFeatures2KHR>(&mesh_shader_features);
     if (DeviceExtensionSupported(VK_EXT_MESH_SHADER_EXTENSION_NAME, 0)) {
-        vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+        vkGetPhysicalDeviceFeatures2(gpu(), &features2);
     }
     if (!mesh_shader_features.taskShader || !mesh_shader_features.meshShader) {
         GTEST_SKIP() << "Task and mesh shaders are required";
@@ -1065,7 +987,7 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
         createInfos[i].pName = "main";
     }
 
-    vk::CreateShadersEXT(m_device->handle(), 3u, createInfos, nullptr, shaders);
+    vkCreateShadersEXT(m_device->handle(), 3u, createInfos, nullptr, shaders);
 
     VkBufferObj vertexBuffer;
     vertexBuffer.init(*m_device, sizeof(float), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -1104,13 +1026,6 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
     begin_rendering_info.colorAttachmentCount = 1u;
     begin_rendering_info.pColorAttachments = &color_attachment;
 
-    PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR =
-        (PFN_vkCmdBeginRenderingKHR)vk::GetDeviceProcAddr(device(), "vkCmdBeginRenderingKHR");
-    PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR =
-        (PFN_vkCmdEndRenderingKHR)vk::GetDeviceProcAddr(device(), "vkCmdEndRenderingKHR");
-    PFN_vkCmdDrawMeshTasksEXT vkCmdDrawMeshTasksEXT =
-        (PFN_vkCmdDrawMeshTasksEXT)vk::GetDeviceProcAddr(device(), "vkCmdDrawMeshTasksEXT");
-
     m_commandBuffer->begin();
 
     {
@@ -1127,7 +1042,7 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
         imageMemoryBarrier.subresourceRange.levelCount = 1u;
         imageMemoryBarrier.subresourceRange.baseArrayLayer = 0u;
         imageMemoryBarrier.subresourceRange.layerCount = 1u;
-        vk::CmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u,
                                &imageMemoryBarrier);
     }
@@ -1142,9 +1057,9 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
     }
     for (const auto stage : nullStages) {
         VkShaderEXT nullShader = VK_NULL_HANDLE;
-        vk::CmdBindShadersEXT(m_commandBuffer->handle(), 1u, &stage, &nullShader);
+        vkCmdBindShadersEXT(m_commandBuffer->handle(), 1u, &stage, &nullShader);
     }
-    vk::CmdBindShadersEXT(m_commandBuffer->handle(), 3u, shaderStages, shaders);
+    vkCmdBindShadersEXT(m_commandBuffer->handle(), 3u, shaderStages, shaders);
     BindDefaultDynamicStates(vertexBuffer.handle(), false);
     vkCmdDrawMeshTasksEXT(m_commandBuffer->handle(), 1, 1, 1);
     vkCmdEndRenderingKHR(m_commandBuffer->handle());
@@ -1153,7 +1068,7 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
 
     SubmitAndWait();
 
-    for (uint32_t i = 0; i < 3; ++i) vk::DestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
+    for (uint32_t i = 0; i < 3; ++i) vkDestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
 
     m_errorMonitor->VerifyNotFound();
 }
@@ -1271,12 +1186,12 @@ TEST_F(ShaderObjectTest, FailCreateShaders) {
 
     createInfos[fail_index].codeType = VK_SHADER_CODE_TYPE_BINARY_EXT;
 
-    VkResult res = vk::CreateShadersEXT(m_device->handle(), shaders_count, createInfos, nullptr, shaders);
+    VkResult res = vkCreateShadersEXT(m_device->handle(), shaders_count, createInfos, nullptr, shaders);
     ASSERT_EQ(res, VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT);
 
     for (uint32_t i = 0; i < shaders_count; ++i) {
         if (i < fail_index) {
-            vk::DestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
+            vkDestroyShaderEXT(m_device->handle(), shaders[i], nullptr);
             ASSERT_NE(shaders[i], VK_NULL_HANDLE);
         } else {
             ASSERT_EQ(shaders[i], VK_NULL_HANDLE);

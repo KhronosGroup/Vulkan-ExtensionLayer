@@ -25,8 +25,9 @@
  */
 
 #include "test_common.h"
-#include "lvt_function_pointers.h"
 #include "test_environment.h"
+
+#include <volk.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -118,12 +119,15 @@ void Environment::SetUp() {
 
     VkResult err;
     uint32_t count;
-    err = vk::CreateInstance(&inst_info, NULL, &inst);
+    err = vkCreateInstance(&inst_info, NULL, &inst);
     ASSERT_EQ(VK_SUCCESS, err);
-    err = vk::EnumeratePhysicalDevices(inst, &count, NULL);
+
+    volkLoadInstance(inst);
+
+    err = vkEnumeratePhysicalDevices(inst, &count, NULL);
     ASSERT_EQ(VK_SUCCESS, err);
     ASSERT_LE(count, ARRAY_SIZE(gpus));
-    err = vk::EnumeratePhysicalDevices(inst, &count, gpus);
+    err = vkEnumeratePhysicalDevices(inst, &count, gpus);
     ASSERT_EQ(VK_SUCCESS, err);
     ASSERT_GT(count, default_dev_);
 
@@ -156,6 +160,6 @@ void Environment::TearDown() {
     for (std::vector<Device *>::iterator it = devs_.begin(); it != devs_.end(); it++) delete *it;
     devs_.clear();
 
-    if (inst) vk::DestroyInstance(inst, NULL);
+    if (inst) vkDestroyInstance(inst, NULL);
 }
 }  // namespace vk_testing

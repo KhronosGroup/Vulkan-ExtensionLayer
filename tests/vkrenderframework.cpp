@@ -236,11 +236,11 @@ bool ErrorMonitor::IgnoreMessage(string const &msg) const {
 void DebugReporter::Create(VkInstance instance) noexcept {
     assert(instance);
     assert(!debug_obj_);
-
-    auto DebugCreate = reinterpret_cast<DebugCreateFnType>(vk::GetInstanceProcAddr(instance, debug_create_fn_name_));
-    if (!DebugCreate) return;
-
-    const VkResult err = DebugCreate(instance, &debug_create_info_, nullptr, &debug_obj_);
+#ifdef VK_USE_PLATFORM_ANDROID_KHR
+    const VkResult err = vkCreateDebugReportCallbackEXT(instance, &debug_create_info_, nullptr, &debug_obj_);
+#else
+    const VkResult err = vkCreateDebugUtilsMessengerEXT(instance, &debug_create_info_, nullptr, &debug_obj_);
+#endif
     if (err) debug_obj_ = VK_NULL_HANDLE;
 }
 
@@ -248,10 +248,11 @@ void DebugReporter::Destroy(VkInstance instance) noexcept {
     assert(instance);
     assert(debug_obj_);  // valid to call with null object, but probably bug
 
-    auto DebugDestroy = reinterpret_cast<DebugDestroyFnType>(vk::GetInstanceProcAddr(instance, debug_destroy_fn_name_));
-    assert(DebugDestroy);
-
-    DebugDestroy(instance, debug_obj_, nullptr);
+#ifdef VK_USE_PLATFORM_ANDROID_KHR
+    vkDestroyDebugReportCallbackEXT(instance, debug_obj_, nullptr);
+#else
+    vkDestroyDebugUtilsMessengerEXT(instance, debug_obj_, nullptr);
+#endif
     debug_obj_ = VK_NULL_HANDLE;
 }
 
@@ -469,15 +470,17 @@ void VkRenderFramework::InitFramework(void * /*unused compatibility parameter*/,
         ici.pNext = instance_pnext;
     }
 
-    ASSERT_VK_SUCCESS(vk::CreateInstance(&ici, nullptr, &instance_));
+    ASSERT_VK_SUCCESS(vkCreateInstance(&ici, nullptr, &instance_));
     if (instance_pnext) reinterpret_cast<VkBaseOutStructure *>(last_pnext)->pNext = nullptr;  // reset back borrowed pNext chain
 
+    volkLoadInstance(instance_);
+
     uint32_t gpu_count = 1;
-    const VkResult err = vk::EnumeratePhysicalDevices(instance_, &gpu_count, &gpu_);
+    const VkResult err = vkEnumeratePhysicalDevices(instance_, &gpu_count, &gpu_);
     ASSERT_TRUE(err == VK_SUCCESS || err == VK_INCOMPLETE) << vk_result_string(err);
     ASSERT_GT(gpu_count, (uint32_t)0) << "No GPU (i.e. VkPhysicalDevice) available";
 
-    vk::GetPhysicalDeviceProperties(gpu_, &physDevProps_);
+    vkGetPhysicalDeviceProperties(gpu_, &physDevProps_);
     debug_reporter_.Create(instance_);
 }
 
@@ -491,9 +494,9 @@ void VkRenderFramework::ShutdownFramework() {
     m_commandBuffer = nullptr;
     delete m_commandPool;
     m_commandPool = nullptr;
-    if (m_framebuffer) vk::DestroyFramebuffer(device(), m_framebuffer, NULL);
+    if (m_framebuffer) vkDestroyFramebuffer(device(), m_framebuffer, NULL);
     m_framebuffer = VK_NULL_HANDLE;
-    if (m_renderPass) vk::DestroyRenderPass(device(), m_renderPass, NULL);
+    if (m_renderPass) vkDestroyRenderPass(device(), m_renderPass, NULL);
     m_renderPass = VK_NULL_HANDLE;
 
     m_renderTargets.clear();
@@ -507,7 +510,7 @@ void VkRenderFramework::ShutdownFramework() {
 
     debug_reporter_.Destroy(instance_);
 
-    vk::DestroyInstance(instance_, nullptr);
+    vkDestroyInstance(instance_, nullptr);
     instance_ = NULL;  // In case we want to re-initialize
 }
 
@@ -624,7 +627,7 @@ bool VkRenderFramework::InitSurface(float width, float height) {
     surface_create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
     surface_create_info.hinstance = window_instance;
     surface_create_info.hwnd = window;
-    VkResult err = vk::CreateWin32SurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
+    VkResult err = vkCreateWin32SurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
     if (err != VK_SUCCESS) return false;
 #endif
 
@@ -632,7 +635,7 @@ bool VkRenderFramework::InitSurface(float width, float height) {
     VkAndroidSurfaceCreateInfoKHR surface_create_info = {};
     surface_create_info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
     surface_create_info.window = VkTestFramework::window;
-    VkResult err = vk::CreateAndroidSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
+    VkResult err = vkCreateAndroidSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
     if (err != VK_SUCCESS) return false;
 #endif
 
@@ -646,7 +649,7 @@ bool VkRenderFramework::InitSurface(float width, float height) {
         surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
         surface_create_info.dpy = dpy;
         surface_create_info.window = window;
-        VkResult err = vk::CreateXlibSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
+        VkResult err = vkCreateXlibSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
         if (err != VK_SUCCESS) return false;
     }
 #endif
@@ -660,7 +663,7 @@ bool VkRenderFramework::InitSurface(float width, float height) {
             surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
             surface_create_info.connection = connection;
             surface_create_info.window = window;
-            VkResult err = vk::CreateXcbSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
+            VkResult err = vkCreateXcbSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
             if (err != VK_SUCCESS) return false;
         }
     }
@@ -679,22 +682,22 @@ bool VkRenderFramework::InitSwapchain(VkImageUsageFlags imageUsage, VkSurfaceTra
 bool VkRenderFramework::InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags imageUsage,
                                       VkSurfaceTransformFlagBitsKHR preTransform) {
     VkSurfaceCapabilitiesKHR capabilities;
-    vk::GetPhysicalDeviceSurfaceCapabilitiesKHR(m_device->phy().handle(), surface, &capabilities);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_device->phy().handle(), surface, &capabilities);
 
     uint32_t format_count;
-    vk::GetPhysicalDeviceSurfaceFormatsKHR(m_device->phy().handle(), surface, &format_count, nullptr);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(m_device->phy().handle(), surface, &format_count, nullptr);
     vector<VkSurfaceFormatKHR> formats;
     if (format_count != 0) {
         formats.resize(format_count);
-        vk::GetPhysicalDeviceSurfaceFormatsKHR(m_device->phy().handle(), surface, &format_count, formats.data());
+        vkGetPhysicalDeviceSurfaceFormatsKHR(m_device->phy().handle(), surface, &format_count, formats.data());
     }
 
     uint32_t present_mode_count;
-    vk::GetPhysicalDeviceSurfacePresentModesKHR(m_device->phy().handle(), surface, &present_mode_count, nullptr);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(m_device->phy().handle(), surface, &present_mode_count, nullptr);
     vector<VkPresentModeKHR> present_modes;
     if (present_mode_count != 0) {
         present_modes.resize(present_mode_count);
-        vk::GetPhysicalDeviceSurfacePresentModesKHR(m_device->phy().handle(), surface, &present_mode_count, present_modes.data());
+        vkGetPhysicalDeviceSurfacePresentModesKHR(m_device->phy().handle(), surface, &present_mode_count, present_modes.data());
     }
 
     VkSwapchainCreateInfoKHR swapchain_create_info = {};
@@ -718,25 +721,25 @@ bool VkRenderFramework::InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags i
     swapchain_create_info.clipped = VK_FALSE;
     swapchain_create_info.oldSwapchain = 0;
 
-    VkResult err = vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
+    VkResult err = vkCreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
     if (err != VK_SUCCESS) {
         return false;
     }
     uint32_t imageCount = 0;
-    vk::GetSwapchainImagesKHR(device(), m_swapchain, &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(device(), m_swapchain, &imageCount, nullptr);
     vector<VkImage> swapchainImages;
     swapchainImages.resize(imageCount);
-    vk::GetSwapchainImagesKHR(device(), m_swapchain, &imageCount, swapchainImages.data());
+    vkGetSwapchainImagesKHR(device(), m_swapchain, &imageCount, swapchainImages.data());
     return true;
 }
 
 void VkRenderFramework::DestroySwapchain() {
     if (m_swapchain != VK_NULL_HANDLE) {
-        vk::DestroySwapchainKHR(device(), m_swapchain, nullptr);
+        vkDestroySwapchainKHR(device(), m_swapchain, nullptr);
         m_swapchain = VK_NULL_HANDLE;
     }
     if (m_surface != VK_NULL_HANDLE) {
-        vk::DestroySurfaceKHR(instance(), m_surface, nullptr);
+        vkDestroySurfaceKHR(instance(), m_surface, nullptr);
         m_surface = VK_NULL_HANDLE;
     }
 }
@@ -784,7 +787,7 @@ void VkRenderFramework::InitRenderTarget(uint32_t targets, VkImageView *dsBindin
 
         VkFormatProperties props;
 
-        vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), m_render_target_fmt, &props);
+        vkGetPhysicalDeviceFormatProperties(m_device->phy().handle(), m_render_target_fmt, &props);
 
         if (props.linearTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT) {
             img->Init((uint32_t)m_width, (uint32_t)m_height, 1, m_render_target_fmt,
@@ -879,7 +882,7 @@ void VkRenderFramework::InitRenderTarget(uint32_t targets, VkImageView *dsBindin
         rp_info.pDependencies = nullptr;
     }
 
-    vk::CreateRenderPass(device(), &rp_info, NULL, &m_renderPass);
+    vkCreateRenderPass(device(), &rp_info, NULL, &m_renderPass);
     // Create Framebuffer and RenderPass with color attachments and any
     // depth/stencil attachment
     VkFramebufferCreateInfo &fb_info = m_framebuffer_info;
@@ -892,7 +895,7 @@ void VkRenderFramework::InitRenderTarget(uint32_t targets, VkImageView *dsBindin
     fb_info.height = (uint32_t)m_height;
     fb_info.layers = 1;
 
-    vk::CreateFramebuffer(device(), &fb_info, NULL, &m_framebuffer);
+    vkCreateFramebuffer(device(), &fb_info, NULL, &m_framebuffer);
 
     m_renderPassBeginInfo.renderPass = m_renderPass;
     m_renderPassBeginInfo.framebuffer = m_framebuffer;
@@ -903,9 +906,9 @@ void VkRenderFramework::InitRenderTarget(uint32_t targets, VkImageView *dsBindin
 }
 
 void VkRenderFramework::DestroyRenderTarget() {
-    vk::DestroyRenderPass(device(), m_renderPass, nullptr);
+    vkDestroyRenderPass(device(), m_renderPass, nullptr);
     m_renderPass = VK_NULL_HANDLE;
-    vk::DestroyFramebuffer(device(), m_framebuffer, nullptr);
+    vkDestroyFramebuffer(device(), m_framebuffer, nullptr);
     m_framebuffer = VK_NULL_HANDLE;
 }
 
@@ -1115,7 +1118,7 @@ VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, const VkFormat format) {
     rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
     device = dev->device();
-    vk::CreateRenderPass(device, &rpci, NULL, &m_renderpass);
+    vkCreateRenderPass(device, &rpci, NULL, &m_renderpass);
 }
 
 VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, VkFormat format, bool depthStencil) {
@@ -1144,11 +1147,11 @@ VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, VkFormat format, bool depthSt
         rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
         device = dev->device();
-        vk::CreateRenderPass(device, &rpci, NULL, &m_renderpass);
+        vkCreateRenderPass(device, &rpci, NULL, &m_renderpass);
     }
 }
 
-VkRenderpassObj::~VkRenderpassObj() noexcept { vk::DestroyRenderPass(device, m_renderpass, NULL); }
+VkRenderpassObj::~VkRenderpassObj() noexcept { vkDestroyRenderPass(device, m_renderpass, NULL); }
 
 VkImageObj::VkImageObj(VkDeviceObj *dev) {
     m_device = dev;
@@ -1187,7 +1190,7 @@ void VkImageObj::ImageMemoryBarrier(VkCommandBufferObj *cmd_buf, VkImageAspectFl
     VkImageMemoryBarrier *pmemory_barrier = &barrier;
 
     // write barrier to the command buffer
-    vk::CmdPipelineBarrier(cmd_buf->handle(), src_stages, dest_stages, VK_DEPENDENCY_BY_REGION_BIT, 0, NULL, 0, NULL, 1,
+    vkCmdPipelineBarrier(cmd_buf->handle(), src_stages, dest_stages, VK_DEPENDENCY_BY_REGION_BIT, 0, NULL, 0, NULL, 1,
                            pmemory_barrier);
 }
 
@@ -1361,7 +1364,7 @@ void VkImageObj::InitNoLayout(const VkImageCreateInfo &create_info, VkMemoryProp
     VkImageTiling requested_tiling = create_info.tiling;
     VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL;
 
-    vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), create_info.format, &image_fmt);
+    vkGetPhysicalDeviceFormatProperties(m_device->phy().handle(), create_info.format, &image_fmt);
 
     if (requested_tiling == VK_IMAGE_TILING_LINEAR) {
         if (IsCompatible(usage, image_fmt.linearTilingFeatures)) {
@@ -1430,7 +1433,7 @@ void VkImageObj::Init(const VkImageCreateInfo &create_info, VkMemoryPropertyFlag
 
 void VkImageObj::init(const VkImageCreateInfo *create_info) {
     VkFormatProperties image_fmt;
-    vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), create_info->format, &image_fmt);
+    vkGetPhysicalDeviceFormatProperties(m_device->phy().handle(), create_info->format, &image_fmt);
 
     switch (create_info->tiling) {
         case VK_IMAGE_TILING_OPTIMAL:
@@ -1500,7 +1503,7 @@ VkResult VkImageObj::CopyImage(VkImageObj &src_image) {
     copy_region.dstOffset.z = 0;
     copy_region.extent = src_image.extent();
 
-    vk::CmdCopyImage(cmd_buf.handle(), src_image.handle(), src_image.Layout(), handle(), Layout(), 1, &copy_region);
+    vkCmdCopyImage(cmd_buf.handle(), src_image.handle(), src_image.Layout(), handle(), Layout(), 1, &copy_region);
 
     src_image.SetLayout(&cmd_buf, VK_IMAGE_ASPECT_COLOR_BIT, src_image_layout);
 
@@ -1545,7 +1548,7 @@ VkResult VkImageObj::CopyImageOut(VkImageObj &dst_image) {
     copy_region.dstOffset.z = 0;
     copy_region.extent = dst_image.extent();
 
-    vk::CmdCopyImage(cmd_buf.handle(), handle(), Layout(), dst_image.handle(), dst_image.Layout(), 1, &copy_region);
+    vkCmdCopyImage(cmd_buf.handle(), handle(), Layout(), dst_image.handle(), dst_image.Layout(), 1, &copy_region);
 
     this->SetLayout(&cmd_buf, VK_IMAGE_ASPECT_COLOR_BIT, src_image_layout);
 
@@ -1974,7 +1977,7 @@ void VkCommandBufferObj::PipelineBarrier(VkPipelineStageFlags src_stages, VkPipe
                                          const VkMemoryBarrier *pMemoryBarriers, uint32_t bufferMemoryBarrierCount,
                                          const VkBufferMemoryBarrier *pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount,
                                          const VkImageMemoryBarrier *pImageMemoryBarriers) {
-    vk::CmdPipelineBarrier(handle(), src_stages, dest_stages, dependencyFlags, memoryBarrierCount, pMemoryBarriers,
+    vkCmdPipelineBarrier(handle(), src_stages, dest_stages, dependencyFlags, memoryBarrierCount, pMemoryBarriers,
                            bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers);
 }
 
@@ -2014,31 +2017,31 @@ void VkCommandBufferObj::ClearAllBuffers(const vector<std::unique_ptr<VkImageObj
 }
 
 void VkCommandBufferObj::FillBuffer(VkBuffer buffer, VkDeviceSize offset, VkDeviceSize fill_size, uint32_t data) {
-    vk::CmdFillBuffer(handle(), buffer, offset, fill_size, data);
+    vkCmdFillBuffer(handle(), buffer, offset, fill_size, data);
 }
 
 void VkCommandBufferObj::UpdateBuffer(VkBuffer buffer, VkDeviceSize dstOffset, VkDeviceSize dataSize, const void *pData) {
-    vk::CmdUpdateBuffer(handle(), buffer, dstOffset, dataSize, pData);
+    vkCmdUpdateBuffer(handle(), buffer, dstOffset, dataSize, pData);
 }
 
 void VkCommandBufferObj::CopyImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout,
                                    uint32_t regionCount, const VkImageCopy *pRegions) {
-    vk::CmdCopyImage(handle(), srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions);
+    vkCmdCopyImage(handle(), srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions);
 }
 
 void VkCommandBufferObj::ResolveImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage,
                                       VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageResolve *pRegions) {
-    vk::CmdResolveImage(handle(), srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions);
+    vkCmdResolveImage(handle(), srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions);
 }
 
 void VkCommandBufferObj::ClearColorImage(VkImage image, VkImageLayout imageLayout, const VkClearColorValue *pColor,
                                          uint32_t rangeCount, const VkImageSubresourceRange *pRanges) {
-    vk::CmdClearColorImage(handle(), image, imageLayout, pColor, rangeCount, pRanges);
+    vkCmdClearColorImage(handle(), image, imageLayout, pColor, rangeCount, pRanges);
 }
 
 void VkCommandBufferObj::ClearDepthStencilImage(VkImage image, VkImageLayout imageLayout, const VkClearDepthStencilValue *pColor,
                                                 uint32_t rangeCount, const VkImageSubresourceRange *pRanges) {
-    vk::CmdClearDepthStencilImage(handle(), image, imageLayout, pColor, rangeCount, pRanges);
+    vkCmdClearDepthStencilImage(handle(), image, imageLayout, pColor, rangeCount, pRanges);
 }
 
 void VkCommandBufferObj::BuildAccelerationStructure(VkAccelerationStructureObj *as, VkBuffer scratchBuffer) {
@@ -2046,10 +2049,6 @@ void VkCommandBufferObj::BuildAccelerationStructure(VkAccelerationStructureObj *
 }
 
 void VkCommandBufferObj::BuildAccelerationStructure(VkAccelerationStructureObj *as, VkBuffer scratchBuffer, VkBuffer instanceData) {
-    PFN_vkCmdBuildAccelerationStructureNV vkCmdBuildAccelerationStructureNV =
-        (PFN_vkCmdBuildAccelerationStructureNV)vk::GetDeviceProcAddr(as->dev(), "vkCmdBuildAccelerationStructureNV");
-    assert(vkCmdBuildAccelerationStructureNV != nullptr);
-
     vkCmdBuildAccelerationStructureNV(handle(), &as->info(), instanceData, 0, VK_FALSE, as->handle(), VK_NULL_HANDLE, scratchBuffer,
                                       0);
 }
@@ -2070,26 +2069,26 @@ void VkCommandBufferObj::PrepareAttachments(const vector<std::unique_ptr<VkImage
 }
 
 void VkCommandBufferObj::BeginRenderPass(const VkRenderPassBeginInfo &info) {
-    vk::CmdBeginRenderPass(handle(), &info, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(handle(), &info, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void VkCommandBufferObj::EndRenderPass() { vk::CmdEndRenderPass(handle()); }
+void VkCommandBufferObj::EndRenderPass() { vkCmdEndRenderPass(handle()); }
 
 void VkCommandBufferObj::SetViewport(uint32_t firstViewport, uint32_t viewportCount, const VkViewport *pViewports) {
-    vk::CmdSetViewport(handle(), firstViewport, viewportCount, pViewports);
+    vkCmdSetViewport(handle(), firstViewport, viewportCount, pViewports);
 }
 
 void VkCommandBufferObj::SetStencilReference(VkStencilFaceFlags faceMask, uint32_t reference) {
-    vk::CmdSetStencilReference(handle(), faceMask, reference);
+    vkCmdSetStencilReference(handle(), faceMask, reference);
 }
 
 void VkCommandBufferObj::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset,
                                      uint32_t firstInstance) {
-    vk::CmdDrawIndexed(handle(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+    vkCmdDrawIndexed(handle(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
 
 void VkCommandBufferObj::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) {
-    vk::CmdDraw(handle(), vertexCount, instanceCount, firstVertex, firstInstance);
+    vkCmdDraw(handle(), vertexCount, instanceCount, firstVertex, firstInstance);
 }
 
 void VkCommandBufferObj::QueueCommandBuffer(bool checkSuccess) {
@@ -2112,7 +2111,7 @@ void VkCommandBufferObj::QueueCommandBuffer(const VkFenceObj &fence, bool checkS
 
     // TODO: Determine if we really want this serialization here
     // Wait for work to finish before cleaning up.
-    vk::DeviceWaitIdle(m_device->device());
+    vkDeviceWaitIdle(m_device->device());
 }
 
 void VkCommandBufferObj::BindDescriptorSet(VkDescriptorSetObj &descriptorSet) {
@@ -2120,17 +2119,17 @@ void VkCommandBufferObj::BindDescriptorSet(VkDescriptorSetObj &descriptorSet) {
 
     // bind pipeline, vertex buffer (descriptor set) and WVP (dynamic buffer view)
     if (set_obj) {
-        vk::CmdBindDescriptorSets(handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, descriptorSet.GetPipelineLayout(), 0, 1, &set_obj, 0,
+        vkCmdBindDescriptorSets(handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, descriptorSet.GetPipelineLayout(), 0, 1, &set_obj, 0,
                                   NULL);
     }
 }
 
 void VkCommandBufferObj::BindIndexBuffer(VkBufferObj *indexBuffer, VkDeviceSize offset, VkIndexType indexType) {
-    vk::CmdBindIndexBuffer(handle(), indexBuffer->handle(), offset, indexType);
+    vkCmdBindIndexBuffer(handle(), indexBuffer->handle(), offset, indexType);
 }
 
 void VkCommandBufferObj::BindVertexBuffer(VkConstantBufferObj *vertexBuffer, VkDeviceSize offset, uint32_t binding) {
-    vk::CmdBindVertexBuffers(handle(), binding, 1, &vertexBuffer->handle(), &offset);
+    vkCmdBindVertexBuffers(handle(), binding, 1, &vertexBuffer->handle(), &offset);
 }
 
 VkCommandPoolObj::VkCommandPoolObj(VkDeviceObj *device, uint32_t queue_family_index, VkCommandPoolCreateFlags flags) {
