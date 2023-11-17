@@ -93,6 +93,8 @@ find_package(GTest REQUIRED CONFIG QUIET)
 
 find_package(glslang REQUIRED CONFIG QUIET)
 
+find_package(volk QUIET CONFIG)
+
 target_link_libraries(vk_extension_layer_tests PRIVATE
     VkExtLayer_utils
     Vulkan::LayerSettings
@@ -108,7 +110,11 @@ target_link_libraries(vk_extension_layer_tests PRIVATE
     glslang::SPIRV
     glslang::SPVRemapper
     ${CMAKE_DL_LIBS}
+    volk::volk_headers
 )
+
+# Needed for volk to work correctly
+target_compile_definitions(vk_extension_layer_tests PRIVATE VK_NO_PROTOTYPES)
 
 if (ANDROID)
     add_subdirectory(android)

@@ -21,8 +21,6 @@
 
 #pragma once
 
-#include "lvt_function_pointers.h"
-
 #include "vktestframework.h"
 
 #if defined(ANDROID)
@@ -162,10 +160,6 @@ struct DebugReporter {
         VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT, nullptr,
         VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT,
         &DebugCallback, &error_monitor_};
-    using DebugCreateFnType = PFN_vkCreateDebugReportCallbackEXT;
-    const char *debug_create_fn_name_ = "vkCreateDebugReportCallbackEXT";
-    using DebugDestroyFnType = PFN_vkDestroyDebugReportCallbackEXT;
-    const char *debug_destroy_fn_name_ = "vkDestroyDebugReportCallbackEXT";
     VkDebugReportCallbackEXT debug_obj_ = VK_NULL_HANDLE;
 #else
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
@@ -182,10 +176,6 @@ struct DebugReporter {
         VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
         &DebugCallback,
         &error_monitor_};
-    using DebugCreateFnType = PFN_vkCreateDebugUtilsMessengerEXT;
-    const char *debug_create_fn_name_ = "vkCreateDebugUtilsMessengerEXT";
-    using DebugDestroyFnType = PFN_vkDestroyDebugUtilsMessengerEXT;
-    const char *debug_destroy_fn_name_ = "vkDestroyDebugUtilsMessengerEXT";
     VkDebugUtilsMessengerEXT debug_obj_ = VK_NULL_HANDLE;
 #endif
 };

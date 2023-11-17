@@ -20,7 +20,6 @@ add_library(VkExtLayer_utils STATIC)
 target_sources(VkExtLayer_utils PRIVATE
     allocator.cpp
     generated/vk_safe_struct.cpp
-    generated/lvt_function_pointers.cpp
 )
 
 lunarg_target_compiler_configurations(VkExtLayer_utils ${BUILD_WERROR})
