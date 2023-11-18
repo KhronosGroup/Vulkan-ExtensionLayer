@@ -1211,3 +1211,249 @@ TEST_F(ShaderObjectTest, FailCreateShaders) {
 
     m_errorMonitor->VerifyNotFound();
 }
+
+TEST_F(ShaderObjectTest, UnusedAttachments) {
+    TEST_DESCRIPTION("Test drawing with dynamic rendering unused attachments extension");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    if (!DeviceExtensionSupported(VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME, 0)) {
+        GTEST_SKIP() << "VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME not supported";
+    }
+    m_device_extension_names.push_back(VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME);
+    if (!CheckShaderObjectSupportAndInitState()) {
+        GTEST_SKIP() << kSkipPrefix << " shader object or dynamic rendering unused attachments not supported, skipping test";
+    }
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+
+    m_errorMonitor->ExpectSuccess();
+
+    static const char vertSource[] = R"glsl(
+        #version 460
+        void main() {
+            vec2 pos = vec2(float(gl_VertexIndex & 1), float((gl_VertexIndex >> 1) & 1));
+            gl_Position = vec4(pos - 0.5f, 0.0f, 1.0f);
+        }
+    )glsl";
+
+    static const char fragSource[] = R"glsl(
+        #version 460
+        layout(location = 0) out vec4 uFragColor;
+        void main(){
+           uFragColor = vec4(0.2f, 0.4f, 0.6f, 0.8f);
+        }
+    )glsl";
+
+    VkShaderStageFlagBits shaderStages[] = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
+
+    std::vector<unsigned int> spv[2];
+    GLSLtoSPV(&m_device->props.limits, VK_SHADER_STAGE_VERTEX_BIT, vertSource, spv[0], false, 0);
+    GLSLtoSPV(&m_device->props.limits, VK_SHADER_STAGE_FRAGMENT_BIT, fragSource, spv[1], false, 0);
+
+    VkShaderStageFlagBits unusedShaderStages[] = {VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+                                                  VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, VK_SHADER_STAGE_GEOMETRY_BIT};
+    VkShaderEXT shaders[2];
+    VkShaderCreateInfoEXT createInfos[2];
+    for (uint32_t i = 0; i < 2; ++i) {
+        createInfos[i] = vku::InitStructHelper();
+        createInfos[i].stage = shaderStages[i];
+        createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
+        createInfos[i].codeSize = spv[i].size() * sizeof(unsigned int);
+        createInfos[i].pCode = spv[i].data();
+        createInfos[i].pName = "main";
+    }
+
+    vkCreateShadersEXT(m_device->handle(), 2u, createInfos, nullptr, shaders);
+
+    VkBufferObj buffer1;
+    buffer1.init(*m_device, sizeof(float) * 4u, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                 VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    VkBufferObj buffer2;
+    buffer2.init(*m_device, sizeof(float) * 4u, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                 VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+
+    VkBufferObj vertexBuffer;
+    vertexBuffer.init(*m_device, sizeof(float), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
+    VkImageCreateInfo imageInfo = vku::InitStructHelper();
+    imageInfo.flags = 0;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    imageInfo.extent = {static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height), 1};
+    imageInfo.mipLevels = 1u;
+    imageInfo.arrayLayers = 1u;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    imageInfo.queueFamilyIndexCount = 0u;
+    imageInfo.pQueueFamilyIndices = nullptr;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkImageObj image1(m_device);
+    image1.init(&imageInfo);
+    VkImageView view1 = image1.targetView(imageInfo.format);
+    VkImageObj image2(m_device);
+    image2.init(&imageInfo);
+    VkImageView view2 = image2.targetView(imageInfo.format);
+    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+    VkImageObj image3(m_device);
+    image3.init(&imageInfo);
+    VkImageView view3 = image3.targetView(imageInfo.format);
+
+    VkRenderingAttachmentInfo color_attachments[3];
+    color_attachments[0] = vku::InitStructHelper();
+    color_attachments[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    color_attachments[0].imageView = view1;
+    color_attachments[1] = vku::InitStructHelper();
+    color_attachments[1].imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    color_attachments[1].imageView = VK_NULL_HANDLE;
+    color_attachments[2] = vku::InitStructHelper();
+    color_attachments[2].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    color_attachments[2].imageView = view3;
+
+    VkRenderingInfo begin_rendering_info = vku::InitStructHelper();
+    begin_rendering_info.flags = 0u;
+    begin_rendering_info.renderArea.offset.x = 0;
+    begin_rendering_info.renderArea.offset.y = 0;
+    begin_rendering_info.renderArea.extent.width = static_cast<uint32_t>(m_width);
+    begin_rendering_info.renderArea.extent.height = static_cast<uint32_t>(m_height);
+    begin_rendering_info.layerCount = 1u;
+    begin_rendering_info.viewMask = 0x0;
+    begin_rendering_info.colorAttachmentCount = 3u;
+    begin_rendering_info.pColorAttachments = color_attachments;
+
+    m_commandBuffer->begin();
+
+    {
+        VkImageMemoryBarrier imageMemoryBarrier = vku::InitStructHelper();
+        imageMemoryBarrier.srcAccessMask = VK_ACCESS_NONE;
+        imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imageMemoryBarrier.image = image1.handle();
+        imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageMemoryBarrier.subresourceRange.baseMipLevel = 0u;
+        imageMemoryBarrier.subresourceRange.levelCount = 1u;
+        imageMemoryBarrier.subresourceRange.baseArrayLayer = 0u;
+        imageMemoryBarrier.subresourceRange.layerCount = 1u;
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u, &imageMemoryBarrier);
+        imageMemoryBarrier.image = image2.handle();
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u, &imageMemoryBarrier);
+        imageMemoryBarrier.image = image3.handle();
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u, &imageMemoryBarrier);
+    }
+    vkCmdBeginRenderingKHR(m_commandBuffer->handle(), &begin_rendering_info);
+    vkCmdBindShadersEXT(m_commandBuffer->handle(), 2u, shaderStages, shaders);
+    for (const auto& unusedShader : unusedShaderStages) {
+        VkShaderEXT null_shader = VK_NULL_HANDLE;
+        vkCmdBindShadersEXT(m_commandBuffer->handle(), 1u, &unusedShader, &null_shader);
+    }
+    BindDefaultDynamicStates(vertexBuffer.handle(), false);
+    {
+        VkBool32 colorBlendEnable = VK_FALSE;
+        vkCmdSetColorBlendEnableEXT(m_commandBuffer->handle(), 1u, 1u, &colorBlendEnable);
+        VkColorBlendEquationEXT colorBlendEquation = {
+            VK_BLEND_FACTOR_ONE,  // VkBlendFactor	srcColorBlendFactor;
+            VK_BLEND_FACTOR_ONE,  // VkBlendFactor	dstColorBlendFactor;
+            VK_BLEND_OP_ADD,      // VkBlendOp		colorBlendOp;
+            VK_BLEND_FACTOR_ONE,  // VkBlendFactor	srcAlphaBlendFactor;
+            VK_BLEND_FACTOR_ONE,  // VkBlendFactor	dstAlphaBlendFactor;
+            VK_BLEND_OP_ADD,      // VkBlendOp		alphaBlendOp;
+        };
+        vkCmdSetColorBlendEquationEXT(m_commandBuffer->handle(), 1u, 1u, &colorBlendEquation);
+        VkColorComponentFlags colorWriteMask =
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        vkCmdSetColorWriteMaskEXT(m_commandBuffer->handle(), 1u, 1u, &colorWriteMask);
+    }
+    vkCmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
+    vkCmdEndRenderingKHR(m_commandBuffer->handle());
+
+    color_attachments[2].imageView = VK_NULL_HANDLE;
+    vkCmdBeginRenderingKHR(m_commandBuffer->handle(), &begin_rendering_info);
+    vkCmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
+    vkCmdEndRenderingKHR(m_commandBuffer->handle());
+
+    begin_rendering_info.colorAttachmentCount = 1u;
+    vkCmdBeginRenderingKHR(m_commandBuffer->handle(), &begin_rendering_info);
+    vkCmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
+    vkCmdEndRenderingKHR(m_commandBuffer->handle());
+
+    begin_rendering_info.colorAttachmentCount = 3u;
+    color_attachments[1].imageView = view2;
+    vkCmdBeginRenderingKHR(m_commandBuffer->handle(), &begin_rendering_info);
+    vkCmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
+    vkCmdEndRenderingKHR(m_commandBuffer->handle());
+
+    {
+        VkImageMemoryBarrier imageMemoryBarrier = vku::InitStructHelper();
+        imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+        imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imageMemoryBarrier.image = image1.handle();
+        imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageMemoryBarrier.subresourceRange.baseMipLevel = 0u;
+        imageMemoryBarrier.subresourceRange.levelCount = 1u;
+        imageMemoryBarrier.subresourceRange.baseArrayLayer = 0u;
+        imageMemoryBarrier.subresourceRange.layerCount = 1u;
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u, &imageMemoryBarrier);
+        imageMemoryBarrier.image = image2.handle();
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u, &imageMemoryBarrier);
+        imageMemoryBarrier.image = image3.handle();
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u, &imageMemoryBarrier);
+    }
+
+    VkBufferImageCopy copyRegion = {};
+    copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copyRegion.imageSubresource.mipLevel = 0u;
+    copyRegion.imageSubresource.baseArrayLayer = 0u;
+    copyRegion.imageSubresource.layerCount = 1u;
+    copyRegion.imageOffset.x = static_cast<int32_t>(m_width / 2) + 1;
+    copyRegion.imageOffset.y = static_cast<int32_t>(m_height / 2) + 1;
+    copyRegion.imageExtent.width = 1u;
+    copyRegion.imageExtent.height = 1u;
+    copyRegion.imageExtent.depth = 1u;
+
+    vkCmdCopyImageToBuffer(m_commandBuffer->handle(), image1.handle(), VK_IMAGE_LAYOUT_GENERAL, buffer1.handle(), 1u, &copyRegion);
+    vkCmdCopyImageToBuffer(m_commandBuffer->handle(), image1.handle(), VK_IMAGE_LAYOUT_GENERAL, buffer2.handle(), 1u, &copyRegion);
+
+    m_commandBuffer->end();
+
+    SubmitAndWait();
+
+    float* data1;
+    float* data2;
+
+    vkMapMemory(m_device->handle(), buffer1.memory().handle(), 0u, sizeof(float) * 4u, 0u, (void**)&data1);
+    vkMapMemory(m_device->handle(), buffer2.memory().handle(), 0u, sizeof(float) * 4u, 0u, (void**)&data2);
+
+    for (uint32_t i = 0; i < 4; ++i) {
+        if (data1[i] != 0.2f + i * 0.2f) {
+            m_errorMonitor->SetError("Wrong pixel value");
+        }
+    }
+    for (uint32_t i = 0; i < 4; ++i) {
+        if (data2[i] != 0.2f + i * 0.2f) {
+            m_errorMonitor->SetError("Wrong pixel value");
+        }
+    }
+
+    vkUnmapMemory(m_device->handle(), buffer1.memory().handle());
+    vkUnmapMemory(m_device->handle(), buffer2.memory().handle());
+
+    vkDestroyShaderEXT(m_device->handle(), shaders[0], nullptr);
+    vkDestroyShaderEXT(m_device->handle(), shaders[1], nullptr);
+
+    m_errorMonitor->VerifyNotFound();
+}
