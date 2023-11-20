@@ -17,7 +17,7 @@
  * Author: Vikram Kushwaha <vkushwaha@nvidia.com>
  */
 
-static bool logging_enabled = true;
+static bool logging_enabled = false;
 
 #define PRINT(...)                        \
     {                                     \
