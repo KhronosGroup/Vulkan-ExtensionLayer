@@ -14541,6 +14541,7 @@ struct safe_VkLatencyTimingsFrameReportNV {
 struct safe_VkGetLatencyMarkerInfoNV {
     VkStructureType sType;
     const void* pNext{};
+    uint32_t timingCount;
     safe_VkLatencyTimingsFrameReportNV* pTimings{};
     safe_VkGetLatencyMarkerInfoNV(const VkGetLatencyMarkerInfoNV* in_struct);
     safe_VkGetLatencyMarkerInfoNV(const safe_VkGetLatencyMarkerInfoNV& copy_src);
