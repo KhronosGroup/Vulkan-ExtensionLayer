@@ -21,7 +21,6 @@
 # https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2204-Readme.md#environment-variables-2
 
 import argparse
-import json
 import os
 import sys
 import shutil
@@ -37,7 +36,7 @@ def get_android_manifest() -> str:
 
 # Generate the APK from the CMake binaries
 def generate_apk(SDK_ROOT : str, CMAKE_INSTALL_DIR : str) -> str:
-    apk_dir = common_ci.RepoRelative(f'build-android/bin')
+    apk_dir = common_ci.RepoRelative('build-android/bin')
 
     # Delete APK directory since it could contain files from old runs
     if os.path.isdir(apk_dir):
@@ -85,7 +84,6 @@ def main():
     parser.add_argument('--app-abi', dest='android_abi', type=str, default="arm64-v8a")
     parser.add_argument('--app-stl', dest='android_stl', type=str, choices=["c++_static", "c++_shared"], default="c++_static")
     parser.add_argument('--apk', action='store_true', help='Generate an APK as a post build step.')
-    parser.add_argument('--tests', action='store_true', help='Build tests.')
     parser.add_argument('--clean', action='store_true', help='Cleans CMake build artifacts')
     args = parser.parse_args()
 
@@ -93,7 +91,6 @@ def main():
     android_abis = args.android_abi.split(" ")
     android_stl = args.android_stl
     create_apk = args.apk
-    build_tests = args.tests
     clean = args.clean
 
     if "ANDROID_NDK_HOME" not in os.environ:
@@ -131,7 +128,7 @@ def main():
 
         print(f"Using {tool} : {path}")
 
-    cmake_install_dir = common_ci.RepoRelative(f'build-android/libs')
+    cmake_install_dir = common_ci.RepoRelative('build-android/libs')
 
     # Delete install directory since it could contain files from old runs
     if os.path.isdir(cmake_install_dir):
@@ -158,7 +155,7 @@ def main():
         cmake_cmd += f' -D CMAKE_TOOLCHAIN_FILE={android_toolchain}'
         cmake_cmd += f' -D CMAKE_ANDROID_ARCH_ABI={abi}'
         cmake_cmd += f' -D CMAKE_INSTALL_LIBDIR={lib_dir}'
-        cmake_cmd += f' -D BUILD_TESTS={build_tests}'
+        cmake_cmd += f' -D BUILD_TESTS={create_apk}'
         cmake_cmd += f' -D CMAKE_ANDROID_STL_TYPE={android_stl}'
 
         cmake_cmd += ' -D ANDROID_PLATFORM=26'
@@ -171,7 +168,7 @@ def main():
 
         install_cmd = f'cmake --install {build_dir} --prefix {cmake_install_dir}'
         if cmake_config in ['Release', 'MinSizeRel']:
-            install_cmd += ' --strip'
+            install_cmd += f' --strip'
         common_ci.RunShellCmd(install_cmd)
 
     if create_apk:

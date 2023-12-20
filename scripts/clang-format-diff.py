@@ -17,7 +17,6 @@ Example usage for git/svn users:
   svn diff --diff-cmd=diff -x-U0 | clang-format-diff.py -i
 
 """
-from __future__ import absolute_import, division, print_function
 
 import argparse
 import difflib
@@ -65,7 +64,7 @@ def main():
     match = re.search(r'^\+\+\+\ (.*?/){%s}(\S*)' % args.p, line)
     if match:
       filename = match.group(2)
-    if filename == None:
+    if filename is None:
       continue
 
     if args.regex is not None:
