@@ -489,6 +489,13 @@ class GoodRepo(object):
         # Set build config for single-configuration generators (this is a no-op on multi-config generators)
         cmake_cmd.append(f'-D CMAKE_BUILD_TYPE={CONFIG_MAP[self._args.config]}')
 
+        # Optionally build dependencies with ASAN enabled
+        if self._args.asan:
+            cmake_cmd.append(f'-D CMAKE_CXX_FLAGS=-fsanitize=address')
+            cmake_cmd.append(f'-D CMAKE_C_FLAGS=-fsanitize=address')
+            if platform.system() != 'Windows':
+                os.environ['LDFLAGS'] = '-fsanitize=address'
+
         # Use the CMake -A option to select the platform architecture
         # without needing a Visual Studio generator.
         if platform.system() == 'Windows' and self._args.generator != "Ninja":
@@ -549,7 +556,7 @@ class GoodRepo(object):
 
         total_time = time.time() - start
 
-        print(f"Installed {self.name} ({self.commit}) in {total_time} seconds", flush=True)
+        print(f"Installed {self.name} ({self.commit}) in {total_time:.3f} seconds", flush=True)
 
     def IsOptional(self, opts):
         return len(self.optional.intersection(opts)) > 0
@@ -712,6 +719,12 @@ def main():
         metavar='VAR[=VALUE]',
         help="Add CMake command line option -D'VAR'='VALUE' to the CMake generation command line; may be used multiple times",
         default=[])
+    parser.add_argument(
+        '--asan',
+        dest='asan',
+        action='store_true',
+        help="Build dependencies with ASAN enabled",
+        default=False)
 
     args = parser.parse_args()
     save_cwd = os.getcwd()
@@ -794,3 +807,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
