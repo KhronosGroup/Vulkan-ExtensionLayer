@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2023 Valve Corporation
-# Copyright (c) 2014-2023 LunarG, Inc.
+# Copyright (c) 2014-2024 Valve Corporation
+# Copyright (c) 2014-2024 LunarG, Inc.
 # Copyright (c) 2019      Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -59,7 +59,7 @@ endif()
 target_link_libraries(VkExtLayer_utils PUBLIC Vulkan::Headers Vulkan::UtilityHeaders)
 
 if(ANDROID)
-    target_link_libraries(VkExtLayer_utils PUBLIC log)
+    target_link_libraries(VkExtLayer_utils PUBLIC android log)
 endif()
 
 target_include_directories(VkExtLayer_utils PUBLIC

@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2023 Valve Corporation
-# Copyright (c) 2014-2023 LunarG, Inc.
+# Copyright (c) 2014-2024 Valve Corporation
+# Copyright (c) 2014-2024 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -101,12 +101,7 @@ target_link_libraries(vk_extension_layer_tests PRIVATE
     Vulkan::Headers
     GTest::gtest
     GTest::gtest_main
-    glslang::glslang
-    glslang::OGLCompiler
-    glslang::OSDependent
-    glslang::MachineIndependent
-    glslang::GenericCodeGen
-    glslang::HLSL
+    SPIRV-Headers::SPIRV-Headers
     glslang::SPIRV
     glslang::SPVRemapper
     ${CMAKE_DL_LIBS}
