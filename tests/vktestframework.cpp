@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2023 The Khronos Group Inc.
- * Copyright (c) 2015-2023 Valve Corporation
- * Copyright (c) 2015-2023 LunarG, Inc.
+ * Copyright (c) 2015-2024 The Khronos Group Inc.
+ * Copyright (c) 2015-2024 Valve Corporation
+ * Copyright (c) 2015-2024 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #include "vktestframework.h"
 #include "vkrenderframework.h"
 
-#include "glslang/SPIRV/GLSL.std.450.h"
+#include "spirv/unified1/GLSL.std.450.h"
 #include "glslang/SPIRV/SPVRemapper.h"
 
 #include <limits.h>

@@ -28,7 +28,7 @@
             "sub_dir": "glslang",
             "build_dir": "glslang/build",
             "install_dir": "glslang/build/install",
-            "commit": "be564292f00c5bf0d7251c11f1c9618eb1117762",
+            "commit": "a91631b260cba3f22858d6c6827511e636c2458a",
             "cmake_options": [
                 "-DENABLE_OPT=OFF"
             ],
@@ -42,7 +42,7 @@
             "sub_dir": "SPIRV-Headers",
             "build_dir": "SPIRV-Headers/build",
             "install_dir": "SPIRV-Headers/build/install",
-            "commit": "e867c06631767a2d96424cbec530f9ee5e78180f",
+            "commit": "1c6bb2743599e6eb6f37b2969acc0aef812e32e3",
             "optional": [
                 "tests"
             ]
@@ -59,7 +59,7 @@
                 "-DSPIRV_SKIP_TESTS=ON",
                 "-DSPIRV_SKIP_EXECUTABLES=ON"
             ],
-            "commit": "360d469b9eac54d6c6e20f609f9ec35e3a5380ad",
+            "commit": "f0cc85efdbbe3a46eae90e0f915dc1509836d0fc",
             "optional": [
                 "tests"
             ]
