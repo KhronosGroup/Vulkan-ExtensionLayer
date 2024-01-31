@@ -9,7 +9,12 @@
         "description": "Khronos Decompression layer",
         "status": "STABLE",
         "platforms": [ "WINDOWS", "LINUX", "MACOS", "ANDROID" ],
-        "instance_extensions": [],
+        "instance_extensions": [
+            {
+                "name": "VK_EXT_layer_settings",
+                "spec_version": "2"
+            }
+        ],
         "device_extensions": [
             {
                 "name": "VK_NV_memory_decompression",
