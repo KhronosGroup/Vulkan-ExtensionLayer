@@ -487,6 +487,7 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_khr_maintenance5{kNotEnabled};
     ExtEnabled vk_khr_ray_tracing_position_fetch{kNotEnabled};
     ExtEnabled vk_khr_cooperative_matrix{kNotEnabled};
+    ExtEnabled vk_khr_video_decode_av1{kNotEnabled};
     ExtEnabled vk_khr_video_maintenance1{kNotEnabled};
     ExtEnabled vk_khr_vertex_attribute_divisor{kNotEnabled};
     ExtEnabled vk_khr_load_store_op_none{kNotEnabled};
@@ -1115,6 +1116,9 @@ struct DeviceExtensions : public InstanceExtensions {
             {VK_KHR_COOPERATIVE_MATRIX_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_cooperative_matrix,
                                                                   {{{&DeviceExtensions::vk_khr_get_physical_device_properties2,
                                                                      VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
+            {VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME,
+             DeviceInfo(&DeviceExtensions::vk_khr_video_decode_av1,
+                        {{{&DeviceExtensions::vk_khr_video_decode_queue, VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME}}})},
             {VK_KHR_VIDEO_MAINTENANCE_1_EXTENSION_NAME,
              DeviceInfo(&DeviceExtensions::vk_khr_video_maintenance1,
                         {{{&DeviceExtensions::vk_khr_video_queue, VK_KHR_VIDEO_QUEUE_EXTENSION_NAME}}})},
@@ -2060,6 +2064,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_KHR_MAINTENANCE_5_EXTENSION_NAME,
     VK_KHR_RAY_TRACING_POSITION_FETCH_EXTENSION_NAME,
     VK_KHR_COOPERATIVE_MATRIX_EXTENSION_NAME,
+    VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME,
     VK_KHR_VIDEO_MAINTENANCE_1_EXTENSION_NAME,
     VK_KHR_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME,
     VK_KHR_LOAD_STORE_OP_NONE_EXTENSION_NAME,
