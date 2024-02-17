@@ -68,7 +68,7 @@ def get_private_variable_name(variable_data):
     return name + ('s' if is_plural else '') + '_'
 
 def generate_constants_file(data):
-    out_file = create_generated_file('../layers/generated/shader_object_constants.h')
+    out_file = create_generated_file('../layers/shader_object/generated/shader_object_constants.h')
 
     all_important_extensions = data['extensions'] + data['optional_extensions'] + [{ 'name': 'SHADER_OBJECT', 'extension_name_macro': 'VK_EXT_SHADER_OBJECT_EXTENSION_NAME' }]
 
@@ -79,7 +79,10 @@ def generate_constants_file(data):
         longest_macro_name_length = max(longest_macro_name_length, len(extension['extension_name_macro']))
 
     out_file.write('#pragma once\n\n')
-    out_file.write('#include <cstdint>\n\n')
+    out_file.write('#include <cstdint>\n')
+    out_file.write('#include <cstring>\n\n')
+
+    out_file.write('#include "shader_object/shader_object_util.h"\n\n')
 
     out_file.write('enum AdditionalExtensionFlagBits {\n')
     shift_amount = 0
@@ -124,7 +127,7 @@ def generate_constants_file(data):
     out_file.close()
 
 def generate_device_data_declare_extension_variables(data):
-    out_file = create_generated_file('../layers/generated/shader_object_device_data_declare_extension_variables.inl')
+    out_file = create_generated_file('../layers/shader_object/generated/shader_object_device_data_declare_extension_variables.inl')
 
     for extension in (data['extensions'] + data['optional_extensions']):
         if 'feature_struct' not in extension:
@@ -140,7 +143,7 @@ def generate_device_data_declare_extension_variables(data):
     out_file.close()
 
 def generate_device_data_set_extension_variables(data):
-    out_file = create_generated_file('../layers/generated/shader_object_device_data_set_extension_variables.inl')
+    out_file = create_generated_file('../layers/shader_object/generated/shader_object_device_data_set_extension_variables.inl')
 
     for extension in (data['extensions'] + data['optional_extensions']):
         if 'feature_struct' not in extension:
@@ -152,7 +155,7 @@ def generate_device_data_set_extension_variables(data):
     out_file.close()
 
 def generate_device_data_dynamic_state_adding(data):
-    out_file = create_generated_file('../layers/generated/shader_object_device_data_dynamic_state_adding.inl')
+    out_file = create_generated_file('../layers/shader_object/generated/shader_object_device_data_dynamic_state_adding.inl')
 
     for extension in data['extensions']:
         if 'dynamic_states' not in extension:
@@ -179,7 +182,7 @@ def generate_device_data_dynamic_state_adding(data):
     out_file.close()
 
 def generate_create_device_feature_structs(data):
-    out_file = create_generated_file('../layers/generated/shader_object_create_device_feature_structs.inl')
+    out_file = create_generated_file('../layers/shader_object/generated/shader_object_create_device_feature_structs.inl')
 
     if (len(data['extensions']) == 0):
         return
@@ -231,7 +234,7 @@ def generate_create_device_feature_structs(data):
     out_file.close()
 
 def generate_find_intercepted_dynamic_state_function_by_name(data):
-    out_file = create_generated_file('../layers/generated/shader_object_find_intercepted_dynamic_state_function_by_name.inl')
+    out_file = create_generated_file('../layers/shader_object/generated/shader_object_find_intercepted_dynamic_state_function_by_name.inl')
 
     for extension in data['extensions']:
         if 'dynamic_states' not in extension:
@@ -258,10 +261,11 @@ def generate_find_intercepted_dynamic_state_function_by_name(data):
 
 def generate_full_draw_state_struct_members(data):
     getter_setter_section = ['']
+    getter_setter_section_impl = ['']
     operator_equals_section = ['']
     member_variables_section = ['']
     subset_compare_section = dict()
-
+    
     state_to_pipeline_subset = dict()
     for subset in data['pipeline_subsets']:
         for dynamic_state_enum in data['pipeline_subsets'][subset]['dynamic_state_enums']:
@@ -270,22 +274,29 @@ def generate_full_draw_state_struct_members(data):
     def generate_getter_and_setter(state_group, name, variable_name, type, array_length = None):
         is_singular = array_length == None
         upper_camel_case_name = snake_case_to_upper_camel_case(name)
-        getter_setter_section.append(f'void Set{upper_camel_case_name}(' + ('' if is_singular else 'uint32_t index, ') + f'{type} const& element) {{\n')
-        getter_setter_section.append(f'    if (element == {variable_name}' + ('' if is_singular else '[index]') + ') {\n')
-        getter_setter_section.append('        return;\n')
-        getter_setter_section.append('    }\n')
-        getter_setter_section.append(f'    dirty_hash_bits_.set({state_group});\n')
-        getter_setter_section.append('    MarkDirty();\n')
-        getter_setter_section.append(f'    {variable_name}' + ('' if is_singular else '[index]') + ' = element;\n')
-        getter_setter_section.append('}\n')
-        getter_setter_section.append(f'{type} const& Get{upper_camel_case_name}(' + ('' if is_singular else 'uint32_t index') + ') const {\n')
-        getter_setter_section.append(f'    return {variable_name}' + ('' if is_singular else '[index]') + ';\n')
-        getter_setter_section.append('}\n')
+        getter_setter_section.append(f'void Set{upper_camel_case_name}(' + ('' if is_singular else 'uint32_t index, ') + f'{type} const& element);\n')
+        getter_setter_section_impl.append(f'void FullDrawStateData::Set{upper_camel_case_name}(' + ('' if is_singular else 'uint32_t index, ') + f'{type} const& element) {{\n')
+        getter_setter_section_impl.append(f'    if (element == {variable_name}' + ('' if is_singular else '[index]') + ') {\n')
+        getter_setter_section_impl.append('        return;\n')
+        getter_setter_section_impl.append('    }\n')
+        getter_setter_section_impl.append(f'    dirty_hash_bits_.set({state_group});\n')
+        getter_setter_section_impl.append('    MarkDirty();\n')
+        getter_setter_section_impl.append(f'    {variable_name}' + ('' if is_singular else '[index]') + ' = element;\n')
+        getter_setter_section_impl.append('}\n')
+
+        getter_setter_section.append(f'{type} const& Get{upper_camel_case_name}(' + ('' if is_singular else 'uint32_t index') + ') const;\n')
+        getter_setter_section_impl.append(f'{type} const& FullDrawStateData::Get{upper_camel_case_name}(' + ('' if is_singular else 'uint32_t index') + ') const {\n')
+        getter_setter_section_impl.append(f'    return {variable_name}' + ('' if is_singular else '[index]') + ';\n')
+        getter_setter_section_impl.append('}\n')
+
         if not is_singular:
-            getter_setter_section.append(f'{type} const* Get{upper_camel_case_name}Ptr() const {{\n')
-            getter_setter_section.append(f'    return {variable_name};\n')
-            getter_setter_section.append('}\n')
+            getter_setter_section.append(f'{type} const* Get{upper_camel_case_name}Ptr() const;\n')
+            getter_setter_section_impl.append(f'{type} const* FullDrawStateData::Get{upper_camel_case_name}Ptr() const {{\n')
+            getter_setter_section_impl.append(f'    return {variable_name};\n')
+            getter_setter_section_impl.append('}\n')
+
         getter_setter_section.append('\n')
+        getter_setter_section_impl.append('\n')
 
     def process_variable(variable_state_group, dynamic_state_enum, variable_data):
         var_type = variable_data['type']
@@ -360,7 +371,11 @@ def generate_full_draw_state_struct_members(data):
             for variable in dynamic_state['variables']:
                 process_variable(state_group, enum, variable)
 
-    out_file = create_generated_file('../layers/generated/shader_object_full_draw_state_struct_members.inl')
+    out_file = create_generated_file('../layers/shader_object/generated/shader_object_full_draw_state_struct_members.inl')
+    out_cpp_file = create_generated_file('../layers/shader_object/generated/shader_object_full_draw_state_struct_members.cpp')
+
+    out_cpp_file.write('#include "shader_object/shader_object_structs.h"\n\n')
+    out_cpp_file.write('namespace shader_object {\n\n')
 
     # public section
     out_file.write('public:\n')
@@ -374,32 +389,35 @@ def generate_full_draw_state_struct_members(data):
 
     # getters and setters
     out_file.write('    '.join(getter_setter_section))
+    out_cpp_file.write(''.join(getter_setter_section_impl))
 
     # generate operator== function
-    out_file.write('    bool operator==(FullDrawStateData const& o) const {\n')
-    out_file.write('        '.join(operator_equals_section))
-    out_file.write('        return true;\n')
-    out_file.write('    }\n\n')
+    out_file.write('    bool operator==(FullDrawStateData const& o) const;\n')
+    out_cpp_file.write('bool FullDrawStateData::operator==(FullDrawStateData const& o) const {\n')
+    out_cpp_file.write('    '.join(operator_equals_section))
+    out_cpp_file.write('    return true;\n')
+    out_cpp_file.write('}\n\n')
 
     # generate compare state subset
-    out_file.write('    bool CompareStateSubset(FullDrawStateData const& o, VkGraphicsPipelineLibraryFlagBitsEXT flag) const {\n');
+    out_file.write('    bool CompareStateSubset(FullDrawStateData const& o, VkGraphicsPipelineLibraryFlagBitsEXT flag) const;\n');
+    out_cpp_file.write('    bool FullDrawStateData::CompareStateSubset(FullDrawStateData const& o, VkGraphicsPipelineLibraryFlagBitsEXT flag) const {\n');
 
     for subset_flag in subset_compare_section:
-        out_file.write(f'        if (flag == {subset_flag}) {{\n')
+        out_cpp_file.write(f'        if (flag == {subset_flag}) {{\n')
 
         for shader in data['pipeline_subsets'][subset_flag]['shaders']:
-            out_file.write(f'            if (!(o.comparable_shaders_[{shader}] == comparable_shaders_[{shader}])) {{\n')
-            out_file.write(f'                return false;\n')
-            out_file.write(f'            }}\n')
+            out_cpp_file.write(f'            if (!(o.comparable_shaders_[{shader}] == comparable_shaders_[{shader}])) {{\n')
+            out_cpp_file.write(f'                return false;\n')
+            out_cpp_file.write(f'            }}\n')
 
         for comparison_lines in subset_compare_section[subset_flag]:
             lines = ['']
             lines.extend(comparison_lines)
-            out_file.write('            '.join(lines))
-        out_file.write('        }\n')
+            out_cpp_file.write('            '.join(lines))
+        out_cpp_file.write('        }\n')
 
-    out_file.write('        return true;\n')
-    out_file.write('    }\n')
+    out_cpp_file.write('        return true;\n')
+    out_cpp_file.write('    }\n')
 
     # private section
     out_file.write('\nprivate:\n')
@@ -419,33 +437,42 @@ def generate_full_draw_state_struct_members(data):
 
     variables_by_state_group['MISC'] = data['static_draw_states']
 
-    out_file.write('    size_t CalculatePartialHash(StateGroup state_group) const {\n')
-    out_file.write('        switch (state_group) {\n')
-    out_file.write('            default: assert(false); return 0;\n')
+    out_file.write('    size_t CalculatePartialHash(StateGroup state_group) const;\n')
+    out_cpp_file.write('    size_t FullDrawStateData::CalculatePartialHash(StateGroup state_group) const {\n')
+    out_cpp_file.write('        switch (state_group) {\n')
+    out_cpp_file.write('            default: assert(false); return 0;\n')
     for state_group, variables in variables_by_state_group.items():
-        out_file.write(f'            case {state_group}:\n')
-        out_file.write('            {\n')
-        out_file.write('                size_t res = 17;\n')
+        out_cpp_file.write(f'            case {state_group}:\n')
+        out_cpp_file.write('            {\n')
+        out_cpp_file.write('                size_t res = 17;\n')
 
         for variable in variables:
             var_type = variable['type']
             var_name_private = get_private_variable_name(variable)
             if is_variable_array(variable):
-                out_file.write('                // TODO: array comparison\n')
+                out_cpp_file.write('                // TODO: array comparison\n')
             else:
-                out_file.write(f'                res = res * 31 + std::hash<{var_type}>()({var_name_private});\n')
+                if (var_type == 'VkFormat'):
+                    out_cpp_file.write('                if (!dynamic_rendering_unused_attachments_) {\n')
+                    out_cpp_file.write(f'                   res = res * 31 + std::hash<{var_type}>()({var_name_private});\n')
+                    out_cpp_file.write('                }\n')
+                else:
+                    out_cpp_file.write(f'                res = res * 31 + std::hash<{var_type}>()({var_name_private});\n')
 
-        out_file.write('                return res;\n')
-        out_file.write('            }\n')
-    out_file.write('        }\n')
-    out_file.write('    }\n\n')
+        out_cpp_file.write('                return res;\n')
+        out_cpp_file.write('            }\n')
+    out_cpp_file.write('        }\n')
+    out_cpp_file.write('    }\n\n')
 
     out_file.write('    '.join(member_variables_section))
 
+    out_cpp_file.write('}  // namespace shader_object\n\n')
+
     out_file.close()
+    out_cpp_file.close()
 
 def generate_full_draw_state_utility_functions(data):
-    out_file = create_generated_file('../layers/generated/shader_object_full_draw_state_utility_functions.inl')
+    out_file = create_generated_file('../layers/shader_object/generated/shader_object_full_draw_state_utility_functions.inl')
 
     # gather init time array variables
 
@@ -499,7 +526,7 @@ def generate_full_draw_state_utility_functions(data):
 def generate_entry_points(data):
     # generate all x macros
 
-    out_file = create_generated_file('../layers/generated/shader_object_entry_points_x_macros.inl')
+    out_file = create_generated_file('../layers/shader_object/generated/shader_object_entry_points_x_macros.inl')
 
     def generate_x_macro(name, function_names_list):
         out_file.write(f'#define {name}')

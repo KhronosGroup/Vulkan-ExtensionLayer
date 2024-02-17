@@ -35,7 +35,8 @@ else()
 endif()
 
 target_sources(VkLayer_khronos_shader_object PRIVATE
-    shader_object.cpp
+    shader_object/shader_object.cpp
+    shader_object/generated/shader_object_full_draw_state_struct_members.cpp
 )
 
 add_library(VkLayer_khronos_memory_decompression MODULE)
