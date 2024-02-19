@@ -613,6 +613,7 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_ext_index_type_uint8{kNotEnabled};
     ExtEnabled vk_ext_extended_dynamic_state{kNotEnabled};
     ExtEnabled vk_ext_host_image_copy{kNotEnabled};
+    ExtEnabled vk_ext_map_memory_placed{kNotEnabled};
     ExtEnabled vk_ext_shader_atomic_float2{kNotEnabled};
     ExtEnabled vk_ext_swapchain_maintenance1{kNotEnabled};
     ExtEnabled vk_ext_shader_demote_to_helper_invocation{kNotEnabled};
@@ -723,6 +724,7 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_qnx_external_memory_screen_buffer{kNotEnabled};
     ExtEnabled vk_msft_layered_driver{kNotEnabled};
     ExtEnabled vk_nv_descriptor_pool_overallocation{kNotEnabled};
+    ExtEnabled vk_nv_shader_atomic_float16_vector{kNotEnabled};
     ExtEnabled vk_khr_acceleration_structure{kNotEnabled};
     ExtEnabled vk_khr_ray_tracing_pipeline{kNotEnabled};
     ExtEnabled vk_khr_ray_query{kNotEnabled};
@@ -1468,6 +1470,9 @@ struct DeviceExtensions : public InstanceExtensions {
                            VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME},
                           {&DeviceExtensions::vk_khr_copy_commands2, VK_KHR_COPY_COMMANDS_2_EXTENSION_NAME},
                           {&DeviceExtensions::vk_khr_format_feature_flags2, VK_KHR_FORMAT_FEATURE_FLAGS_2_EXTENSION_NAME}}})},
+            {VK_EXT_MAP_MEMORY_PLACED_EXTENSION_NAME,
+             DeviceInfo(&DeviceExtensions::vk_ext_map_memory_placed,
+                        {{{&DeviceExtensions::vk_khr_map_memory2, VK_KHR_MAP_MEMORY_2_EXTENSION_NAME}}})},
             {VK_EXT_SHADER_ATOMIC_FLOAT_2_EXTENSION_NAME,
              DeviceInfo(&DeviceExtensions::vk_ext_shader_atomic_float2,
                         {{{&DeviceExtensions::vk_ext_shader_atomic_float, VK_EXT_SHADER_ATOMIC_FLOAT_EXTENSION_NAME}}})},
@@ -1871,6 +1876,8 @@ struct DeviceExtensions : public InstanceExtensions {
             {VK_NV_DESCRIPTOR_POOL_OVERALLOCATION_EXTENSION_NAME,
              DeviceInfo(&DeviceExtensions::vk_nv_descriptor_pool_overallocation,
                         {{{&DeviceExtensions::vk_feature_version_1_1, "VK_VERSION_1_1"}}})},
+            {VK_NV_SHADER_ATOMIC_FLOAT16_VECTOR_EXTENSION_NAME,
+             DeviceInfo(&DeviceExtensions::vk_nv_shader_atomic_float16_vector, {})},
             {VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
              DeviceInfo(&DeviceExtensions::vk_khr_acceleration_structure,
                         {{{&DeviceExtensions::vk_feature_version_1_1, "VK_VERSION_1_1"},
@@ -2200,6 +2207,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_EXT_INDEX_TYPE_UINT8_EXTENSION_NAME,
     VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME,
     VK_EXT_HOST_IMAGE_COPY_EXTENSION_NAME,
+    VK_EXT_MAP_MEMORY_PLACED_EXTENSION_NAME,
     VK_EXT_SHADER_ATOMIC_FLOAT_2_EXTENSION_NAME,
     VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME,
     VK_EXT_SHADER_DEMOTE_TO_HELPER_INVOCATION_EXTENSION_NAME,
@@ -2322,6 +2330,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
 #endif  // VK_USE_PLATFORM_SCREEN_QNX
     VK_MSFT_LAYERED_DRIVER_EXTENSION_NAME,
     VK_NV_DESCRIPTOR_POOL_OVERALLOCATION_EXTENSION_NAME,
+    VK_NV_SHADER_ATOMIC_FLOAT16_VECTOR_EXTENSION_NAME,
     VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
     VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
     VK_KHR_RAY_QUERY_EXTENSION_NAME,
