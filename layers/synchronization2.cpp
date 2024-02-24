@@ -88,27 +88,38 @@ VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysicalDevi
         uint32_t count = 0;
         auto instance_data = GetInstanceData(physicalDevice);
         instance_data->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, &count, nullptr);
-        if (!pProperties) {
-            *pPropertyCount = count + 1;
-            return VK_SUCCESS;
-        }
-        if (*pPropertyCount <= count) {
-            instance_data->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
-            return VK_INCOMPLETE;
-        }
-        instance_data->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, &count, pProperties);
+
+        // We need to check if the extension is natively supported in order to return the correct count into `pPropertyCount`.
+        std::vector<VkExtensionProperties> properties(count);
+        instance_data->vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, &count, properties.data());
 
         bool has_native_synchronization2 = false;
         for (uint32_t i = 0; i < count; ++i) {
-            if (strncmp(pProperties[i].extensionName, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
+            if (strncmp(properties[i].extensionName, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
                 has_native_synchronization2 = true;
                 break;
             }
         }
+
+        uint32_t total_count = !has_native_synchronization2 ? count + 1 : count;
+
+        if (!pProperties) {
+            *pPropertyCount = total_count;
+            return VK_SUCCESS;
+        }
+
+        if (*pPropertyCount < total_count) {
+            return VK_INCOMPLETE;
+        }
+
+        memcpy(pProperties, properties.data(), count * sizeof(VkExtensionProperties));
+
         if (!has_native_synchronization2) {
             pProperties[count] = kDeviceExtension;
-            *pPropertyCount = count + 1;
         }
+
+        *pPropertyCount = total_count;
+
         return VK_SUCCESS;
     }
 
