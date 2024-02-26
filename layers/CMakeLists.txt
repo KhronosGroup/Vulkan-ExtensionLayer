@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2023 Valve Corporation
-# Copyright (c) 2014-2023 LunarG, Inc.
+# Copyright (c) 2014-2024 Valve Corporation
+# Copyright (c) 2014-2024 LunarG, Inc.
 # Copyright (c) 2019      Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ~~~
-add_library(VkLayer_khronos_synchronization2 MODULE)
+
+
+if(IOS)
+    add_library(VkLayer_khronos_synchronization2 SHARED)
+else()
+    add_library(VkLayer_khronos_synchronization2 MODULE)
+endif()
+
 target_sources(VkLayer_khronos_synchronization2 PRIVATE
     synchronization2.cpp
 )
 
-add_library(VkLayer_khronos_shader_object MODULE)
+
+if(IOS)
+    add_library(VkLayer_khronos_shader_object SHARED)
+else()
+    add_library(VkLayer_khronos_shader_object MODULE)
+endif()
+
 target_sources(VkLayer_khronos_shader_object PRIVATE
     shader_object.cpp
 )
@@ -79,7 +92,16 @@ foreach(extension_layer ${EXTENSION_LAYERS})
     if (WIN32)
         set(JSON_LIBRARY_PATH ".\\\\${extension_layer}.dll")
     elseif(APPLE)
-        set(JSON_LIBRARY_PATH "./lib${extension_layer}.dylib")
+
+	if(IOS)
+            set_target_properties(${extension_layer} PROPERTIES
+		FRAMEWORK			TRUE
+		MACOSX_FRAMEWORK_IDENTIFIER 	com.khronos.${extension_layer}
+            )
+	else()
+	    set(JSON_LIBRARY_PATH "./lib${extension_layer}.dylib")
+        endif()
+
     else()
         set(JSON_LIBRARY_PATH "./lib${extension_layer}.so")
     endif()
@@ -101,7 +123,16 @@ foreach(extension_layer ${EXTENSION_LAYERS})
         set(UNIX_INTERMEDIATE_FILE "${CMAKE_CURRENT_BINARY_DIR}/json/unix_install_${extension_layer}.json")
 
         if(APPLE)
-            set(JSON_LIBRARY_PATH "lib${extension_layer}.dylib")
+
+            if(IOS)
+                set_target_properties(${extension_layer} PROPERTIES
+		        FRAMEWORK			TRUE
+		        MACOSX_FRAMEWORK_IDENTIFIER 	com.khronos.${extension_layer}
+                )
+            else()
+                set(JSON_LIBRARY_PATH "lib${extension_layer}.dylib")
+            endif()
+
         else()
             set(JSON_LIBRARY_PATH "lib${extension_layer}.so")
         endif()
