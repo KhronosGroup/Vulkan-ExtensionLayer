@@ -109,6 +109,9 @@ VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysicalDevi
         }
 
         if (*pPropertyCount < total_count) {
+            // Spec for `vkEnumerateDeviceLayerProperties` says at most `pPropertyCount` structures will be written in this case,
+            // which is the convention we follow for `vkEnumerate*` functions.
+            memcpy(pProperties, properties.data(), *pPropertyCount * sizeof(VkExtensionProperties));
             return VK_INCOMPLETE;
         }
 
