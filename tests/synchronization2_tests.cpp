@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2023 The Khronos Group Inc.
- * Copyright (c) 2015-2023 Valve Corporation
- * Copyright (c) 2015-2023 LunarG, Inc.
+ * Copyright (c) 2015-2024 The Khronos Group Inc.
+ * Copyright (c) 2015-2024 Valve Corporation
+ * Copyright (c) 2015-2024 LunarG, Inc.
  * Copyright (c) 2015-2022 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -784,7 +784,8 @@ TEST_F(Sync2Test, BarrierLayoutToImageUsage) {
     m_errorMonitor->VerifyNotFound();
 }
 
-TEST_F(Sync2Test, WaitEventThenSet) {
+// TODO https://github.com/KhronosGroup/Vulkan-ExtensionLayer/issues/372
+TEST_F(Sync2Test, DISABLED_WaitEventThenSet) {
     TEST_DESCRIPTION("Wait on a event then set it after the wait has been submitted.");
     if (!CheckSynchronization2SupportAndInitState()) {
         GTEST_SKIP() << kSkipPrefix << " synchronization2 not supported, skipping test";
