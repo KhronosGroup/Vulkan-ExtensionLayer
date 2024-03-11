@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2023 Valve Corporation
-# Copyright (c) 2014-2023 LunarG, Inc.
+# Copyright (c) 2014-2024 Valve Corporation
+# Copyright (c) 2014-2024 LunarG, Inc.
 # Copyright (c) 2019      Intel Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,29 @@ if(WIN32)
     add_compile_definitions(VK_USE_PLATFORM_WIN32_KHR)
 elseif(ANDROID)
     add_compile_definitions(VK_USE_PLATFORM_ANDROID_KHR)
+elseif(!APPLE)
+    option(BUILD_WSI_XCB_SUPPORT "Build XCB WSI support" ON)
+    option(BUILD_WSI_XLIB_SUPPORT "Build Xlib WSI support" ON)
+    option(BUILD_WSI_WAYLAND_SUPPORT "Build Wayland WSI support" ON)
+
+    if (BUILD_WSI_XCB_SUPPORT OR BUILD_WSI_XLIB_SUPPORT OR BUILD_WSI_WAYLAND_SUPPORT)
+        find_package(PkgConfig REQUIRED QUIET)
+    endif()
+
+    if(BUILD_WSI_XCB_SUPPORT)
+        pkg_check_modules(XCB REQUIRED QUIET IMPORTED_TARGET xcb)
+        add_compile_definitions(VK_USE_PLATFORM_XCB_KHR)
+    endif()
+
+    if(BUILD_WSI_XLIB_SUPPORT)
+        pkg_check_modules(X11 REQUIRED QUIET IMPORTED_TARGET x11)
+        add_compile_definitions(VK_USE_PLATFORM_XLIB_KHR VK_USE_PLATFORM_XLIB_XRANDR_EXT)
+    endif()
+
+    if(BUILD_WSI_WAYLAND_SUPPORT)
+        pkg_check_modules(WAYlAND_CLIENT QUIET REQUIRED IMPORTED_TARGET wayland-client)
+        add_compile_definitions(VK_USE_PLATFORM_WAYLAND_KHR)
+    endif()
 endif()
 
 option(BUILD_WERROR "Treat compiler warnings as errors")
