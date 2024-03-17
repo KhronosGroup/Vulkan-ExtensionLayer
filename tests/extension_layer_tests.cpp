@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015-2022 The Khronos Group Inc.
- * Copyright (c) 2015-2023 Valve Corporation
- * Copyright (c) 2015-2023 LunarG, Inc.
+ * Copyright (c) 2015-2024 Valve Corporation
+ * Copyright (c) 2015-2024 LunarG, Inc.
  * Copyright (c) 2015-2022 Google, Inc.
  * Copyright (c) 2015-2023 Nvidia Corporation.
  *
@@ -261,6 +261,8 @@ bool VkExtensionLayerTest::CheckShaderObjectSupportAndInitState() {
     }
 
     vkGetPhysicalDeviceFeatures2(gpu(), &features2);
+    mesh_shader_features.multiviewMeshShader = VK_FALSE;
+    mesh_shader_features.primitiveFragmentShadingRateMeshShader = VK_FALSE;
     if (!shader_object_features.shaderObject || !dynamic_rendering_features.dynamicRendering) {
         return false;
     }
