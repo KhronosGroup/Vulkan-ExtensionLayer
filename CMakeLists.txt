@@ -79,16 +79,6 @@ if(MSVC)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS NOMINMAX WIN32_LEAN_AND_MEAN)
 endif()
 
-option(VEL_CODEGEN "Enable code generation")
-if (VEL_CODEGEN)
-    find_package(Python3 REQUIRED QUIET)
-    add_custom_target(vel_codegen
-        COMMAND Python3::Interpreter ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
-            ${VULKAN_HEADERS_INSTALL_DIR}/${CMAKE_INSTALL_DATADIR}/vulkan/registry --incremental
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/utils/generated
-    )
-endif()
-
 find_package(VulkanHeaders CONFIG)
 find_package(VulkanUtilityLibraries CONFIG)
 
