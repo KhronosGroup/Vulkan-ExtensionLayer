@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# Copyright (c) 2021-2023 The Khronos Group Inc.
-# Copyright (c) 2021-2023 Valve Corporation
-# Copyright (c) 2021-2023 LunarG, Inc.
+# Copyright (c) 2021-2024 The Khronos Group Inc.
+# Copyright (c) 2021-2024 Valve Corporation
+# Copyright (c) 2021-2024 LunarG, Inc.
 # Copyright (c) 2021-2023 Google Inc.
 # Copyright (c) 2023-2023 RasterGrid Kft.
 #
@@ -52,8 +52,6 @@ def RunGenerators(api: str, registry: str, directory: str, styleFile: str, targe
     from reg import Registry
 
     from generators.base_generator import BaseGeneratorOptions
-    from generators.extension_helper_generator import ExtensionHelperOutputGenerator
-    from generators.api_version_generator import ApiVersionOutputGenerator
     from generators.safe_struct_generator import SafeStructOutputGenerator
 
     # These set fields that are needed by both OutputGenerator and BaseGenerator,
@@ -89,14 +87,6 @@ def RunGenerators(api: str, registry: str, directory: str, styleFile: str, targe
         },
         'vk_safe_struct_vendor.cpp' : {
             'generator' : SafeStructOutputGenerator,
-            'genCombined': True,
-        },
-        'vk_extension_helper.h' : {
-            'generator' : ExtensionHelperOutputGenerator,
-            'genCombined': True,
-        },
-        'vk_api_version.h' : {
-            'generator' : ApiVersionOutputGenerator,
             'genCombined': True,
         },
     }
