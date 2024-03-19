@@ -60,7 +60,7 @@ endif()
 foreach(extension_layer ${EXTENSION_LAYERS})
     lunarg_target_compiler_configurations(${extension_layer} ${BUILD_WERROR})
     target_include_directories(${extension_layer} PRIVATE .)
-    target_link_libraries(${extension_layer} PRIVATE VkExtLayer_utils Vulkan::LayerSettings Vulkan::UtilityHeaders)
+    target_link_libraries(${extension_layer} PRIVATE VkExtLayer_utils Vulkan::LayerSettings Vulkan::SafeStruct Vulkan::UtilityHeaders)
 
     if(MSVC)
         target_link_options(${extension_layer} PRIVATE /DEF:${CMAKE_CURRENT_SOURCE_DIR}/${extension_layer}.def)

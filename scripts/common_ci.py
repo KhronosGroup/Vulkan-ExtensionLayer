@@ -1,8 +1,8 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2015-2017, 2019-2022 The Khronos Group Inc.
-# Copyright (c) 2015-2017, 2019-2023 Valve Corporation
-# Copyright (c) 2015-2017, 2019-2023 LunarG, Inc.
+# Copyright (c) 2015-2017, 2019-2024 The Khronos Group Inc.
+# Copyright (c) 2015-2017, 2019-2024 Valve Corporation
+# Copyright (c) 2015-2017, 2019-2024 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,13 +53,6 @@ def RunShellCmd(command, start_dir = PROJECT_ROOT, env=None, verbose=False):
 #
 # Check if the system is Windows
 def IsWindows(): return 'windows' == platform.system().lower()
-
-#
-# Verify consistency of generated source code
-def CheckVELCodegenConsistency():
-    print("Check Generated Source Code Consistency")
-    gen_check_cmd = f'python scripts/generate_source.py --verify {EXTERNAL_DIR}/Vulkan-Headers/registry'
-    RunShellCmd(gen_check_cmd)
 
 def BuildVEL(args):
     print("Log CMake version")

@@ -23,7 +23,7 @@
 #undef VK_NO_PROTOTYPES
 #include <vector>
 #include <unordered_set>
-#include "vk_concurrent_unordered_map.h"
+#include <vulkan/utility/vk_concurrent_unordered_map.hpp>
 
 struct ByteCode {
     const uint8_t* code;
@@ -94,7 +94,7 @@ struct InstanceData {
         DECLARE_HOOK(GetPhysicalDeviceMemoryProperties);
     } vtable;
 
-    vl_concurrent_unordered_map<VkPhysicalDevice, std::shared_ptr<PhysicalDeviceData>> physical_device_map;
+    vku::concurrent::unordered_map<VkPhysicalDevice, std::shared_ptr<PhysicalDeviceData>> physical_device_map;
 };
 
 struct DeviceFeatures {

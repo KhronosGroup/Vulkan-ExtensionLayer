@@ -1,5 +1,5 @@
-# Copyright (c) 2023 Valve Corporation
-# Copyright (c) 2023 LunarG, Inc.
+# Copyright (c) 2023-2024 Valve Corporation
+# Copyright (c) 2023-2024 LunarG, Inc.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -69,8 +69,6 @@ jobs:
         env:
           CC: ${{ matrix.compiler.cc }}
           CXX: ${{ matrix.compiler.cxx }}
-      - name: Verify generated code is up to date
-        run: python scripts/github_ci_check_codegen.py
 
   windows:
     runs-on: windows-latest
