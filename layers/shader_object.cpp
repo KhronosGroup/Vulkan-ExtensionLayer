@@ -33,16 +33,13 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_layer.h>
 #include <vulkan/layer/vk_layer_settings.hpp>
+#include <vulkan/utility/vk_safe_struct.hpp>
 
 #include "log.h"
-#include "vk_safe_struct.h"
 #include "vk_api_hash.h"
 
 #define kLayerSettingsForceEnable "force_enable"
 #define kLayerSettingsCustomSTypeInfo "custom_stype_list"
-
-// Required by vk_safe_struct
-std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
 
 #define SHADER_OBJECT_BINARY_VERSION 1
 
@@ -2619,7 +2616,7 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
     }
 
     if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsCustomSTypeInfo)) {
-        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, custom_stype_info);
+        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, vku::custom_stype_info);
     }
 
     vkuDestroyLayerSettingSet(layer_setting_set, pAllocator);
@@ -3011,7 +3008,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
         }
 
         // Deep copy the create info pNext chain using vk_safe_struct.hpp
-        auto const device_next_chain = static_cast<VkBaseOutStructure*>(SafePnextCopy(pCreateInfo->pNext));
+        auto const device_next_chain = static_cast<VkBaseOutStructure*>(vku::SafePnextCopy(pCreateInfo->pNext));
         if (!device_next_chain) {
             allocator.pfnFree(allocator.pUserData, enabled_extension_names);
             allocator.pfnFree(allocator.pUserData, device_data_memory);
@@ -3022,7 +3019,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
         auto before_device_next_chain = VkBaseOutStructure{{}, device_next_chain};
         for (auto current = &before_device_next_chain; current; current = current->pNext) {
             if (current->pNext && current->pNext->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT) {
-                auto shader_object_feature = reinterpret_cast<safe_VkPhysicalDeviceShaderObjectFeaturesEXT*>(current->pNext);
+                auto shader_object_feature = reinterpret_cast<vku::safe_VkPhysicalDeviceShaderObjectFeaturesEXT*>(current->pNext);
                 current->pNext = current->pNext->pNext;
         
                 // Structure was allocated with new in SafePnextCopy
@@ -3039,7 +3036,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
         instance_vtable.GetPhysicalDeviceFeatures2(physicalDevice, &device_features);
         if (dynamic_rendering_ptr->dynamicRendering == VK_FALSE) {
             // Dynamic rendering is required
-            FreePnextChain(device_next_chain);
+            vku::FreePnextChain(device_next_chain);
             allocator.pfnFree(allocator.pUserData, enabled_extension_names);
             allocator.pfnFree(allocator.pUserData, device_data_memory);
             return VK_ERROR_INITIALIZATION_FAILED;
@@ -3096,7 +3093,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
 
         // Handle device creation failure
         if (result != VK_SUCCESS) {
-            FreePnextChain(device_next_chain);
+            vku::FreePnextChain(device_next_chain);
             allocator.pfnFree(allocator.pUserData, device_data_memory);
             return result;
         }
@@ -3135,7 +3132,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
             device_data->AddDynamicState(VK_DYNAMIC_STATE_VIEWPORT_SHADING_RATE_PALETTE_NV);
         }
 
-        FreePnextChain(device_next_chain);
+        vku::FreePnextChain(device_next_chain);
 
         // Get properties for this device so we can allocate according to device limits
         instance_vtable.GetPhysicalDeviceProperties(physicalDevice, &device_data->properties);

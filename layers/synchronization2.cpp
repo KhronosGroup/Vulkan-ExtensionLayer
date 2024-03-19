@@ -1,5 +1,5 @@
-/* Copyright (c) 2020-2021,2023 The Khronos Group Inc.
- * Copyright (c) 2020-2021,2023 LunarG, Inc.
+/* Copyright (c) 2020-2021,2023-2024 The Khronos Group Inc.
+ * Copyright (c) 2020-2021,2023-2024 LunarG, Inc.
  * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@
 #include <vulkan/vk_layer.h>
 #include <vulkan/layer/vk_layer_settings.hpp>
 #include <vulkan/utility/vk_format_utils.h>
+#include <vulkan/utility/vk_safe_struct.hpp>
 #include <ctype.h>
 #include <cstring>
 #include <algorithm>
@@ -32,14 +33,10 @@
 #include "synchronization2.h"
 #include "allocator.h"
 #include "log.h"
-#include "vk_safe_struct.h"
 #include "vk_util.h"
 
 #define kLayerSettingsForceEnable "force_enable"
 #define kLayerSettingsCustomSTypeInfo "custom_stype_list"
-
-// required by vk_safe_struct
-std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
 
 namespace synchronization2 {
 
@@ -53,8 +50,8 @@ static const VkLayerProperties kGlobalLayer = {
 static const VkExtensionProperties kDeviceExtension = {VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
                                                        VK_KHR_SYNCHRONIZATION_2_SPEC_VERSION};
 
-static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<InstanceData>> instance_data_map;
-static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<DeviceData>> device_data_map;
+static vku::concurrent::unordered_map<uintptr_t, std::shared_ptr<InstanceData>> instance_data_map;
+static vku::concurrent::unordered_map<uintptr_t, std::shared_ptr<DeviceData>> device_data_map;
 
 uintptr_t DispatchKey(const void* object) {
     auto tmp = reinterpret_cast<const struct VkLayerDispatchTable_ * const *>(object);
@@ -227,7 +224,7 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
     }
 
     if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsCustomSTypeInfo)) {
-        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, custom_stype_info);
+        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, vku::custom_stype_info);
     }
 
     vkuDestroyLayerSettingSet(layer_setting_set, pAllocator);
@@ -405,36 +402,6 @@ DeviceFeatures::DeviceFeatures(uint32_t api_version, const VkDeviceCreateInfo* c
     }
 }
 
-// This code depends on the allocation behavior of SafeStringCopy() in vk_safe_struct.cpp
-static void RemoveExtensionString(char** string_array, uint32_t* size, const char* s) {
-    for (uint32_t i = 0; i < *size; i++) {
-        if (strcmp(string_array[i], s) == 0) {
-            delete[] string_array[i];
-            string_array[i] = nullptr;
-            if ((i + 1) < *size) {
-                memmove(&string_array[i], &string_array[i + 1], sizeof(char*) * (*size - (i + 1)));
-            }
-            *size -= 1;
-            break;
-        }
-    }
-}
-
-// this code depends on the allocation behavior of SafePnextCopy() in vk_safe_struct.cpp
-static void RemoveSynchronization2FeaturesKHR(safe_VkDeviceCreateInfo* create_info) {
-    auto cur = reinterpret_cast<const VkBaseInStructure*>(create_info->pNext);
-    auto prev_ptr = const_cast<VkBaseInStructure**>(reinterpret_cast<const VkBaseInStructure**>(&create_info->pNext));
-    while (cur != nullptr) {
-        if (cur->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES_KHR) {
-            *prev_ptr = const_cast<VkBaseInStructure*>(cur->pNext);
-            delete reinterpret_cast<const VkPhysicalDeviceSynchronization2FeaturesKHR*>(cur);
-            break;
-        }
-        prev_ptr = const_cast<VkBaseInStructure**>(&cur->pNext);
-        cur = cur->pNext;
-    }
-}
-
 VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, const VkDeviceCreateInfo* pCreateInfo,
                       const VkAllocationCallbacks* pAllocator, VkDevice* pDevice) {
     VkResult result;
@@ -464,12 +431,9 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
         // Only enable device hooks if synchronization2 extension is enabled AND
         // the physical device doesn't support it already or we are force enabled.
         if (enable_layer) {
-            safe_VkDeviceCreateInfo create_info(pCreateInfo);
-
-            RemoveExtensionString(const_cast<char**>(create_info.ppEnabledExtensionNames), &create_info.enabledExtensionCount,
-                                  VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
-
-            RemoveSynchronization2FeaturesKHR(&create_info);
+            vku::safe_VkDeviceCreateInfo create_info(pCreateInfo);
+            vku::RemoveExtension(create_info, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
+            vku::RemoveFromPnext(create_info, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES_KHR);
 
             result = create_device(physicalDevice, create_info.ptr(), pAllocator, pDevice);
         } else {
