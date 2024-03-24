@@ -936,6 +936,7 @@ struct FullDrawStateData {
         state->SetDepthWriteEnable(VK_TRUE);
         state->SetDepthBoundsTestEnable(VK_TRUE);
         state->SetStencilTestEnable(VK_TRUE);
+        state->SetPatchControlPoints(1);
     }
 
     static FullDrawStateData* Create(VkPhysicalDeviceProperties const& properties, VkAllocationCallbacks const& allocator) {
@@ -2324,6 +2325,7 @@ PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, Vk
         partial_pipeline.draw_state->SetDepthBiasEnable(rasterization_state.depthBiasEnable);
 
         create_info.pTessellationState = &tessellation_state;
+        tessellation_state.patchControlPoints = 1u;
         partial_pipeline.draw_state->SetPatchControlPoints(tessellation_state.patchControlPoints);
     }
 
