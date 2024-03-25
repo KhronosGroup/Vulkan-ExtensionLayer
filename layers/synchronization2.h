@@ -1,6 +1,6 @@
-/* Copyright (c) 2020-2021 The Khronos Group Inc.
- * Copyright (c) 2020-2021 LunarG, Inc.
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+/* Copyright (c) 2020-2021,2024 The Khronos Group Inc.
+ * Copyright (c) 2020-2021,2024 LunarG, Inc.
+ * Copyright (c) 2020-2021,2024 Advanced Micro Devices, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
 #include <unordered_set>
 
 #include "allocator.h"
-#include "vk_concurrent_unordered_map.h"
+#include <vulkan/utility/vk_concurrent_unordered_map.hpp>
 
 namespace synchronization2 {
 enum SynchronizationScope { kFirst, kSecond };
@@ -174,7 +174,7 @@ struct InstanceData {
         DECLARE_HOOK(GetPhysicalDeviceProperties);
     } vtable;
 
-    vl_concurrent_unordered_map<VkPhysicalDevice, std::shared_ptr<PhysicalDeviceData>> physical_device_map;
+    vku::concurrent::unordered_map<VkPhysicalDevice, std::shared_ptr<PhysicalDeviceData>> physical_device_map;
 };
 
 // data stored per VkImage for ImageBarrier conversion
@@ -223,8 +223,8 @@ struct DeviceData {
     DeviceFeatures features;
     bool enable_layer;
     uint32_t api_version;
-    vl_concurrent_unordered_map<VkImage, ImageData> image_map;
-    vl_concurrent_unordered_map<VkSwapchainKHR, SwapchainData> swapchain_map;
+    vku::concurrent::unordered_map<VkImage, ImageData> image_map;
+    vku::concurrent::unordered_map<VkSwapchainKHR, SwapchainData> swapchain_map;
     struct DeviceDispatchTable {
         DECLARE_HOOK(GetDeviceProcAddr);
         DECLARE_HOOK(DestroyDevice);

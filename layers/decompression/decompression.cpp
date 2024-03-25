@@ -29,9 +29,9 @@ static bool logging_enabled = false;
 
 #include <vulkan/vk_layer.h>
 #include <vulkan/layer/vk_layer_settings.hpp>
+#include <vulkan/utility/vk_safe_struct.hpp>
 #include "allocator.h"
 #include "log.h"
-#include "vk_safe_struct.h"
 #include "vk_util.h"
 #include "decompression.h"
 
@@ -119,9 +119,6 @@ static const ByteCode kIndirectGInflateBytecode[] = {
 #define kLayerSettingsCustomSTypeInfo "custom_stype_list"
 #define kLayerSettingsLogging "logging"
 
-// required by vk_safe_struct
-std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
-
 namespace memory_decompression {
 
 static const VkLayerProperties kGlobalLayer = {
@@ -134,8 +131,8 @@ static const VkLayerProperties kGlobalLayer = {
 static const VkExtensionProperties kDeviceExtension = {VK_NV_MEMORY_DECOMPRESSION_EXTENSION_NAME,
                                                        VK_NV_MEMORY_DECOMPRESSION_SPEC_VERSION};
 
-static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<InstanceData>> instance_data_map;
-static vl_concurrent_unordered_map<uintptr_t, std::shared_ptr<DeviceData>> device_data_map;
+static vku::concurrent::unordered_map<uintptr_t, std::shared_ptr<InstanceData>> instance_data_map;
+static vku::concurrent::unordered_map<uintptr_t, std::shared_ptr<DeviceData>> device_data_map;
 
 uintptr_t DispatchKey(const void* object) {
     auto tmp = reinterpret_cast<const struct VkLayerDispatchTable_* const*>(object);
@@ -279,7 +276,7 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
     }
 
     if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsCustomSTypeInfo)) {
-        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, custom_stype_info);
+        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, vku::custom_stype_info);
     }
 
     vkuDestroyLayerSettingSet(layer_setting_set, pAllocator);
@@ -432,36 +429,6 @@ DeviceFeatures::DeviceFeatures(uint32_t api_version, const VkDeviceCreateInfo* c
                 break;
         }
         chain = chain->pNext;
-    }
-}
-
-// This code depends on the allocation behavior of SafeStringCopy() in vk_safe_struct.cpp
-static void RemoveExtensionString(char** string_array, uint32_t* size, const char* s) {
-    for (uint32_t i = 0; i < *size; i++) {
-        if (strcmp(string_array[i], s) == 0) {
-            delete[] string_array[i];
-            string_array[i] = nullptr;
-            if ((i + 1) < *size) {
-                memmove(&string_array[i], &string_array[i + 1], sizeof(char*) * (*size - (i + 1)));
-            }
-            *size -= 1;
-            break;
-        }
-    }
-}
-
-// this code depends on the allocation behavior of SafePnextCopy() in vk_safe_struct.cpp
-static void RemoveDeviceFeature(safe_VkDeviceCreateInfo* create_info, uint32_t s_type) {
-    auto cur = reinterpret_cast<const VkBaseInStructure*>(create_info->pNext);
-    auto prev_ptr = const_cast<VkBaseInStructure**>(reinterpret_cast<const VkBaseInStructure**>(&create_info->pNext));
-    while (cur != nullptr) {
-        if (cur->sType == s_type) {
-            *prev_ptr = const_cast<VkBaseInStructure*>(cur->pNext);
-            delete cur;
-            break;
-        }
-        prev_ptr = const_cast<VkBaseInStructure**>(&cur->pNext);
-        cur = cur->pNext;
     }
 }
 
@@ -748,12 +715,9 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
                 return VK_ERROR_FEATURE_NOT_PRESENT;
             }
 
-            safe_VkDeviceCreateInfo create_info(pCreateInfo);
-
-            RemoveExtensionString(const_cast<char**>(create_info.ppEnabledExtensionNames), &create_info.enabledExtensionCount,
-                                  VK_NV_MEMORY_DECOMPRESSION_EXTENSION_NAME);
-
-            RemoveDeviceFeature(&create_info, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV);
+            vku::safe_VkDeviceCreateInfo create_info(pCreateInfo);
+            vku::RemoveExtension(create_info, VK_NV_MEMORY_DECOMPRESSION_EXTENSION_NAME);
+            vku::RemoveFromPnext(create_info, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV);
 
             result = create_device(physicalDevice, create_info.ptr(), pAllocator, pDevice);
         } else {
