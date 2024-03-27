@@ -229,7 +229,7 @@ bool VkExtensionLayerTest::CheckDecompressionSupportAndInitState() {
     return true;
 }
 
-bool VkExtensionLayerTest::CheckShaderObjectSupportAndInitState() {
+bool VkExtensionLayerTest::CheckShaderObjectSupportAndInitState(bool meshShaders) {
     if (!DeviceExtensionSupported(VK_EXT_SHADER_OBJECT_EXTENSION_NAME, 0)) {
         return false;
     }
@@ -261,6 +261,10 @@ bool VkExtensionLayerTest::CheckShaderObjectSupportAndInitState() {
     }
 
     vkGetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (!meshShaders) {
+        mesh_shader_features.taskShader = VK_FALSE;
+        mesh_shader_features.meshShader = VK_FALSE;
+    }
     mesh_shader_features.multiviewMeshShader = VK_FALSE;
     mesh_shader_features.primitiveFragmentShadingRateMeshShader = VK_FALSE;
     if (!shader_object_features.shaderObject || !dynamic_rendering_features.dynamicRendering) {
