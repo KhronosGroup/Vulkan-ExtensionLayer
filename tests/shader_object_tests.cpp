@@ -1,5 +1,5 @@
-/* Copyright (c) 2023 LunarG, Inc.
- * Copyright (c) 2023 Nintendo
+/* Copyright (c) 2023-2024 LunarG, Inc.
+ * Copyright (c) 2023-2024 Nintendo
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ void ShaderObjectTest::SubmitAndWait() {
 TEST_F(ShaderObjectTest, VertFragShader) {
     TEST_DESCRIPTION("Test drawing with a vertex and fragment shader");
     SetTargetApiVersion(VK_API_VERSION_1_1);
-    if (!CheckShaderObjectSupportAndInitState()) {
+    if (!CheckShaderObjectSupportAndInitState(false)) {
         GTEST_SKIP() << kSkipPrefix << " shader object not supported, skipping test";
     }
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
@@ -289,7 +289,7 @@ TEST_F(ShaderObjectTest, VertFragShader) {
 TEST_F(ShaderObjectTest, LinkedShadersDraw) {
     TEST_DESCRIPTION("Test drawing using linked shaders");
     SetTargetApiVersion(VK_API_VERSION_1_1);
-    if (!CheckShaderObjectSupportAndInitState()) {
+    if (!CheckShaderObjectSupportAndInitState(false)) {
         GTEST_SKIP() << kSkipPrefix << " shader object not supported, skipping test";
     }
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
@@ -326,6 +326,9 @@ TEST_F(ShaderObjectTest, LinkedShadersDraw) {
         createInfos[i] = vku::InitStructHelper();
         createInfos[i].flags = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT;
         createInfos[i].stage = shaderStages[i];
+        if (i == 0) {
+            createInfos[i].nextStage = shaderStages[i + 1];
+        }
         createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
         createInfos[i].codeSize = spv[i].size() * sizeof(unsigned int);
         createInfos[i].pCode = spv[i].data();
@@ -373,6 +376,14 @@ TEST_F(ShaderObjectTest, LinkedShadersDraw) {
 
     m_commandBuffer->begin();
 
+    VkShaderStageFlagBits unusedShaderStages[] = {VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+                                                  VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, VK_SHADER_STAGE_GEOMETRY_BIT};
+
+    for (const auto& unusedShader : unusedShaderStages) {
+        VkShaderEXT null_shader = VK_NULL_HANDLE;
+        vkCmdBindShadersEXT(m_commandBuffer->handle(), 1u, &unusedShader, &null_shader);
+    }
+
     {
         VkImageMemoryBarrier imageMemoryBarrier = vku::InitStructHelper();
         imageMemoryBarrier.srcAccessMask = VK_ACCESS_NONE;
@@ -409,7 +420,7 @@ TEST_F(ShaderObjectTest, LinkedShadersDraw) {
 TEST_F(ShaderObjectTest, AllShadersDraw) {
     TEST_DESCRIPTION("Test drawing using all graphics shader");
     SetTargetApiVersion(VK_API_VERSION_1_1);
-    if (!CheckShaderObjectSupportAndInitState()) {
+    if (!CheckShaderObjectSupportAndInitState(false)) {
         GTEST_SKIP() << kSkipPrefix << " shader object not supported, skipping test";
     }
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
@@ -589,7 +600,7 @@ TEST_F(ShaderObjectTest, AllShadersDraw) {
 TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
     TEST_DESCRIPTION("Test drawing using all graphics binary shader");
     SetTargetApiVersion(VK_API_VERSION_1_1);
-    if (!CheckShaderObjectSupportAndInitState()) {
+    if (!CheckShaderObjectSupportAndInitState(false)) {
         GTEST_SKIP() << kSkipPrefix << " shader object not supported, skipping test";
     }
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
@@ -1075,7 +1086,7 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
 
 TEST_F(ShaderObjectTest, FailCreateShaders) {
     SetTargetApiVersion(VK_API_VERSION_1_1);
-    if (!CheckShaderObjectSupportAndInitState()) {
+    if (!CheckShaderObjectSupportAndInitState(false)) {
         GTEST_SKIP() << kSkipPrefix << " shader object not supported, skipping test";
     }
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
