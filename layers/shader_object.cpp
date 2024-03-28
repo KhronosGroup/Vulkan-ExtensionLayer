@@ -2338,6 +2338,7 @@ PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, Vk
             constexpr VkSampleMask all_ones = ~static_cast<VkSampleMask>(0);
             partial_pipeline.draw_state->SetSampleMask(i, all_ones);
         }
+        multisample_state.pSampleMask = partial_pipeline.draw_state->GetSampleMaskPtr();
         partial_pipeline.draw_state->SetAlphaToOneEnable(multisample_state.alphaToOneEnable);
 
         create_info.pDepthStencilState = &depth_stencil_state;
