@@ -396,6 +396,9 @@ VkResult Shader::Create(DeviceData const& deviceData, VkShaderCreateInfoEXT cons
             compute_stage,
             shader->pipeline_layout
         };
+        if (createInfo.flags & VK_SHADER_CREATE_DISPATCH_BASE_BIT_EXT) {
+            compute_pipeline_create_info.flags |= VK_PIPELINE_CREATE_DISPATCH_BASE;
+        }
         result = vtable.CreateComputePipelines(deviceData.device, shader->cache, 1, &compute_pipeline_create_info, &allocator, &shader->partial_pipeline.pipeline);
     }
 
