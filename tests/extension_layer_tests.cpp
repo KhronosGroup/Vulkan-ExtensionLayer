@@ -28,10 +28,6 @@
 #include "extension_layer_tests.h"
 #include <vulkan/utility/vk_struct_helper.hpp>
 
-#if !defined(ANDROID)
-#include "test_layer_location.h"
-#endif
-
 // Global list of sType,size identifiers
 std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
 
@@ -636,7 +632,7 @@ int main(int argc, char **argv) {
 #endif
 
     // Set VK_LAYER_PATH so that the loader can find the layers
-    VkTestFramework::setEnvironmentSetting("VK_LAYER_PATH", LAYER_BUILD_LOCATION);
+    VkTestFramework::setEnvironmentSetting("VK_LAYER_PATH", SHADER_OBJECT_BINARY_PATH);
 
     ::testing::InitGoogleTest(&argc, argv);
     VkTestFramework::InitArgs(&argc, argv);
