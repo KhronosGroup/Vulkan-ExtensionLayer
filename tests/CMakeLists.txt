@@ -14,29 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ~~~
-if (NOT ANDROID)
-    # run the generator expression on the test_layer_location file
-    file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h" INPUT "${CMAKE_CURRENT_LIST_DIR}/generator_source/test_layer_location.h")
-
-    # copy $<BUILD>/test_layer_location_$<CONFIG> to $<BUILD>/test_layer_location.h
-    add_custom_command(
-        PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} "-E" "copy_if_different" "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h" "${CMAKE_BINARY_DIR}/test_layer_location.h"
-        VERBATIM
-        DEPENDS  "${CMAKE_BINARY_DIR}/test_layer_location_$<CONFIG>.h"
-        OUTPUT   "${CMAKE_BINARY_DIR}/test_layer_location.h"
-        COMMENT  "creating test_layer_location.h file ({event: PRE_BUILD}, {filename: test_layer_location.h })"
-    )
-    add_custom_target(generate_test_layer_location DEPENDS "${CMAKE_BINARY_DIR}/test_layer_location.h")
-    include_directories(${CMAKE_BINARY_DIR})
-endif()
 
 if (ANDROID)
     add_library(vk_extension_layer_tests MODULE)
 else()
     add_executable(vk_extension_layer_tests)
-
-    add_dependencies(vk_extension_layer_tests generate_test_layer_location)
 
     target_compile_definitions(vk_extension_layer_tests PRIVATE
         SHADER_OBJECT_BINARY_PATH="$<TARGET_FILE_DIR:VkLayer_khronos_shader_object>"
