@@ -39,6 +39,10 @@
         }                                                                      \
     } while (0)
 #else  // __ANDROID__
+#ifdef __cplusplus
 #include <cassert>
+#else  // __cplusplus
+#include <assert.h>
+#endif  // __cplusplus
 #define ASSERT(condition) assert(condition);
 #endif
