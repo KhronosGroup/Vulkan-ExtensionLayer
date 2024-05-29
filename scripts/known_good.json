@@ -28,7 +28,7 @@
             "sub_dir": "glslang",
             "build_dir": "glslang/build",
             "install_dir": "glslang/build/install",
-            "commit": "af0641aa09f2e63da2423fd652d2cd57497c5b48",
+            "commit": "2b19bf7e1bc0b60cf2fe9d33e5ba6b37dfc1cc83",
             "cmake_options": [
                 "-DENABLE_OPT=OFF"
             ],
@@ -59,7 +59,7 @@
                 "-DSPIRV_SKIP_TESTS=ON",
                 "-DSPIRV_SKIP_EXECUTABLES=ON"
             ],
-            "commit": "ccf3e3c1035189bbb50793d1e249a2c0ba3388a3",
+            "commit": "77c40bece1b8b441eee432fc9d74efbf985f777f",
             "optional": [
                 "tests"
             ]
@@ -89,7 +89,7 @@
             "cmake_options": [
                 "-DVOLK_INSTALL=ON"
             ],
-            "commit": "vulkan-sdk-1.3.275.0",
+            "commit": "749f0ab4e9e69394f4d1d39cbb11b5fb6c9e31b1",
             "optional": [
                 "tests"
             ],
