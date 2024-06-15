@@ -55,14 +55,14 @@ TEST_F(DecompressionTest, DecompressMemory) {
         GTEST_SKIP() << kSkipPrefix << " decompression not supported, skipping test";
     }
 
-    VkConstantBufferObj srcBuffer1(m_device, COMPRESSED_SIZE1, compressedData1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    VkConstantBufferObj srcBuffer1(m_device, COMPRESSED_SIZE1, compressedData1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     ASSERT_TRUE(srcBuffer1.initialized());
 
-    VkConstantBufferObj srcBuffer2(m_device, COMPRESSED_SIZE2, compressedData2, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    VkConstantBufferObj srcBuffer2(m_device, COMPRESSED_SIZE2, compressedData2, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     ASSERT_TRUE(srcBuffer2.initialized());
 
     std::vector<uint8_t> decompressData(2 * DECOMPRESSED_SIZE_ALIGNED, 0xFF);
-    VkConstantBufferObj dstBuffer(m_device, 2 * DECOMPRESSED_SIZE_ALIGNED, decompressData.data(), VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    VkConstantBufferObj dstBuffer(m_device, 2 * DECOMPRESSED_SIZE_ALIGNED, decompressData.data(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     ASSERT_TRUE(dstBuffer.initialized());
 
     VkCommandPool command_pool;
@@ -137,14 +137,14 @@ TEST_F(DecompressionTest, DecompressMemoryIndirect) {
     }
     VkResult result = VK_SUCCESS;
 
-    VkConstantBufferObj srcBuffer1(m_device, COMPRESSED_SIZE1, compressedData1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    VkConstantBufferObj srcBuffer1(m_device, COMPRESSED_SIZE1, compressedData1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     ASSERT_TRUE(srcBuffer1.initialized());
 
-    VkConstantBufferObj srcBuffer2(m_device, COMPRESSED_SIZE2, compressedData2, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    VkConstantBufferObj srcBuffer2(m_device, COMPRESSED_SIZE2, compressedData2, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     ASSERT_TRUE(srcBuffer2.initialized());
 
     std::vector<uint8_t> decompressData(2 * DECOMPRESSED_SIZE_ALIGNED, 0xFF);
-    VkConstantBufferObj dstBuffer(m_device, 2 * DECOMPRESSED_SIZE_ALIGNED, decompressData.data(), VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    VkConstantBufferObj dstBuffer(m_device, 2 * DECOMPRESSED_SIZE_ALIGNED, decompressData.data(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     ASSERT_TRUE(dstBuffer.initialized());
 
     VkBufferDeviceAddressInfo srcBufferAddr1 = {VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, nullptr, srcBuffer1.handle()};
@@ -164,10 +164,10 @@ TEST_F(DecompressionTest, DecompressMemoryIndirect) {
     regions[1].dstAddress = vkGetBufferDeviceAddress(m_device->device(), &dstBufferAddr) + DECOMPRESSED_SIZE_ALIGNED;
     regions[1].decompressionMethod = VK_MEMORY_DECOMPRESSION_METHOD_GDEFLATE_1_0_BIT_NV;
 
-    VkConstantBufferObj indirectBufferCount(m_device, sizeof(uint32_t), &count, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
+    VkConstantBufferObj indirectBufferCount(m_device, sizeof(uint32_t), &count, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     ASSERT_TRUE(dstBuffer.initialized());
     VkConstantBufferObj indirectBufferDecompress(m_device, count * sizeof(VkDecompressMemoryRegionNV), &regions[0],
-                                                 VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
+                                                 VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     ASSERT_TRUE(dstBuffer.initialized());
 
     VkBufferDeviceAddressInfo indirectCountAddrInfo = {VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, nullptr,

@@ -55,7 +55,7 @@ uint vote(bool p) {
 uint shuffle(uint value, uint idx) {
 	g_tmpGroupSync[tid()] = value;
 	barrier();
-	uint res = g_tmpGroupSync[idx];
+	uint res = g_tmpGroupSync[idx&(NUM_THREADS - 1)];
 	barrier();
 	return res;
 }
