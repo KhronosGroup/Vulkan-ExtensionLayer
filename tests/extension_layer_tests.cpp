@@ -530,9 +530,16 @@ void android_main(struct android_app *app) {
     app->onInputEvent = processInput;
 
     while (1) {
-        int events;
         struct android_poll_source *source;
-        while (ALooper_pollAll(active ? 0 : -1, NULL, &events, (void **)&source) >= 0) {
+
+        int result = ALooper_pollOnce(-1, nullptr, nullptr, reinterpret_cast<void **>(&source));
+        if (result == ALOOPER_POLL_ERROR) {
+            __android_log_print(ANDROID_LOG_ERROR, appTag, "ALooper_pollOnce returned an error");
+            VkTestFramework::Finish();
+            return;
+        }
+
+        if (result >= 0) {
             if (source) {
                 source->process(app, source);
             }
