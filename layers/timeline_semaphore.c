@@ -30,51 +30,54 @@
 
 #include "hash_table.h"
 #include "list.h"
+#include "log.h"
 
 #include "vk_alloc.h"
 #include "vk_util.h"
 
-#define ENTRY_POINTS \
-    ENTRY_POINT(GetInstanceProcAddr) \
-    \
-    ENTRY_POINT(EnumeratePhysicalDevices) \
-    ENTRY_POINT(EnumerateDeviceExtensionProperties) \
-    ENTRY_POINT(GetPhysicalDeviceFeatures2) \
-    ENTRY_POINT(GetPhysicalDeviceFeatures2KHR) \
-    ENTRY_POINT(GetPhysicalDeviceProperties2) \
-    ENTRY_POINT(GetPhysicalDeviceProperties2KHR) \
-    ENTRY_POINT(GetPhysicalDeviceQueueFamilyProperties) \
+#define ENTRY_POINTS                                          \
+    ENTRY_POINT(GetInstanceProcAddr)                          \
+                                                              \
+    ENTRY_POINT(EnumeratePhysicalDevices)                     \
+    ENTRY_POINT(EnumerateDeviceExtensionProperties)           \
+    ENTRY_POINT(GetPhysicalDeviceFeatures2)                   \
+    ENTRY_POINT(GetPhysicalDeviceFeatures2KHR)                \
+    ENTRY_POINT(GetPhysicalDeviceProperties2)                 \
+    ENTRY_POINT(GetPhysicalDeviceProperties2KHR)              \
+    ENTRY_POINT(GetPhysicalDeviceQueueFamilyProperties)       \
     ENTRY_POINT(GetPhysicalDeviceExternalSemaphoreProperties) \
-    \
-    ENTRY_POINT(DestroyInstance) \
-    \
-    ENTRY_POINT(GetDeviceProcAddr) \
-    ENTRY_POINT(GetDeviceQueue) \
-    ENTRY_POINT(DestroyDevice) \
-    ENTRY_POINT(DeviceWaitIdle) \
-    ENTRY_POINT(ImportSemaphoreFdKHR) \
-    \
-    ENTRY_POINT(CreateFence) \
-    ENTRY_POINT(DestroyFence) \
-    ENTRY_POINT(ResetFences) \
-    ENTRY_POINT(GetFenceStatus) \
-    ENTRY_POINT(WaitForFences) \
-    \
-    ENTRY_POINT(CreateSemaphore) \
-    ENTRY_POINT(DestroySemaphore) \
-    \
-    ENTRY_POINT(QueueWaitIdle) \
-    ENTRY_POINT(QueueSubmit) \
-    ENTRY_POINT(QueueBindSparse) \
-    \
-    ENTRY_POINT(AcquireNextImageKHR) \
-    ENTRY_POINT(QueuePresentKHR)
+                                                              \
+    ENTRY_POINT(DestroyInstance)                              \
+                                                              \
+    ENTRY_POINT(GetDeviceProcAddr)                            \
+    ENTRY_POINT(GetDeviceQueue)                               \
+    ENTRY_POINT(DestroyDevice)                                \
+    ENTRY_POINT(DeviceWaitIdle)                               \
+    ENTRY_POINT(ImportSemaphoreFdKHR)                         \
+                                                              \
+    ENTRY_POINT(CreateFence)                                  \
+    ENTRY_POINT(DestroyFence)                                 \
+    ENTRY_POINT(ResetFences)                                  \
+    ENTRY_POINT(GetFenceStatus)                               \
+    ENTRY_POINT(WaitForFences)                                \
+                                                              \
+    ENTRY_POINT(CreateSemaphore)                              \
+    ENTRY_POINT(DestroySemaphore)                             \
+                                                              \
+    ENTRY_POINT(QueueWaitIdle)                                \
+    ENTRY_POINT(QueueSubmit)                                  \
+    ENTRY_POINT(QueueBindSparse)                              \
+                                                              \
+    ENTRY_POINT(AcquireNextImageKHR)                          \
+    ENTRY_POINT(QueuePresentKHR)                              \
+                                                              \
+    ENTRY_POINT(SetDebugUtilsObjectNameEXT)
 
-    struct vulkan_vtable {
+struct vulkan_vtable {
 #define ENTRY_POINT(name) PFN_vk##name name;
         ENTRY_POINTS
 #undef ENTRY_POINT
-    };
+};
 
 struct object_map {
     struct hash_table *map;
@@ -1195,6 +1198,19 @@ static VkResult timeline_SignalSemaphore(
     pthread_mutex_unlock(&device->lock);
 
     return result;
+}
+
+static VkResult timeline_SetDebugUtilsObjectNameEXT(VkDevice _device, const VkDebugUtilsObjectNameInfoEXT *pNameInfo) {
+    struct device_data *device = object_find(&global_map, _device);
+    struct timeline_semaphore *semaphore = object_find(&device->semaphores, (void *)(uintptr_t)pNameInfo->objectHandle);
+
+    if (semaphore) {
+        // Ignore.
+        LOG("Ignoring SetDebugUtilsObjectNameEXT for emulated timeline semaphore. (\"%s\")\n", pNameInfo->pObjectName);
+        return VK_SUCCESS;
+    }
+
+    return device->vtable.SetDebugUtilsObjectNameEXT(_device, pNameInfo);
 }
 
 static void
@@ -2474,7 +2490,7 @@ static const NAME_TO_FUNCPTR name_to_instance_funcptr_map[] = {
 };
 
 static const NAME_TO_FUNCPTR name_to_device_funcptr_map[] = {
-    { "vkGetDeviceProcAddr", (void *) vkGetDeviceProcAddr },
+    {"vkGetDeviceProcAddr", (void *)vkGetDeviceProcAddr},
     ADD_HOOK(DestroyDevice),
     ADD_HOOK(CreateSemaphore),
     ADD_HOOK(DestroySemaphore),
@@ -2485,6 +2501,7 @@ static const NAME_TO_FUNCPTR name_to_device_funcptr_map[] = {
     ADD_HOOK_ALIAS(GetSemaphoreCounterValueKHR, GetSemaphoreCounterValue),
     ADD_HOOK_ALIAS(WaitSemaphoresKHR, WaitSemaphores),
     ADD_HOOK_ALIAS(SignalSemaphoreKHR, SignalSemaphore),
+    ADD_HOOK(SetDebugUtilsObjectNameEXT),
 
     ADD_HOOK(QueueSubmit),
     ADD_HOOK(QueueBindSparse),
