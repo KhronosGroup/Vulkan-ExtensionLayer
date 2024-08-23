@@ -1833,6 +1833,9 @@ static VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysi
     }
     if (has_native_shader_object) {
         if (pProperties) {
+            if (count < *pPropertyCount) {
+                *pPropertyCount = count;
+            }
             memcpy(pProperties, all_properties, *pPropertyCount * sizeof(VkExtensionProperties));
         } else {
             *pPropertyCount = count;
