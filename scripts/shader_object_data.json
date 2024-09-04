@@ -1224,6 +1224,12 @@
                 [
                     "DestroyDescriptorUpdateTemplate",
                     "DestroyDescriptorUpdateTemplateKHR"
+                ],
+                [
+                    "SetDebugUtilsObjectNameEXT"
+                ],
+                [
+                    "SetDebugUtilsObjectTagEXT"
                 ]
             ]
         },

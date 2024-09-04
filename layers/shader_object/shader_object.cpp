@@ -3165,6 +3165,24 @@ static VKAPI_ATTR void DestroyDescriptorUpdateTemplate(VkDevice device, VkDescri
     RemoveDescriptorUpdateTemplateBindPoint(device_data, descriptorUpdateTemplate);
 }
 
+static VKAPI_ATTR VkResult VKAPI_CALL SetDebugUtilsObjectNameEXT(VkDevice device, const VkDebugUtilsObjectNameInfoEXT *pNameInfo) {
+    DeviceData& data = *device_data_map.Get(device);
+    VkResult result = VK_SUCCESS;
+    if (pNameInfo && pNameInfo->objectType != VK_OBJECT_TYPE_SHADER_EXT) {
+        result = data.vtable.SetDebugUtilsObjectNameEXT(device, pNameInfo);
+    }
+    return result;
+}
+
+static VKAPI_ATTR VkResult VKAPI_CALL SetDebugUtilsObjectTagEXT(VkDevice device, const VkDebugUtilsObjectTagInfoEXT* pTagInfo) {
+    DeviceData& data = *device_data_map.Get(device);
+    VkResult result = VK_SUCCESS;
+    if (pTagInfo && pTagInfo->objectType != VK_OBJECT_TYPE_SHADER_EXT) {
+        result = data.vtable.SetDebugUtilsObjectTagEXT(device, pTagInfo);
+    }
+    return result;
+}
+
 static VKAPI_ATTR void VKAPI_CALL FakeCmdSetColorBlendAdvancedEXT(VkCommandBuffer, uint32_t, uint32_t, const VkColorBlendAdvancedEXT*) {}
 
 // Get Proc Addr
