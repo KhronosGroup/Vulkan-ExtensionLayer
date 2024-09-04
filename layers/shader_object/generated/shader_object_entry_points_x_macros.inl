@@ -2,7 +2,7 @@
 // See shader_object_generator.py for modifications
 
 /*
- * Copyright 2023 Nintendo
+ * Copyright 2023-2024 Nintendo
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,9 @@
     ENTRY_POINT(CreateDescriptorUpdateTemplate)\
     ENTRY_POINT_ALIAS(CreateDescriptorUpdateTemplateKHR, CreateDescriptorUpdateTemplate)\
     ENTRY_POINT(DestroyDescriptorUpdateTemplate)\
-    ENTRY_POINT_ALIAS(DestroyDescriptorUpdateTemplateKHR, DestroyDescriptorUpdateTemplate)
+    ENTRY_POINT_ALIAS(DestroyDescriptorUpdateTemplateKHR, DestroyDescriptorUpdateTemplate)\
+    ENTRY_POINT(SetDebugUtilsObjectNameEXT)\
+    ENTRY_POINT(SetDebugUtilsObjectTagEXT)
 
 #define ADDITIONAL_INSTANCE_FUNCTIONS\
     ENTRY_POINT(GetPhysicalDeviceProperties)\
