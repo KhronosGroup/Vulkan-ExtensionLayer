@@ -1457,3 +1457,51 @@ TEST_F(ShaderObjectTest, UnusedAttachments) {
 
     m_errorMonitor->VerifyNotFound();
 }
+
+TEST_F(ShaderObjectTest, SetDebugName) {
+    TEST_DESCRIPTION("Test drawing with a vertex and fragment shader");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    if (!InstanceExtensionSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, 0)) {
+        GTEST_SKIP() << "VK_EXT_debug_utils not supported";
+    }
+    m_instance_extension_names.push_back(VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
+    if (!CheckShaderObjectSupportAndInitState(false)) {
+        GTEST_SKIP() << kSkipPrefix << " shader object not supported, skipping test";
+    }
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+
+    m_errorMonitor->ExpectSuccess();
+
+    static const char vertSource[] = R"glsl(
+        #version 460
+        void main() {
+            vec2 pos = vec2(float(gl_VertexIndex & 1), float((gl_VertexIndex >> 1) & 1));
+            gl_Position = vec4(pos - 0.5f, 0.0f, 1.0f);
+        }
+    )glsl";
+
+    std::vector<unsigned int> spv;
+    GLSLtoSPV(&m_device->props.limits, VK_SHADER_STAGE_VERTEX_BIT, vertSource, spv, false, 0);
+
+    VkShaderEXT shader;
+    VkShaderCreateInfoEXT createInfo = vku::InitStructHelper();
+    createInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    createInfo.codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
+    createInfo.codeSize = spv.size() * sizeof(unsigned int);
+    createInfo.pCode = spv.data();
+    createInfo.pName = "main";
+
+    vkCreateShadersEXT(m_device->handle(), 1u, &createInfo, nullptr, &shader);
+
+    VkDebugUtilsObjectNameInfoEXT nameInfo = vku::InitStructHelper();
+    nameInfo.objectType = VK_OBJECT_TYPE_SHADER_EXT;
+    nameInfo.objectHandle = (uint64_t)shader;
+    nameInfo.pObjectName = "vertex shader";
+    vkSetDebugUtilsObjectNameEXT(m_device->handle(), &nameInfo);
+
+    vkDestroyShaderEXT(m_device->handle(), shader, nullptr);
+
+    m_errorMonitor->VerifyNotFound();
+}
