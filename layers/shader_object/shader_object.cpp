@@ -109,6 +109,8 @@ struct LayerDispatchInstance {
 #define ENTRY_POINT_ALIAS(alias, canon)
     ENTRY_POINTS_INSTANCE
     ADDITIONAL_INSTANCE_FUNCTIONS
+    ENTRY_POINTS_DEVICE
+    ADDITIONAL_DEVICE_FUNCTIONS
 #undef ENTRY_POINT_ALIAS
 #undef ENTRY_POINT
 
@@ -117,6 +119,8 @@ struct LayerDispatchInstance {
 #define ENTRY_POINT(name) ENTRY_POINT_ALIAS(name, name)
         ENTRY_POINTS_INSTANCE
         ADDITIONAL_INSTANCE_FUNCTIONS
+        ENTRY_POINTS_DEVICE
+        ADDITIONAL_DEVICE_FUNCTIONS
 #undef ENTRY_POINT
 #undef ENTRY_POINT_ALIAS
     }
@@ -3194,13 +3198,12 @@ struct NameAndFunction {
 
 #define ENTRY_POINT_ALIAS(alias, canon) {"vk" #alias, (void*)shader_object::canon},
 #define ENTRY_POINT(name) ENTRY_POINT_ALIAS(name, name)
-static const NameAndFunction kFunctionMapInstance[] = {ENTRY_POINTS_INSTANCE};
+static const NameAndFunction kFunctionMapInstance[] = {ENTRY_POINTS_INSTANCE ENTRY_POINTS_DEVICE};
 static const NameAndFunction kFunctionMapDevice[] = {ENTRY_POINTS_DEVICE};
-static const NameAndFunction kFunctionMapAll[] = {ENTRY_POINTS_INSTANCE ENTRY_POINTS_DEVICE};
 #undef ENTRY_POINT
 #undef ENTRY_POINT_ALIAS
 
-enum FunctionType { kInstanceFunctions = 0x1, kDeviceFunctions = 0x2, kAllFunctions = kInstanceFunctions | kDeviceFunctions };
+enum FunctionType { kInstanceFunctions = 0x1, kDeviceFunctions = 0x2 };
 
 static void* FindFunctionByName(const char* pName, uint32_t functionType) {
     size_t num_elements = 0;
@@ -3214,7 +3217,6 @@ static void* FindFunctionByName(const char* pName, uint32_t functionType) {
 
     HANDLE_FUNCTION_TYPE(Instance);
     HANDLE_FUNCTION_TYPE(Device);
-    HANDLE_FUNCTION_TYPE(All);
 
 #undef HANDLE_FUNCTION_TYPE
 
