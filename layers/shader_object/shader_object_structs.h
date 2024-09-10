@@ -32,6 +32,8 @@
 #include "vk_api_hash.h"
 
 namespace shader_object {
+
+#define SHADER_OBJECT_DEBUG_UTILS_STR_LENGTH 128u
     
 enum ShaderType {
     VERTEX_SHADER = 0,
@@ -1048,6 +1050,15 @@ struct DeviceData {
 
     // In the future, this could be improved by utilizing private data if it's available on the device
     HashMap<VkImageView, VkFormat> image_view_format_map;
+    struct NameInfo {
+        char name[SHADER_OBJECT_DEBUG_UTILS_STR_LENGTH];
+    };
+    HashMap<Shader*, NameInfo>    debug_utils_object_name_map;
+    struct TagInfo {
+        uint64_t tagName;
+        char     tag[SHADER_OBJECT_DEBUG_UTILS_STR_LENGTH];
+    };
+    HashMap<Shader*, TagInfo>      debug_utils_object_tag_map;
 
     #include "generated/shader_object_device_data_declare_extension_variables.inl"
 };
