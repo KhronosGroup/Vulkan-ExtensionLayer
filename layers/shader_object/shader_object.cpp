@@ -639,6 +639,160 @@ static void RemoveCommandBufferDataForCommandBuffer(DeviceData* device_data, VkC
     }
 }
 
+static const char* GetShaderName(uint32_t shader_type) {
+    switch (shader_type) {
+        case VERTEX_SHADER:
+            return "V";
+        case FRAGMENT_SHADER:
+            return "F";
+        case TESSELLATION_CONTROL_SHADER:
+            return "TC";
+        case TESSELLATION_EVALUATION_SHADER:
+            return "TE";
+        case GEOMETRY_SHADER:
+            return "G";
+        case MESH_SHADER:
+            return "M";
+        case TASK_SHADER:
+            return "T";
+        default:
+            break;
+    }
+    return "";
+}
+
+static void SetComputeShaderDebugUtilsName(DeviceData& data, Shader* shader, const VkDebugUtilsObjectNameInfoEXT *pNameInfo) {
+    VkDebugUtilsObjectNameInfoEXT name_info{
+        VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        nullptr,
+        VK_OBJECT_TYPE_PIPELINE,
+        (uint64_t)shader->partial_pipeline.pipeline,
+        pNameInfo->pObjectName
+    };
+    data.vtable.SetDebugUtilsObjectNameEXT(data.device, &name_info);
+}
+
+static void SetComputeShaderDebugUtilsTag(DeviceData& data, Shader* shader, const VkDebugUtilsObjectTagInfoEXT* pTagInfo) {
+    VkDebugUtilsObjectTagInfoEXT tag_info{
+        VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT,
+        nullptr,
+        VK_OBJECT_TYPE_PIPELINE,
+        (uint64_t)shader->partial_pipeline.pipeline,
+        pTagInfo->tagName,
+        pTagInfo->tagSize,
+        pTagInfo->pTag
+    };
+    data.vtable.SetDebugUtilsObjectTagEXT(data.device, &tag_info);
+}
+
+static void SetDebugUtilsNameAndTag(CommandBufferData& cmd_data, VkPipeline pipeline) {
+    auto& device_data = *cmd_data.device_data;
+    auto const state  = cmd_data.GetDrawStateData();
+
+    if (device_data.debug_utils_object_name_map.NumEntries() > 0) {
+        bool first_shader = true;
+        bool same_name = true;
+        char same_shader_name[SHADER_OBJECT_DEBUG_UTILS_STR_LENGTH];
+        char pipeline_name[SHADER_OBJECT_DEBUG_UTILS_STR_LENGTH* 5 + 26];
+        pipeline_name[0] = '\0';
+        char temp[SHADER_OBJECT_DEBUG_UTILS_STR_LENGTH + 5];
+
+        for (uint32_t shader_type = 0; shader_type < NUM_SHADERS; ++shader_type) {
+            Shader* shader = state->GetComparableShader(shader_type).GetShaderPtr();
+
+            if (shader == nullptr) {
+                continue;
+            }
+
+            auto iter = device_data.debug_utils_object_name_map.Find(shader);
+            if (iter != device_data.debug_utils_object_name_map.end()) {
+                const auto& shader_name = iter.GetValue().name;
+                if (first_shader) {
+                    first_shader = false;
+                    strncpy(same_shader_name, shader_name, sizeof(same_shader_name));
+                } else if (strncmp(shader_name, same_shader_name, sizeof(shader_name)) == 0) {
+                    same_name = false;
+                    strncat(pipeline_name, "/", sizeof(pipeline_name) - strlen(pipeline_name) - 1);
+                }
+
+                bool has_space_or_slash = strchr(shader_name, ' ') != NULL || strchr(shader_name, '/') != NULL;
+                if (has_space_or_slash) {
+                    snprintf(temp, sizeof(temp), "%s:\"%s\"", GetShaderName(shader_type), shader_name);
+                } else {
+                    snprintf(temp, sizeof(temp), "%s:%s", GetShaderName(shader_type), shader_name);
+                }
+                strncat(pipeline_name, temp, sizeof(pipeline_name) - strlen(pipeline_name) - 1);
+                pipeline_name[sizeof(pipeline_name) - 1] = '\0';
+            }
+        }
+
+        if (!first_shader) {
+            VkDebugUtilsObjectNameInfoEXT name_info{
+                VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+                nullptr,
+                VK_OBJECT_TYPE_PIPELINE,
+                (uint64_t)pipeline,
+                same_name ? same_shader_name : pipeline_name
+            };
+            device_data.vtable.SetDebugUtilsObjectNameEXT(device_data.device, &name_info);
+        }
+    }
+    if (device_data.debug_utils_object_tag_map.NumEntries() > 0) {
+        bool first_shader = true;
+        bool same_tag = true;
+        char same_shader_tag[SHADER_OBJECT_DEBUG_UTILS_STR_LENGTH];
+        char pipeline_tag[SHADER_OBJECT_DEBUG_UTILS_STR_LENGTH * 5 + 26];
+        pipeline_tag[0] = '\0';
+        char temp[SHADER_OBJECT_DEBUG_UTILS_STR_LENGTH + 5];
+        uint64_t tagName = 0;
+
+        for (uint32_t shader_type = 0; shader_type < NUM_SHADERS; ++shader_type) {
+            Shader* shader = state->GetComparableShader(shader_type).GetShaderPtr();
+
+            if (shader == nullptr) {
+                continue;
+            }
+
+            auto iter = device_data.debug_utils_object_tag_map.Find(shader);
+            if (iter != device_data.debug_utils_object_tag_map.end()) {
+                const auto& shader_tag = iter.GetValue().tag;
+                if (first_shader) {
+                    first_shader = false;
+                    strncpy(same_shader_tag, shader_tag, sizeof(same_shader_tag));
+                } else if (shader_tag != same_shader_tag) {
+                    same_tag = false;
+                    strncat(pipeline_tag, "/", sizeof(pipeline_tag) - strlen(pipeline_tag) - 1);
+                }
+
+                if (shader_type == VERTEX_SHADER || shader_type == MESH_SHADER) {
+                    tagName = iter.GetValue().tagName;
+                }
+
+                bool has_space_or_slash = strchr(shader_tag, ' ') != NULL || strchr(shader_tag, '/') != NULL;
+                if (has_space_or_slash) {
+                    snprintf(temp, sizeof(temp), "%s:\"%s\"", GetShaderName(shader_type), shader_tag);
+                } else {
+                    snprintf(temp, sizeof(temp), "%s:%s", GetShaderName(shader_type), shader_tag);
+                }
+                strncat(pipeline_tag, temp, sizeof(pipeline_tag) - strlen(pipeline_tag) - 1);
+                pipeline_tag[sizeof(pipeline_tag) - 1] = '\0';
+            }
+        }
+        if (!first_shader) {
+            VkDebugUtilsObjectTagInfoEXT tag_info{
+                VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT,
+                nullptr,
+                VK_OBJECT_TYPE_PIPELINE,
+                (uint64_t)pipeline,
+                tagName,
+                same_tag ? strlen(same_shader_tag) : strlen(pipeline_tag),
+                same_tag ? same_shader_tag : pipeline_tag
+            };
+            device_data.vtable.SetDebugUtilsObjectTagEXT(device_data.device, &tag_info);
+        }
+    }
+}
+
 static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData& cmd_data) {
     auto& device_data = *cmd_data.device_data;
     auto const state  = cmd_data.GetDrawStateData();
@@ -1025,6 +1179,8 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
         cmd_data.device_data->device, vertex_or_mesh_shader->cache, 1, &create_info, nullptr, &pipeline);
     ASSERT(result == VK_SUCCESS);
     UNUSED(result);
+
+    SetDebugUtilsNameAndTag(cmd_data, pipeline);
 
     return pipeline;
 }
@@ -3200,7 +3356,21 @@ static VKAPI_ATTR void DestroyDescriptorUpdateTemplate(VkDevice device, VkDescri
 static VKAPI_ATTR VkResult VKAPI_CALL SetDebugUtilsObjectNameEXT(VkDevice device, const VkDebugUtilsObjectNameInfoEXT *pNameInfo) {
     DeviceData& data = *device_data_map.Get(device);
     VkResult result = VK_SUCCESS;
-    if (pNameInfo && pNameInfo->objectType != VK_OBJECT_TYPE_SHADER_EXT) {
+    if (pNameInfo->objectType == VK_OBJECT_TYPE_SHADER_EXT) {
+        const auto shader = reinterpret_cast<Shader*>(pNameInfo->objectHandle);
+        if (shader->stage == VK_SHADER_STAGE_COMPUTE_BIT) {
+            SetComputeShaderDebugUtilsName(data, shader, pNameInfo);
+        } else {
+            if (pNameInfo->pObjectName) {
+                DeviceData::NameInfo objectName;
+                strncpy(objectName.name, pNameInfo->pObjectName, sizeof(objectName.name) - 1);
+                objectName.name[sizeof(objectName.name) - 1] = '\0';
+                data.debug_utils_object_name_map.Add(shader, objectName);
+            } else {
+                data.debug_utils_object_name_map.Remove(shader);
+            }
+        }
+    } else {
         result = data.vtable.SetDebugUtilsObjectNameEXT(device, pNameInfo);
     }
     return result;
@@ -3209,7 +3379,19 @@ static VKAPI_ATTR VkResult VKAPI_CALL SetDebugUtilsObjectNameEXT(VkDevice device
 static VKAPI_ATTR VkResult VKAPI_CALL SetDebugUtilsObjectTagEXT(VkDevice device, const VkDebugUtilsObjectTagInfoEXT* pTagInfo) {
     DeviceData& data = *device_data_map.Get(device);
     VkResult result = VK_SUCCESS;
-    if (pTagInfo && pTagInfo->objectType != VK_OBJECT_TYPE_SHADER_EXT) {
+    if (pTagInfo->objectType == VK_OBJECT_TYPE_SHADER_EXT) {
+        const auto shader = reinterpret_cast<Shader*>(pTagInfo->objectHandle);
+        if (shader->stage == VK_SHADER_STAGE_COMPUTE_BIT) {
+            SetComputeShaderDebugUtilsTag(data, shader, pTagInfo);
+        } else {
+            DeviceData::TagInfo tagInfo;
+            tagInfo.tagName = pTagInfo->tagName;
+            size_t copySize = pTagInfo->tagSize < sizeof(tagInfo.tag) ? pTagInfo->tagSize : sizeof(tagInfo.tag) - 1;
+            memcpy(tagInfo.tag, pTagInfo->pTag, copySize);
+            tagInfo.tag[copySize] = '\0';
+            data.debug_utils_object_tag_map.Add(shader, tagInfo);
+        }
+    } else {
         result = data.vtable.SetDebugUtilsObjectTagEXT(device, pTagInfo);
     }
     return result;
