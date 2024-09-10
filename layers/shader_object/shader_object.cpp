@@ -2384,6 +2384,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL GetShaderBinaryDataEXT(VkDevice device, Vk
     }
 
     if (*pDataSize < binary_size) {
+        *pDataSize = 0;
         return VK_INCOMPLETE;
     }
 
