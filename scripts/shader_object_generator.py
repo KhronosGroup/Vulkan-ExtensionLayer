@@ -336,7 +336,11 @@ def generate_full_draw_state_struct_members(data):
             generate_getter_and_setter(variable_state_group, variable_data['name'], var_name_private, var_type, length)
         else:
             # value member
-            member_variables_section.append(f'{var_type} {var_name_private}{{}};\n')
+            if var_name_private == "patch_control_points_":
+                member_variables_section.append(f'{var_type} {var_name_private} = 1;\n')
+            else:
+                member_variables_section.append(f'{var_type} {var_name_private}{{}};\n')
+
             if var_type == 'VkFormat':
                 comparison_code.append(f'if (!(o.{var_name_private} == {var_name_private}) && (!o.dynamic_rendering_unused_attachments_ || o.{var_name_private} != VK_FORMAT_UNDEFINED) && (!dynamic_rendering_unused_attachments_ || {var_name_private} != VK_FORMAT_UNDEFINED)) {{\n')
             elif var_name_private == 'num_color_attachments_':

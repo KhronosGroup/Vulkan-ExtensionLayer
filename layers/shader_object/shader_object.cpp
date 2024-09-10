@@ -1310,7 +1310,6 @@ PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, Vk
         partial_pipeline.draw_state->SetDepthBiasEnable(rasterization_state.depthBiasEnable);
 
         create_info.pTessellationState = &tessellation_state;
-        tessellation_state.patchControlPoints = 1u;
         partial_pipeline.draw_state->SetPatchControlPoints(tessellation_state.patchControlPoints);
     }
 
