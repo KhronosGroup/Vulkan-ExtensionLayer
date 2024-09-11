@@ -1026,6 +1026,7 @@ struct DeviceData {
     enum FlagBits {
         SHADER_OBJECT_LAYER_ENABLED        = 1u << 0,
         HAS_PRIMITIVE_TOPLOGY_UNRESTRICTED = 1u << 1,
+        DISABLE_PIPELINE_PRE_CACHING       = 1u << 2,
     };
     using Flags = uint32_t;
 

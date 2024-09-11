@@ -40,6 +40,7 @@
 #include "shader_object/shader_object_structs.h"
 
 #define kLayerSettingsForceEnable "force_enable"
+#define kLayerSettingsDisablePipelinePreCaching "disable_pipeline_pre_caching"
 #define kLayerSettingsCustomSTypeInfo "custom_stype_list"
 
 #define SHADER_OBJECT_BINARY_VERSION 1
@@ -160,6 +161,7 @@ namespace shader_object {
 
 struct LayerSettings {
     bool force_enable{false};
+    bool disable_pipeline_pre_caching{false};
 };
 
 struct InstanceData {
@@ -1345,6 +1347,9 @@ PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, Vk
 }
 
 static VkResult PopulateCachesForShaders(DeviceData const& deviceData, VkAllocationCallbacks const& allocator, bool are_graphics_shaders_linked, uint32_t shaderCount, VkShaderEXT* pShaders) {
+    if (deviceData.flags & DeviceData::DISABLE_PIPELINE_PRE_CACHING) {
+        return VK_SUCCESS;
+    }
     if (deviceData.graphics_pipeline_library.graphicsPipelineLibrary == VK_TRUE) {
         // Compile partial pipelines to fill cache and to keep around for first draw pipeline creation
 
@@ -1582,7 +1587,7 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
     VkuLayerSettingSet layer_setting_set = VK_NULL_HANDLE;
     vkuCreateLayerSettingSet(kLayerName, create_info, pAllocator, nullptr, &layer_setting_set);
 
-    static const char* setting_names[] = {kLayerSettingsForceEnable, kLayerSettingsCustomSTypeInfo};
+    static const char* setting_names[] = {kLayerSettingsForceEnable, kLayerSettingsDisablePipelinePreCaching, kLayerSettingsCustomSTypeInfo};
     uint32_t setting_name_count = static_cast<uint32_t>(std::size(setting_names));
 
     uint32_t unknown_setting_count = 0;
@@ -1601,6 +1606,10 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
 
     if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsForceEnable)) {
         vkuGetLayerSettingValue(layer_setting_set, kLayerSettingsForceEnable, layer_settings->force_enable);
+    }
+
+    if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsDisablePipelinePreCaching)) {
+        vkuGetLayerSettingValue(layer_setting_set, kLayerSettingsDisablePipelinePreCaching, layer_settings->disable_pipeline_pre_caching);
     }
 
     if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsCustomSTypeInfo)) {
@@ -2092,6 +2101,9 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
         // Fill in device data
         device_data->device                           = *pDevice;
         device_data->flags                            = enable_layer ? DeviceData::SHADER_OBJECT_LAYER_ENABLED : 0; 
+        if (instance_data->layer_settings.disable_pipeline_pre_caching) {
+            device_data->flags |= DeviceData::DISABLE_PIPELINE_PRE_CACHING;
+        }
         device_data->reserved_private_data_slot_count = total_private_data_slot_request_count;
         device_data->enabled_extensions               = enabled_additional_extensions;
 
