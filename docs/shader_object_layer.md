@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <p align="left"><img src="https://vulkan.lunarg.com/img/NewLunarGLogoBlack.png" alt="LunarG" width=263 height=113 /></p>
 
-Copyright &copy; 2015-2023 LunarG, Inc.
+Copyright &copy; 2015-2024 LunarG, Inc.
 
 [![Creative Commons][3]][4]
 
@@ -74,6 +74,16 @@ To force the layer to be enabled for Vulkan applications, even though the Vulkan
 **Linux/MacOS**
 
     export VK_SHADER_OBJECT_FORCE_ENABLE=true
+
+To disable pipeline pre-caching to reduce memory overhead, you can set the `VK_SHADER_OBJECT_DISABLE_PIPELINE_PRE_CACHING` environment variable in the following way:
+
+**Windows**
+
+    set VK_SHADER_OBJECT_DISABLE_PIPELINE_PRE_CACHING=true
+
+**Linux/MacOS**
+
+    export VK_SHADER_OBJECT_DISABLE_PIPELINE_PRE_CACHING=true
 
 <br>
 

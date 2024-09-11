@@ -83,6 +83,14 @@
                     "description": "Force the layer to be active even if the underlying driver also implements the shader object extension.",
                     "type": "BOOL",
                     "default": false
+                },
+                {
+                    "key": "disable_pipeline_pre_caching",
+                    "env": "VK_SHADER_OBJECT_DISABLE_PIPELINE_PRE_CACHING",
+                    "label": "Disable Pipeline Pre-Caching",
+                    "description": "Disable the layer from pre-caching pipelines, reducing the memory overhead.",
+                    "type": "BOOL",
+                    "default": false
                 }
             ]
         }
