@@ -4,7 +4,8 @@
             "name": "DYNAMIC_RENDERING",
             "extension_name_macro": "VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME",
             "feature_struct": "VkPhysicalDeviceDynamicRenderingFeatures",
-            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES"
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES",
+            "promoted_to": "1_3"
         },
         {
             "name": "MAINTENANCE_2",
@@ -14,7 +15,8 @@
             "name": "PRIVATE_DATA",
             "extension_name_macro": "VK_EXT_PRIVATE_DATA_EXTENSION_NAME",
             "feature_struct": "VkPhysicalDevicePrivateDataFeaturesEXT",
-            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES"
+            "feature_struct_stype": "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES",
+            "promoted_to": "1_3"
         },
         {
             "name": "EXTENDED_DYNAMIC_STATE_1",
