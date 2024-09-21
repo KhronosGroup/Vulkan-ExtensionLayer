@@ -189,6 +189,7 @@ def generate_create_device_feature_structs(data):
 
     out_file.write('VkBaseOutStructure* appended_features_chain = nullptr;\n')
     out_file.write('VkBaseOutStructure* appended_features_chain_last = nullptr;\n\n')
+    out_file.write('auto vulkan_1_3_ptr = reinterpret_cast<VkPhysicalDeviceVulkan13Features*>(FindStructureInChain(device_next_chain, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES));\n\n')
 
     # Performance could be improved, this is a naive implementation
 
@@ -201,9 +202,10 @@ def generate_create_device_feature_structs(data):
         enum_name = extension['name']
         var_name = extension['name'].lower()
         initializer = '{' + extension['feature_struct_stype'] + '}'
+        promoted_struct = f'vulkan_{extension['promoted_to']}_ptr == nullptr && ' if 'promoted_to' in extension else ''
         out_file.write(f'auto {var_name}_ptr = reinterpret_cast<{struct_name}*>(FindStructureInChain(device_next_chain, {sType}));\n')
         out_file.write(f'{struct_name} {var_name}_local{initializer};\n')
-        out_file.write(f'if ({var_name}_ptr == nullptr && (physical_device_data->supported_additional_extensions & {enum_name}) != 0) {{\n')
+        out_file.write(f'if ({promoted_struct}{var_name}_ptr == nullptr && (physical_device_data->supported_additional_extensions & {enum_name}) != 0) {{\n')
         out_file.write(f'    {var_name}_ptr = &{var_name}_local;\n')
         out_file.write(f'    if (appended_features_chain_last == nullptr) {{\n')
         out_file.write(f'        appended_features_chain = (VkBaseOutStructure*){var_name}_ptr;\n')

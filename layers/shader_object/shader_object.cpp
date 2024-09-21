@@ -2206,7 +2206,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
 #include "generated/shader_object_create_device_feature_structs.inl"
         device_features.pNext = appended_features_chain;
         instance_vtable.GetPhysicalDeviceFeatures2(physicalDevice, &device_features);
-        if (!dynamic_rendering_ptr || dynamic_rendering_ptr->dynamicRendering == VK_FALSE) {
+        if ((!vulkan_1_3_ptr || vulkan_1_3_ptr->dynamicRendering == VK_FALSE) && (!dynamic_rendering_ptr || dynamic_rendering_ptr->dynamicRendering == VK_FALSE)) {
             // Dynamic rendering is required
             vku::FreePnextChain(device_next_chain);
             allocator.pfnFree(allocator.pUserData, enabled_extension_names);
@@ -2236,7 +2236,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
         };
 
         // Append to deep-copied pNext chain
-        if (private_data_ptr && private_data_ptr->privateData == VK_TRUE) {
+        if ((vulkan_1_3_ptr && vulkan_1_3_ptr->privateData == VK_TRUE) || (private_data_ptr && private_data_ptr->privateData == VK_TRUE)) {
             last->pNext = reinterpret_cast<VkBaseOutStructure*>(&reserved_private_data_slot);
         } else {
             last->pNext = appended_features_chain;

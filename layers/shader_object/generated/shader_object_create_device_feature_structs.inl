@@ -20,9 +20,11 @@
 VkBaseOutStructure* appended_features_chain = nullptr;
 VkBaseOutStructure* appended_features_chain_last = nullptr;
 
+auto vulkan_1_3_ptr = reinterpret_cast<VkPhysicalDeviceVulkan13Features*>(FindStructureInChain(device_next_chain, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES));
+
 auto dynamic_rendering_ptr = reinterpret_cast<VkPhysicalDeviceDynamicRenderingFeatures*>(FindStructureInChain(device_next_chain, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES));
 VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_local{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES};
-if (dynamic_rendering_ptr == nullptr && (physical_device_data->supported_additional_extensions & DYNAMIC_RENDERING) != 0) {
+if (vulkan_1_3_ptr == nullptr && dynamic_rendering_ptr == nullptr && (physical_device_data->supported_additional_extensions & DYNAMIC_RENDERING) != 0) {
     dynamic_rendering_ptr = &dynamic_rendering_local;
     if (appended_features_chain_last == nullptr) {
         appended_features_chain = (VkBaseOutStructure*)dynamic_rendering_ptr;
@@ -34,7 +36,7 @@ if (dynamic_rendering_ptr == nullptr && (physical_device_data->supported_additio
 }
 auto private_data_ptr = reinterpret_cast<VkPhysicalDevicePrivateDataFeaturesEXT*>(FindStructureInChain(device_next_chain, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES));
 VkPhysicalDevicePrivateDataFeaturesEXT private_data_local{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES};
-if (private_data_ptr == nullptr && (physical_device_data->supported_additional_extensions & PRIVATE_DATA) != 0) {
+if (vulkan_1_3_ptr == nullptr && private_data_ptr == nullptr && (physical_device_data->supported_additional_extensions & PRIVATE_DATA) != 0) {
     private_data_ptr = &private_data_local;
     if (appended_features_chain_last == nullptr) {
         appended_features_chain = (VkBaseOutStructure*)private_data_ptr;
