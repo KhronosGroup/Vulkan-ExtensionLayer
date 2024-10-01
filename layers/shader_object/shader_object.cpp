@@ -759,7 +759,7 @@ static void SetDebugUtilsNameAndTag(CommandBufferData& cmd_data, VkPipeline pipe
                 if (first_shader) {
                     first_shader = false;
                     strncpy(same_shader_tag, shader_tag, sizeof(same_shader_tag));
-                } else if (shader_tag != same_shader_tag) {
+                } else if (strncmp(shader_tag, same_shader_tag, sizeof(same_shader_tag)) != 0) {
                     same_tag = false;
                     strncat(pipeline_tag, "/", sizeof(pipeline_tag) - strlen(pipeline_tag) - 1);
                 }
