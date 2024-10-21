@@ -56,7 +56,7 @@ elseif(NOT APPLE)
     endif()
 
     if(BUILD_WSI_WAYLAND_SUPPORT)
-        pkg_check_modules(WAYlAND_CLIENT QUIET REQUIRED IMPORTED_TARGET wayland-client)
+        pkg_check_modules(WAYLAND_CLIENT QUIET REQUIRED IMPORTED_TARGET wayland-client)
         add_compile_definitions(VK_USE_PLATFORM_WAYLAND_KHR)
     endif()
 endif()

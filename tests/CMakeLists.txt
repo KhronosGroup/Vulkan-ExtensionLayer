@@ -90,7 +90,7 @@ target_link_libraries(vk_extension_layer_tests PRIVATE
     volk::volk_headers
     $<TARGET_NAME_IF_EXISTS:PkgConfig::XCB>
     $<TARGET_NAME_IF_EXISTS:PkgConfig::X11>
-    $<TARGET_NAME_IF_EXISTS:PkgConfig::WAYlAND_CLIENT>
+    $<TARGET_NAME_IF_EXISTS:PkgConfig::WAYLAND_CLIENT>
 )
 
 # Needed for volk to work correctly
