@@ -59,11 +59,14 @@ jobs:
       - uses: lukka/get-cmake@latest
         with:
           cmakeVersion: 3.17.2
-      - run: python -m pip install jsonschema pyparsing
+      - name: Install python deps
+        run: python -m pip install jsonschema pyparsing
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
             key: ${{ matrix.os }}-${{ matrix.config }}-${{ matrix.compiler.cc }}-${{ matrix.compiler.cxx }}
+      - name: Install packages
+        run: sudo apt-get -qq update && sudo apt-get install -y libwayland-dev xorg-dev
       - name: Build Vulkan-ExtensionLayer
         run: python scripts/github_ci_build_desktop.py --config ${{ matrix.config }}
         env:
