@@ -497,7 +497,7 @@ static VkPipelineStageFlags ConvertPipelineStageMask(VkPipelineStageFlags2KHR st
     }
 
     if (stage_mask & VK_PIPELINE_STAGE_2_PRE_RASTERIZATION_SHADERS_BIT_KHR) {
-        result_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+        result_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
         if (features.tessellation) {
             result_stage_mask |= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
                                  VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
