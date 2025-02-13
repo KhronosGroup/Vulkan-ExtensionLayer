@@ -12,7 +12,7 @@
 
 ## Requirements
 
-1. CMake >= 3.17.2
+1. CMake >= 3.22.1
 2. C++17 compatible toolchain
 3. Git
 4. Python >= 3.10
