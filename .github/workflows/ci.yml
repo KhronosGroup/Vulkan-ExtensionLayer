@@ -41,14 +41,14 @@ jobs:
       matrix:
         compiler: [{cc: gcc, cxx: g++}]
         config: [debug, release]
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
         include:
-          # Test Ubuntu-20.04 release build works.
-          - os: ubuntu-20.04
+          # Test Ubuntu-22.04 release build works.
+          - os: ubuntu-22.04
             compiler: {cc: gcc, cxx: g++}
             config: release
           # Test clang support
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             compiler: {cc: clang, cxx: clang++}
             config: release
     steps:
