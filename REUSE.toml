@@ -7,7 +7,7 @@ SPDX-PackageDownloadLocation = "https://github.com/KhronosGroup/Vulkan-Extension
 path = "layers/decompression/**"
 precedence = "aggregate"
 SPDX-FileCopyrightText = ["2023-2025 The Khronos Group, Inc.", "2023 NVIDIA CORPORATION & AFFILIATES"]
-SPDX-License-Identifier = "Apache-2.0 or MIT"
+SPDX-License-Identifier = "Apache-2.0 OR MIT"
 
 [[annotations]]
 path = "layers/README.txt"
@@ -37,7 +37,7 @@ SPDX-License-Identifier = "Apache-2.0"
 path = "layers/VkLayer_khronos_memory_decompression.def"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2023 Nvidia Corporation"
-SPDX-License-Identifier = "Apache-2.0"
+SPDX-License-Identifier = "Apache-2.0 OR MIT"
 
 [[annotations]]
 path = ["layers/VkLayer_khronos_shader_object.def", "layers/vk_api_hash.h"]
