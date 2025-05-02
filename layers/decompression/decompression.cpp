@@ -505,9 +505,25 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
         // If we do not have size control extension, or width < 16
         // Force a shader variant with full syncronization.
         subgroupSize = 8;
+
+        // Intel Xe (and earlier) GPUs can support subgroup sizes of 8, 16,
+        // and 32. At least on current versions of the Intel compiler in Mesa,
+        // the SIMD32 version cannot fit in available register space, and it
+        // is about 11% slower than the SIMD16 version.
+        if (subgroupsizeProps.minSubgroupSize == 8 && subgroupsizeProps.maxSubgroupSize == 32) {
+            subgroupSize = 16;
+        }
     } else if (subgroupFeatures.subgroupSizeControl) {
-        // Use a shader with the narrowest supported subgroup.
-        subgroupSize = subgroupsizeProps.minSubgroupSize;
+        // Intel Xe2 GPUs can support subgroup sizes of 16 and 32. The
+        // GInflate shader will easily fit in the register file of SIMD32, and
+        // there are significant advantages to the 32-wide shader. Force a
+        // subgroup size of 32.
+        if (subgroupsizeProps.maxSubgroupSize <= 32) {
+            subgroupSize = subgroupsizeProps.maxSubgroupSize;
+        } else {
+            // Use a shader with the narrowest supported subgroup.
+            subgroupSize = subgroupsizeProps.minSubgroupSize;
+        }
     }
 
     PRINT("Info: subgroupSize %u\n", subgroupSize);
@@ -602,6 +618,10 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     VkShaderModule copyCountModule;
     VkShaderModule indirectDecompressShaderModule;
 
+    VkPipelineShaderStageRequiredSubgroupSizeCreateInfo rss_info = {
+        VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO};
+    rss_info.requiredSubgroupSize = subgroupSize;
+
     // Create Decompression shader pipeline
     ByteCode bytecode = kGInflateBytecode[bytecodeIndex];
     VkShaderModuleCreateInfo shaderModuleInfo = {VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
@@ -630,6 +650,11 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     pipelineInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
     pipelineInfo.stage.module = decompressShaderModule;
     pipelineInfo.stage.pName = "main";
+
+    if (subgroupFeatures.subgroupSizeControl) {
+        pipelineInfo.stage.pNext = &rss_info;
+    }
+
     result = vtable.CreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, 0, &pipelineDecompressSingle);
     if (result != VK_SUCCESS) {
         return result;
@@ -658,6 +683,7 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     pipelineInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
     pipelineInfo.stage.module = copyCountModule;
     pipelineInfo.stage.pName = "main";
+    pipelineInfo.stage.pNext = NULL;
     result = vtable.CreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, 0, &pipelineCopy);
     if (result != VK_SUCCESS) {
         return result;
@@ -687,6 +713,11 @@ VkResult DeviceData::CreatePipelineState(VkDevice* pDevice, VkPhysicalDevice phy
     pipelineInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
     pipelineInfo.stage.module = indirectDecompressShaderModule;
     pipelineInfo.stage.pName = "main";
+
+    if (subgroupFeatures.subgroupSizeControl) {
+        pipelineInfo.stage.pNext = &rss_info;
+    }
+
     result = vtable.CreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, 0, &pipelineDecompressMulti);
     if (result != VK_SUCCESS) {
         return result;
