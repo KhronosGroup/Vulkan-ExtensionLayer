@@ -76,7 +76,7 @@ uint scan(uint value) {
 	uint sum = subgroupExclusiveAdd(value);
 	if (tid == SIMD_WIDTH - 1) g_tmpGroupSync[0] = sum + value;
 	barrier();
-	if (tid >= SIMD_WIDTH) sum += g_tmpGroupSync[0];
+	if (tid >= gl_SubgroupSize) sum += g_tmpGroupSync[0];
 	barrier();
 	return sum;
 #else
