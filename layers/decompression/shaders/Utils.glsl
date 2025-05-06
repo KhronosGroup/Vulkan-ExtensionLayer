@@ -36,13 +36,15 @@ void sync() {}
 shared uint g_tmpGroupSync[NUM_THREADS];
 
 uint vote(bool p) {
-	g_tmpGroupSync[tid()] = p ? 1 : 0;
+	uint tid = tid();
+
+	g_tmpGroupSync[tid] = int(p) << tid;
 	barrier();
 
 	uint ballot = g_tmpGroupSync[0];
 
 	for (uint i = 1; i < NUM_THREADS; i++)
-		ballot |= g_tmpGroupSync[i] << i;
+		ballot |= g_tmpGroupSync[i];
 
 	barrier();
 	return ballot;
