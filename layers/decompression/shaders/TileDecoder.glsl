@@ -30,12 +30,12 @@
 #endif
 
 #if SIMD_WIDTH > 16
-#extension GL_KHR_shader_subgroup_ballot : require
 #extension GL_KHR_shader_subgroup_vote : require
 #extension GL_KHR_shader_subgroup_shuffle : require
 #endif
 
 #if SIMD_WIDTH > 8
+#extension GL_KHR_shader_subgroup_ballot : require
 #extension GL_KHR_shader_subgroup_arithmetic : require
 #endif
 
