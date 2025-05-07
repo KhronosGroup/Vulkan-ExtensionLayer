@@ -91,6 +91,8 @@ struct InstanceData {
         DECLARE_HOOK(EnumerateInstanceExtensionProperties);
         DECLARE_HOOK(GetPhysicalDeviceProperties2);
         DECLARE_HOOK(GetPhysicalDeviceFeatures2);
+        DECLARE_HOOK(GetPhysicalDeviceProperties2KHR);
+        DECLARE_HOOK(GetPhysicalDeviceFeatures2KHR);
         DECLARE_HOOK(GetPhysicalDeviceProperties);
         DECLARE_HOOK(GetPhysicalDeviceMemoryProperties);
     } vtable;
