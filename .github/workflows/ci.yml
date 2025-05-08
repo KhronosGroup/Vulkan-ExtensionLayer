@@ -18,7 +18,7 @@ name: ci
 concurrency:
     group: ${{ github.workflow }}-${{ github.head_ref || github.run_id  }}
     cancel-in-progress: true
-  
+
 on:
     push:
     pull_request:
@@ -37,6 +37,7 @@ jobs:
       CMAKE_C_COMPILER_LAUNCHER: ccache
       CMAKE_CXX_COMPILER_LAUNCHER: ccache
     runs-on: ${{ matrix.os }}
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     strategy:
       matrix:
         compiler: [{cc: gcc, cxx: g++}]
@@ -75,6 +76,7 @@ jobs:
 
   windows:
     runs-on: windows-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     strategy:
       matrix:
         arch: [ amd64, amd64_x86 ]
@@ -89,10 +91,11 @@ jobs:
       - name: Install build dependencies
         run: python -m pip install jsonschema pyparsing
       - name: Build Vulkan-ExtensionLayer
-        run: python scripts/github_ci_build_desktop.py --config release 
+        run: python scripts/github_ci_build_desktop.py --config release
 
   macos:
     runs-on: macos-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     steps:
       - uses: actions/checkout@v4
       - uses: lukka/get-cmake@latest
@@ -107,6 +110,7 @@ jobs:
 
   iOS:
     runs-on: macos-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     steps:
       - uses: actions/checkout@v4
       - uses: lukka/get-cmake@latest
@@ -128,6 +132,7 @@ jobs:
       CMAKE_C_COMPILER_LAUNCHER: ccache
       CMAKE_CXX_COMPILER_LAUNCHER: ccache
     runs-on: ubuntu-22.04
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     strategy:
       matrix:
         abi: [ arm64-v8a ]
