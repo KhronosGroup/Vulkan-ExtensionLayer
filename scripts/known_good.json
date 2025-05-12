@@ -9,7 +9,7 @@
             "cmake_options": [
                 "-DVULKAN_HEADERS_ENABLE_MODULE=OFF"
             ],
-            "commit": "v1.4.313"
+            "commit": "v1.4.315"
         },
         {
             "name": "Vulkan-Utility-Libraries",
@@ -17,7 +17,7 @@
             "sub_dir": "Vulkan-Utility-Libraries",
             "build_dir": "Vulkan-Utility-Libraries/build",
             "install_dir": "Vulkan-Utility-Libraries/build/install",
-            "commit": "v1.4.313",
+            "commit": "v1.4.315",
             "deps": [
                 {
                     "var_name": "VULKAN_HEADERS_INSTALL_DIR",
@@ -92,7 +92,7 @@
             "cmake_options": [
                 "-DVOLK_INSTALL=ON"
             ],
-            "commit": "43c29e655cb8117fd9cfb65ad9cefe2d40965102",
+            "commit": "02ffc36f3c7f8a744e741127eda7ccbdb5c622e6",
             "optional": [
                 "tests"
             ],
