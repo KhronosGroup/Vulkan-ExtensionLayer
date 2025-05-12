@@ -395,6 +395,8 @@ static void fill_device_vtable(struct vulkan_vtable *vtable, VkDevice device,
 #define ENTRY_POINT(name) vtable->name = (PFN_vk##name) get_proc_addr(device, "vk"#name);
     ENTRY_POINTS
 #undef ENTRY_POINT
+    // Fixup the GetDeviceProcAddr as otherwise we replace our own GDPA with the GDPA of the next layer
+    vtable->GetDeviceProcAddr = get_proc_addr;
 }
 
 /**/
