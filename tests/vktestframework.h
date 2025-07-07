@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2023 The Khronos Group Inc.
- * Copyright (c) 2015-2023 Valve Corporation
- * Copyright (c) 2015-2023 LunarG, Inc.
+ * Copyright (c) 2015-2025 The Khronos Group Inc.
+ * Copyright (c) 2015-2025 Valve Corporation
+ * Copyright (c) 2015-2025 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,15 @@
  *
  * Author: Courtney Goeltzenleuchter <courtney@LunarG.com>
  * Author: Tony Barbour <tony@LunarG.com>
+ * Author: Charles Giessen <charles@LunarG.com>
  */
 
 #pragma once
+
+// SPVRemapper.h includes spirv.hpp11 which uses "None" in the enum class SamplerAddressingMode. Need to undefine the macro so
+#ifdef VK_USE_PLATFORM_XLIB_KHR
+#undef None
+#endif
 
 #include "glslang/SPIRV/GlslangToSpv.h"
 #include "glslang/SPIRV/SPVRemapper.h"
