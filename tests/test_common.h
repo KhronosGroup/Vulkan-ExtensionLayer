@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2023 The Khronos Group Inc.
- * Copyright (c) 2015-2023 Valve Corporation
- * Copyright (c) 2015-2023 LunarG, Inc.
+ * Copyright (c) 2015-2025 The Khronos Group Inc.
+ * Copyright (c) 2015-2025 Valve Corporation
+ * Copyright (c) 2015-2025 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
  * Author: Mike Stroyan <mike@LunarG.com>
  * Author: Tobin Ehlis <tobine@google.com>
  * Author: Tony Barbour <tony@LunarG.com>
+ * Author: Charles Giessen <charles@LunarG.com>
  */
 
 #pragma once
@@ -59,12 +60,7 @@
 #undef Bool
 #endif
 
-// Use the NDK's header on Android
-#ifndef __ANDROID__
-#include "gtest/gtest.h"
-#else
-#include "gtest/gtest.h"
-#endif
+#include <gtest/gtest.h>
 
 // Redefine Xlib definitions
 #ifdef VK_USE_PLATFORM_XLIB_KHR
@@ -204,4 +200,3 @@ static void test_platform_thread_cond_broadcast(test_platform_thread_cond *pCond
 // files with "WIN32" in it, as a quick way to find files that must be changed.
 
 #endif  // defined(_WIN32)
-
