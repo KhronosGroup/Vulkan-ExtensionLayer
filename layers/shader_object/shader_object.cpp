@@ -878,11 +878,11 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
         viewport_chain->pNext = reinterpret_cast<VkBaseOutStructure*>(&depth_clip_control_state);
         viewport_chain = viewport_chain->pNext;
     }
-    if (device_data.enabled_extensions & NV_CLIP_SPACE_W_SCALING) {
+    if (device_data.enabled_extensions & NV_CLIP_SPACE_W_SCALING && viewport_w_scaling_state.viewportCount > 0) {
         viewport_chain->pNext = reinterpret_cast<VkBaseOutStructure*>(&viewport_w_scaling_state);
         viewport_chain = viewport_chain->pNext;
     }
-    if (device_data.enabled_extensions & NV_VIEWPORT_SWIZZLE) {
+    if (device_data.enabled_extensions & NV_VIEWPORT_SWIZZLE && viewport_w_scaling_state.viewportCount > 0) {
         viewport_chain->pNext = reinterpret_cast<VkBaseOutStructure*>(&viewport_swizzle_state);
         viewport_chain = viewport_chain->pNext;
     }
@@ -1523,6 +1523,13 @@ static VkResult PopulateCachesForShaders(DeviceData const& deviceData, VkAllocat
             Shader* pre_rasterization_shaders[4]; // vertex + tesc + tese + geom or task + mesh
             Shader* vertex_or_mesh_shader = nullptr;
             Shader* fragment_shader = nullptr;
+            uint32_t tess_shaders = 0;
+            for (uint32_t i = 0; i < shaderCount; ++i) {
+                auto shader = *reinterpret_cast<Shader**>(&pShaders[i]);
+                if (shader->stage == VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT || shader->stage == VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT) {
+                    ++tess_shaders;
+                }
+            }
             for (uint32_t i = 0; i < shaderCount; ++i) {
                 auto shader = *reinterpret_cast<Shader**>(&pShaders[i]);
                 switch (shader->stage) {
@@ -1531,11 +1538,16 @@ static VkResult PopulateCachesForShaders(DeviceData const& deviceData, VkAllocat
                         vertex_or_mesh_shader = shader;
                         // fall-through
                     case VK_SHADER_STAGE_TASK_BIT_EXT:
-                    case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
-                    case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
                     case VK_SHADER_STAGE_GEOMETRY_BIT:
                         pre_rasterization_shaders[pre_rasterization_shader_count] = shader;
                         ++pre_rasterization_shader_count;
+                        break;
+                    case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
+                    case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
+                        if (tess_shaders == 2) {
+                            pre_rasterization_shaders[pre_rasterization_shader_count] = shader;
+                            ++pre_rasterization_shader_count;
+                        }
                         break;
                     case VK_SHADER_STAGE_FRAGMENT_BIT:
                         fragment_shader = shader;
