@@ -26,7 +26,6 @@ endif()
 target_sources(VkLayer_khronos_synchronization2 PRIVATE
     synchronization2.cpp
     synchronization2.h
-)
 
 
 if(IOS)
