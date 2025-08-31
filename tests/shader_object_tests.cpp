@@ -157,6 +157,9 @@ TEST_F(ShaderObjectTest, VertFragShader) {
     for (uint32_t i = 0; i < 2; ++i) {
         createInfos[i] = vku::InitStructHelper();
         createInfos[i].stage = shaderStages[i];
+        if (i == 0) {
+            createInfos[i].nextStage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        }
         createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
         createInfos[i].codeSize = spv[i].size() * sizeof(unsigned int);
         createInfos[i].pCode = spv[i].data();
@@ -521,6 +524,9 @@ TEST_F(ShaderObjectTest, AllShadersDraw) {
     for (uint32_t i = 0; i < 5; ++i) {
         createInfos[i] = vku::InitStructHelper();
         createInfos[i].stage = shaderStages[i];
+        if (i < 4) {
+            createInfos[i].nextStage = shaderStages[i + 1];
+        }
         createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
         createInfos[i].codeSize = spv[i].size() * sizeof(unsigned int);
         createInfos[i].pCode = spv[i].data();
@@ -700,6 +706,9 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
     for (uint32_t i = 0; i < 5; ++i) {
         createInfos[i] = vku::InitStructHelper();
         createInfos[i].stage = shaderStages[i];
+        if (i < 4) {
+            createInfos[i].nextStage = shaderStages[i + 1];
+        }
         createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
         createInfos[i].codeSize = spv[i].size() * sizeof(unsigned int);
         createInfos[i].pCode = spv[i].data();
@@ -719,6 +728,9 @@ TEST_F(ShaderObjectTest, AllShadersDrawBinary) {
 
         binaryCreateInfos[i] = vku::InitStructHelper();
         binaryCreateInfos[i].stage = shaderStages[i];
+        if (i < 4) {
+            binaryCreateInfos[i].nextStage = shaderStages[i + 1];
+        }
         binaryCreateInfos[i].codeType = VK_SHADER_CODE_TYPE_BINARY_EXT;
         binaryCreateInfos[i].codeSize = dataSize[i];
         binaryCreateInfos[i].pCode = binaryData[i].data();
@@ -996,6 +1008,9 @@ TEST_F(ShaderObjectTest, TaskMeshShadersDraw) {
     for (uint32_t i = 0; i < 3; ++i) {
         createInfos[i] = vku::InitStructHelper();
         createInfos[i].stage = shaderStages[i];
+        if (i < 2) {
+            createInfos[i].nextStage = shaderStages[i + 1];
+        }
         createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
         createInfos[i].codeSize = spv[i].size() * sizeof(unsigned int);
         createInfos[i].pCode = spv[i].data();
@@ -1223,7 +1238,7 @@ TEST_F(ShaderObjectTest, UnusedAttachments) {
         GTEST_SKIP() << "VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME not supported";
     }
     m_device_extension_names.push_back(VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME);
-    if (!CheckShaderObjectSupportAndInitState()) {
+    if (!CheckShaderObjectSupportAndInitState(false)) {
         GTEST_SKIP() << kSkipPrefix << " shader object or dynamic rendering unused attachments not supported, skipping test";
     }
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
@@ -1261,6 +1276,9 @@ TEST_F(ShaderObjectTest, UnusedAttachments) {
     for (uint32_t i = 0; i < 2; ++i) {
         createInfos[i] = vku::InitStructHelper();
         createInfos[i].stage = shaderStages[i];
+        if (i == 0) {
+            createInfos[i].nextStage = shaderStages[i + 1];
+        }
         createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
         createInfos[i].codeSize = spv[i].size() * sizeof(unsigned int);
         createInfos[i].pCode = spv[i].data();
@@ -1359,9 +1377,9 @@ TEST_F(ShaderObjectTest, UnusedAttachments) {
         vkCmdBindShadersEXT(m_commandBuffer->handle(), 1u, &unusedShader, &null_shader);
     }
     BindDefaultDynamicStates(vertexBuffer.handle(), false);
-    {
+    for (uint32_t i = 0; i < 3; ++i) {
         VkBool32 colorBlendEnable = VK_FALSE;
-        vkCmdSetColorBlendEnableEXT(m_commandBuffer->handle(), 1u, 1u, &colorBlendEnable);
+        vkCmdSetColorBlendEnableEXT(m_commandBuffer->handle(), i, 1u, &colorBlendEnable);
         VkColorBlendEquationEXT colorBlendEquation = {
             VK_BLEND_FACTOR_ONE,  // VkBlendFactor	srcColorBlendFactor;
             VK_BLEND_FACTOR_ONE,  // VkBlendFactor	dstColorBlendFactor;
@@ -1370,10 +1388,10 @@ TEST_F(ShaderObjectTest, UnusedAttachments) {
             VK_BLEND_FACTOR_ONE,  // VkBlendFactor	dstAlphaBlendFactor;
             VK_BLEND_OP_ADD,      // VkBlendOp		alphaBlendOp;
         };
-        vkCmdSetColorBlendEquationEXT(m_commandBuffer->handle(), 1u, 1u, &colorBlendEquation);
+        vkCmdSetColorBlendEquationEXT(m_commandBuffer->handle(), i, 1u, &colorBlendEquation);
         VkColorComponentFlags colorWriteMask =
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        vkCmdSetColorWriteMaskEXT(m_commandBuffer->handle(), 1u, 1u, &colorWriteMask);
+        vkCmdSetColorWriteMaskEXT(m_commandBuffer->handle(), i, 1u, &colorWriteMask);
     }
     vkCmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
     vkCmdEndRenderingKHR(m_commandBuffer->handle());
@@ -1389,6 +1407,7 @@ TEST_F(ShaderObjectTest, UnusedAttachments) {
     vkCmdEndRenderingKHR(m_commandBuffer->handle());
 
     begin_rendering_info.colorAttachmentCount = 3u;
+    color_attachments[1].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     color_attachments[1].imageView = view2;
     vkCmdBeginRenderingKHR(m_commandBuffer->handle(), &begin_rendering_info);
     vkCmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
