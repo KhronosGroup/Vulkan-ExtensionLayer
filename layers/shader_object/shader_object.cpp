@@ -426,9 +426,6 @@ void Shader::Destroy(DeviceData const& device_data, Shader* pShader, VkAllocatio
     auto  device = device_data.device;
     auto& vtable = device_data.vtable;
 
-    if (pShader->shader_module != VK_NULL_HANDLE) {
-        vtable.DestroyShaderModule(device, pShader->shader_module, &allocator);
-    }
     if (pShader->pristine_cache != VK_NULL_HANDLE) {
         vtable.DestroyPipelineCache(device, pShader->pristine_cache, nullptr);
     }
@@ -450,6 +447,10 @@ void Shader::Destroy(DeviceData const& device_data, Shader* pShader, VkAllocatio
         vtable.DestroyPipeline(device, pair.value, nullptr);
     }
     pipelines.Clear();
+    if (pShader->shader_module != VK_NULL_HANDLE) {
+        vtable.DestroyShaderModule(device, pShader->shader_module, &allocator);
+    }
+
     pShader->private_data.Clear();
     pShader->~Shader();
 
