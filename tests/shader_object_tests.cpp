@@ -275,7 +275,8 @@ TEST_F(ShaderObjectTest, VertFragShader) {
     vkMapMemory(m_device->handle(), buffer.memory().handle(), 0u, sizeof(float) * 4u, 0u, (void**)&data);
     float e = 0.01f;
     for (uint32_t i = 0; i < 4; ++i) {
-        if (std::fabs(data[i] - 0.2f + i * 0.2f) > e) {
+        float expected = 0.2f + i * 0.2f;
+        if (std::fabs(data[i] - expected) > e) {
             std::string msg = "Wrong pixel value " + std::to_string(data[i]) + ", expected " + std::to_string(0.2f + i * 0.2f);
             m_errorMonitor->SetError(msg.c_str());
         }
@@ -1443,13 +1444,15 @@ TEST_F(ShaderObjectTest, UnusedAttachments) {
 
     float e = 0.01f;
     for (uint32_t i = 0; i < 4; ++i) {
-        if (std::fabs(data1[i] - 0.2f + i * 0.2f) > e) {
+        float expected = 0.2f + i * 0.2f;
+        if (std::fabs(data1[i] - expected) > e) {
             std::string msg = "Wrong pixel value " + std::to_string(data1[i]) + ", expected " + std::to_string(0.2f + i * 0.2f);
             m_errorMonitor->SetError(msg.c_str());
         }
     }
     for (uint32_t i = 0; i < 4; ++i) {
-        if (std::fabs(data2[i] - 0.2f + i * 0.2f) > e) {
+        float expected = 0.2f + i * 0.2f;
+        if (std::fabs(data2[i] - expected) > e) {
             std::string msg = "Wrong pixel value " + std::to_string(data2[i]) + ", expected " + std::to_string(0.2f + i * 0.2f);
             m_errorMonitor->SetError(msg.c_str());
         }
