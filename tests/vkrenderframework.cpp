@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015-2022 The Khronos Group Inc.
- * Copyright (c) 2015-2023 Valve Corporation
- * Copyright (c) 2015-2023 LunarG, Inc.
+ * Copyright (c) 2015-2025 Valve Corporation
+ * Copyright (c) 2015-2025 LunarG, Inc.
  * Copyright (c) 2015-2022 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1205,6 +1205,9 @@ void VkImageObj::SetLayout(VkCommandBufferObj *cmd_buf, VkImageAspectFlags aspec
 
     const VkFlags shader_read_inputs = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_MEMORY_READ_BIT;
 
+    VkPipelineStageFlags src_stages = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+    VkPipelineStageFlags dst_stages = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+
     if (image_layout == m_descriptorImageInfo.imageLayout) {
         return;
     }
@@ -1228,6 +1231,7 @@ void VkImageObj::SetLayout(VkCommandBufferObj *cmd_buf, VkImageAspectFlags aspec
             break;
         default:
             src_mask = all_cache_outputs;  // Only need to worry about writes, as the stage mask will protect reads
+            src_stages |= VK_PIPELINE_STAGE_HOST_BIT;
     }
 
     // Narrow the dst mask by the valid accesss for the new layout
@@ -1256,10 +1260,11 @@ void VkImageObj::SetLayout(VkCommandBufferObj *cmd_buf, VkImageAspectFlags aspec
         default:
             // Must wait all read and write operations for the completion of the layout tranisition
             dst_mask = all_cache_inputs | all_cache_outputs;
+            dst_stages |= VK_PIPELINE_STAGE_HOST_BIT;
             break;
     }
 
-    ImageMemoryBarrier(cmd_buf, aspect, src_mask, dst_mask, image_layout);
+    ImageMemoryBarrier(cmd_buf, aspect, src_mask, dst_mask, image_layout, src_stages, dst_stages);
     m_descriptorImageInfo.imageLayout = image_layout;
 }
 
