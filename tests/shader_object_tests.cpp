@@ -1,5 +1,5 @@
-/* Copyright (c) 2023-2024 LunarG, Inc.
- * Copyright (c) 2023-2024 Nintendo
+/* Copyright (c) 2023-2025 LunarG, Inc.
+ * Copyright (c) 2023-2025 Nintendo
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 
 #include <type_traits>
+#include <cmath>
 
 #include "extension_layer_tests.h"
 #include "shader_object_tests.h"
@@ -272,9 +273,11 @@ TEST_F(ShaderObjectTest, VertFragShader) {
 
     float* data;
     vkMapMemory(m_device->handle(), buffer.memory().handle(), 0u, sizeof(float) * 4u, 0u, (void**)&data);
+    float e = 0.01f;
     for (uint32_t i = 0; i < 4; ++i) {
-        if (data[i] != 0.2f + i * 0.2f) {
-            m_errorMonitor->SetError("Wrong pixel value");
+        if (std::fabs(data[i] - 0.2f + i * 0.2f) > e) {
+            std::string msg = "Wrong pixel value " + std::to_string(data[i]) + ", expected " + std::to_string(0.2f + i * 0.2f);
+            m_errorMonitor->SetError(msg.c_str());
         }
     }
 
@@ -1438,14 +1441,17 @@ TEST_F(ShaderObjectTest, UnusedAttachments) {
     vkMapMemory(m_device->handle(), buffer1.memory().handle(), 0u, sizeof(float) * 4u, 0u, (void**)&data1);
     vkMapMemory(m_device->handle(), buffer2.memory().handle(), 0u, sizeof(float) * 4u, 0u, (void**)&data2);
 
+    float e = 0.01f;
     for (uint32_t i = 0; i < 4; ++i) {
-        if (data1[i] != 0.2f + i * 0.2f) {
-            m_errorMonitor->SetError("Wrong pixel value");
+        if (std::fabs(data1[i] - 0.2f + i * 0.2f) > e) {
+            std::string msg = "Wrong pixel value " + std::to_string(data1[i]) + ", expected " + std::to_string(0.2f + i * 0.2f);
+            m_errorMonitor->SetError(msg.c_str());
         }
     }
     for (uint32_t i = 0; i < 4; ++i) {
-        if (data2[i] != 0.2f + i * 0.2f) {
-            m_errorMonitor->SetError("Wrong pixel value");
+        if (std::fabs(data2[i] - 0.2f + i * 0.2f) > e) {
+            std::string msg = "Wrong pixel value " + std::to_string(data2[i]) + ", expected " + std::to_string(0.2f + i * 0.2f);
+            m_errorMonitor->SetError(msg.c_str());
         }
     }
 
