@@ -304,18 +304,12 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
     static const char* setting_names[] = {kLayerSettingsForceEnable, kLayerSettingsLogging, kLayerSettingsCustomSTypeInfo};
     uint32_t setting_name_count = static_cast<uint32_t>(std::size(setting_names));
 
-    uint32_t unknown_setting_count = 0;
-    vkuGetUnknownSettings(create_info, setting_name_count, setting_names, &unknown_setting_count, nullptr);
+    std::vector<const char*> unknown_settings;
 
-    if (unknown_setting_count > 0) {
-        std::vector<const char*> unknown_settings;
-        unknown_settings.resize(unknown_setting_count);
+    vkuGetUnknownSettings(layer_setting_set, setting_name_count, setting_names, create_info, unknown_settings);
 
-        vkuGetUnknownSettings(create_info, setting_name_count, setting_names, &unknown_setting_count, &unknown_settings[0]);
-
-        for (std::size_t i = 0, n = unknown_settings.size(); i < n; ++i) {
-            LOG("Unknown %s setting listed in VkLayerSettingsCreateInfoEXT, this setting is ignored.\n", unknown_settings[i]);
-        }
+    for (std::size_t i = 0, n = unknown_settings.size(); i < n; ++i) {
+        LOG("Unknown %s setting listed in VkLayerSettingsCreateInfoEXT, this setting is ignored.\n", unknown_settings[i]);
     }
 
     if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsForceEnable)) {
