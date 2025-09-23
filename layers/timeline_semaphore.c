@@ -2180,6 +2180,8 @@ static size_t vk_device_create_info_type_size(
         return sizeof(VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES:
         return sizeof(VkPhysicalDeviceHostQueryResetFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceImageCompressionControlFeaturesEXT);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES:
         return sizeof(VkPhysicalDeviceImagelessFramebufferFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES_EXT:
@@ -2188,12 +2190,18 @@ static size_t vk_device_create_info_type_size(
         return sizeof(VkPhysicalDeviceInlineUniformBlockFeaturesEXT);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT:
         return sizeof(VkPhysicalDeviceLineRasterizationFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES_KHR:
+        return sizeof(VkPhysicalDeviceMaintenance4FeaturesKHR);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR:
+        return sizeof(VkPhysicalDeviceMaintenance5FeaturesKHR);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PRIORITY_FEATURES_EXT:
         return sizeof(VkPhysicalDeviceMemoryPriorityFeaturesEXT);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV:
         return sizeof(VkPhysicalDeviceMeshShaderFeaturesNV);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES:
         return sizeof(VkPhysicalDeviceMultiviewFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES:
+        return sizeof(VkPhysicalDevicePipelineCreationCacheControlFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR:
         return sizeof(VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES:
@@ -2216,6 +2224,8 @@ static size_t vk_device_create_info_type_size(
         return sizeof(VkPhysicalDeviceShaderDrawParametersFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES:
         return sizeof(VkPhysicalDeviceShaderFloat16Int8Features);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV:
         return sizeof(VkPhysicalDeviceShaderImageFootprintFeaturesNV);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL:
