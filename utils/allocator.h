@@ -1,5 +1,5 @@
-/* Copyright (c) 2020-2021 The Khronos Group Inc.
- * Copyright (c) 2020-2021 LunarG, Inc.
+/* Copyright (c) 2020-2025 The Khronos Group Inc.
+ * Copyright (c) 2020-2025 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,9 +49,7 @@ class Allocator {
 
     T* allocate(size_t num, const void* = 0) {
         T* result = reinterpret_cast<T*>(alloc->pfnAllocation(alloc->pUserData, num * sizeof(T), alignof(T), AllocScope));
-        if (result == nullptr) {
-            throw std::bad_alloc();
-        }
+        assert(result);
         return result;
     }
 
