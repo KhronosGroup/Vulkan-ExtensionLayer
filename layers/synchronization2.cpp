@@ -256,20 +256,17 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreat
     if (result != VK_SUCCESS) {
         return result;
     }
-    try {
+    {
         auto instance_data = std::make_shared<InstanceData>(*pInstance, gpa,
                                                             pAllocator ? pAllocator : &extension_layer::kDefaultAllocator);
 
         instance_data_map.insert(DispatchKey(*pInstance), instance_data);
-        
+
         instance_data->api_version = pCreateInfo->pApplicationInfo ? pCreateInfo->pApplicationInfo->apiVersion : 0;
 
         InitLayerSettings(pCreateInfo, pAllocator, &instance_data->layer_settings);
-    } catch (const std::bad_alloc&) {
-        auto destroy_instance = reinterpret_cast<PFN_vkDestroyInstance>(gpa(NULL, "vkDestroyInstance"));
-        destroy_instance(*pInstance, pAllocator);
-        result = VK_ERROR_OUT_OF_HOST_MEMORY;
     }
+
     return result;
 }
 
@@ -434,7 +431,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
     // Advance the link info for the next element on the chain
     chain_info->u.pLayerInfo = chain_info->u.pLayerInfo->pNext;
 
-    try {
+    {
         bool enable_layer = (features.sync2 && (!pdd->lower_has_sync2 || instance_data->layer_settings.force_enable));
         // Filter out our extension name and feature struct, in a copy of the create info.
         // Only enable device hooks if synchronization2 extension is enabled AND
@@ -456,11 +453,8 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
         auto device_data = std::make_shared<DeviceData>(*pDevice, gdpa, features, enable_layer, alloccb);
 
         device_data_map.insert(DispatchKey(*pDevice), device_data);
-    } catch (const std::bad_alloc&) {
-        auto destroy_device = reinterpret_cast<PFN_vkDestroyDevice>(gdpa(*pDevice, "vkDestroyDevice"));
-        destroy_device(*pDevice, pAllocator);
-        result = VK_ERROR_OUT_OF_HOST_MEMORY;
     }
+
     return result;
 }
 
@@ -957,29 +951,23 @@ VKAPI_ATTR void VKAPI_CALL CmdWaitEvents(VkCommandBuffer commandBuffer, uint32_t
 }
 
 VKAPI_ATTR void VKAPI_CALL CmdWaitEvents2KHR(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents,
-                       const VkDependencyInfoKHR* pDependencyInfos) {
-    try {
-        auto device_data = GetDeviceData(commandBuffer);
+                                             const VkDependencyInfoKHR* pDependencyInfos) {
+    auto device_data = GetDeviceData(commandBuffer);
 
-        DependencyInfoV1 dep_info(*device_data, eventCount, pDependencyInfos, device_data->allocator);
+    DependencyInfoV1 dep_info(*device_data, eventCount, pDependencyInfos, device_data->allocator);
 
-        // don't pass in an invalid VkMemoryBarrier
-        uint32_t mem_barrier_count = 0;
-        VkMemoryBarrier* mem_barrier = nullptr;
-        if (dep_info.barrier.srcAccessMask != 0 || dep_info.barrier.dstAccessMask != 0) {
-            mem_barrier_count = 1;
-            mem_barrier = &dep_info.barrier;
-        }
-
-        device_data->vtable.CmdWaitEvents(
-            commandBuffer, eventCount, pEvents, dep_info.src_stage_mask, dep_info.dst_stage_mask, mem_barrier_count, mem_barrier,
-            VecSize(dep_info.buffer_barriers), reinterpret_cast<VkBufferMemoryBarrier*>(dep_info.buffer_barriers.data()),
-            VecSize(dep_info.image_barriers), reinterpret_cast<VkImageMemoryBarrier*>(dep_info.image_barriers.data()));
-    } catch (const std::bad_alloc& e) {
-        // We don't have a way to return an error here.
-        LOG("bad_alloc: %s\n", e.what());
-        return;
+    // don't pass in an invalid VkMemoryBarrier
+    uint32_t mem_barrier_count = 0;
+    VkMemoryBarrier* mem_barrier = nullptr;
+    if (dep_info.barrier.srcAccessMask != 0 || dep_info.barrier.dstAccessMask != 0) {
+        mem_barrier_count = 1;
+        mem_barrier = &dep_info.barrier;
     }
+
+    device_data->vtable.CmdWaitEvents(
+        commandBuffer, eventCount, pEvents, dep_info.src_stage_mask, dep_info.dst_stage_mask, mem_barrier_count, mem_barrier,
+        VecSize(dep_info.buffer_barriers), reinterpret_cast<VkBufferMemoryBarrier*>(dep_info.buffer_barriers.data()),
+        VecSize(dep_info.image_barriers), reinterpret_cast<VkImageMemoryBarrier*>(dep_info.image_barriers.data()));
 }
 
 VKAPI_ATTR void VKAPI_CALL CmdPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask,
@@ -996,24 +984,19 @@ VKAPI_ATTR void VKAPI_CALL CmdPipelineBarrier(VkCommandBuffer commandBuffer, VkP
 }
 
 VKAPI_ATTR void VKAPI_CALL CmdPipelineBarrier2KHR(VkCommandBuffer commandBuffer, const VkDependencyInfoKHR* dependencyInfo) {
-    try {
-        auto device_data = GetDeviceData(commandBuffer);
+    auto device_data = GetDeviceData(commandBuffer);
 
-        DependencyInfoV1 dep_info(*device_data, 1, dependencyInfo, device_data->allocator);
-        uint32_t mem_barrier_count = 0;
-        VkMemoryBarrier* mem_barrier = nullptr;
-        if (dep_info.barrier.srcAccessMask != 0 || dep_info.barrier.dstAccessMask != 0) {
-            mem_barrier_count = 1;
-            mem_barrier = &dep_info.barrier;
-        }
-        device_data->vtable.CmdPipelineBarrier(commandBuffer, dep_info.src_stage_mask, dep_info.dst_stage_mask, dep_info.flags,
-                                               mem_barrier_count, mem_barrier, VecSize(dep_info.buffer_barriers),
-                                               dep_info.buffer_barriers.data(), VecSize(dep_info.image_barriers),
-                                               dep_info.image_barriers.data());
-    } catch (const std::bad_alloc& e) {
-        LOG("bad_alloc: %s\n", e.what());
-        return;
+    DependencyInfoV1 dep_info(*device_data, 1, dependencyInfo, device_data->allocator);
+    uint32_t mem_barrier_count = 0;
+    VkMemoryBarrier* mem_barrier = nullptr;
+    if (dep_info.barrier.srcAccessMask != 0 || dep_info.barrier.dstAccessMask != 0) {
+        mem_barrier_count = 1;
+        mem_barrier = &dep_info.barrier;
     }
+    device_data->vtable.CmdPipelineBarrier(commandBuffer, dep_info.src_stage_mask, dep_info.dst_stage_mask, dep_info.flags,
+                                           mem_barrier_count, mem_barrier, VecSize(dep_info.buffer_barriers),
+                                           dep_info.buffer_barriers.data(), VecSize(dep_info.image_barriers),
+                                           dep_info.image_barriers.data());
 }
 
 VKAPI_ATTR void VKAPI_CALL CmdWriteTimestamp(VkCommandBuffer commandBuffer, VkPipelineStageFlagBits pipelineStage, VkQueryPool queryPool,
@@ -1173,11 +1156,10 @@ SubmitData::SubmitData(const VkSubmitInfo2KHR& v2, const VkAllocationCallbacks* 
 
 VKAPI_ATTR VkResult VKAPI_CALL QueueSubmit2KHR(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2KHR* pSubmits, VkFence fence) {
     VkResult ret;
-    try {
-        auto device_data = GetDeviceData(queue);
-        if (submitCount == 0 || pSubmits == nullptr) {
-            return device_data->vtable.QueueSubmit(queue, 0, nullptr, fence);
-        }
+    auto device_data = GetDeviceData(queue);
+    if (submitCount == 0 || pSubmits == nullptr) {
+        return device_data->vtable.QueueSubmit(queue, 0, nullptr, fence);
+    }
 
         CmdVector<SubmitData> submit_data_vec(extension_layer::CmdAlloc<SubmitData>(device_data->allocator));
         CmdVector<VkSubmitInfo> submit_infos(extension_layer::CmdAlloc<VkSubmitInfo>(device_data->allocator));
@@ -1190,10 +1172,7 @@ VKAPI_ATTR VkResult VKAPI_CALL QueueSubmit2KHR(VkQueue queue, uint32_t submitCou
         }
 
         ret = device_data->vtable.QueueSubmit(queue, VecSize(submit_infos), submit_infos.data(), fence);
-    } catch (const std::bad_alloc&) {
-        ret = VK_ERROR_OUT_OF_HOST_MEMORY;
-    }
-    return ret;
+        return ret;
 }
 
 SubmitData::SubmitData(const VkSubmitInfo& orig, const VkAllocationCallbacks* alloc, const DeviceFeatures &features)
@@ -1230,11 +1209,10 @@ SubmitData::SubmitData(const VkSubmitInfo& orig, const VkAllocationCallbacks* al
 
 VKAPI_ATTR VkResult VKAPI_CALL QueueSubmit(VkQueue queue, uint32_t submitCount, const VkSubmitInfo* pSubmits, VkFence fence) {
     VkResult ret;
-    try {
-        auto device_data = GetDeviceData(queue);
-        if (submitCount == 0 || pSubmits == nullptr) {
-            return device_data->vtable.QueueSubmit(queue, 0, nullptr, fence);
-        }
+    auto device_data = GetDeviceData(queue);
+    if (submitCount == 0 || pSubmits == nullptr) {
+        return device_data->vtable.QueueSubmit(queue, 0, nullptr, fence);
+    }
 
         CmdVector<SubmitData> submit_data_vec(extension_layer::CmdAlloc<SubmitData>(device_data->allocator));
         CmdVector<VkSubmitInfo> submit_infos(extension_layer::CmdAlloc<VkSubmitInfo>(device_data->allocator));
@@ -1247,9 +1225,7 @@ VKAPI_ATTR VkResult VKAPI_CALL QueueSubmit(VkQueue queue, uint32_t submitCount, 
         }
 
         ret = device_data->vtable.QueueSubmit(queue, VecSize(submit_infos), submit_infos.data(), fence);
-    } catch (const std::bad_alloc&) {
-        ret = VK_ERROR_OUT_OF_HOST_MEMORY;
-    }
+
     return ret;
 }
 
@@ -1263,34 +1239,30 @@ VKAPI_ATTR void VKAPI_CALL CmdWriteBufferMarker2AMD(VkCommandBuffer commandBuffe
     }
 }
 
-VKAPI_ATTR void VKAPI_CALL GetQueueCheckpointData2NV(VkQueue queue, uint32_t* pCheckpointDataCount, VkCheckpointData2NV* pCheckpointData2) {
-    try {
-        auto device_data = GetDeviceData(queue);
-        if (device_data->vtable.GetQueueCheckpointDataNV == nullptr) {
-            return;
+VKAPI_ATTR void VKAPI_CALL GetQueueCheckpointData2NV(VkQueue queue, uint32_t* pCheckpointDataCount,
+                                                     VkCheckpointData2NV* pCheckpointData2) {
+    auto device_data = GetDeviceData(queue);
+    if (device_data->vtable.GetQueueCheckpointDataNV == nullptr) {
+        return;
+    }
+
+    CmdVector<VkCheckpointDataNV> checkpoint_data(extension_layer::CmdAlloc<VkCheckpointDataNV>(device_data->allocator));
+
+    if (pCheckpointData2 != nullptr) {
+        checkpoint_data.reserve(*pCheckpointDataCount);
+        for (uint32_t i = 0; i < *pCheckpointDataCount; ++i) {
+            checkpoint_data[i].sType = VK_STRUCTURE_TYPE_CHECKPOINT_DATA_NV;
+            checkpoint_data[i].pNext = pCheckpointData2[i].pNext;
         }
+    }
 
-        CmdVector<VkCheckpointDataNV> checkpoint_data(extension_layer::CmdAlloc<VkCheckpointDataNV>(device_data->allocator));
+    device_data->vtable.GetQueueCheckpointDataNV(queue, pCheckpointDataCount, checkpoint_data.data());
 
-        if (pCheckpointData2 != nullptr) {
-            checkpoint_data.reserve(*pCheckpointDataCount);
-            for (uint32_t i = 0; i < *pCheckpointDataCount; ++i) {
-                checkpoint_data[i].sType = VK_STRUCTURE_TYPE_CHECKPOINT_DATA_NV;
-                checkpoint_data[i].pNext = pCheckpointData2[i].pNext;
-            }
+    if (pCheckpointData2 != nullptr) {
+        for (uint32_t i = 0; i < *pCheckpointDataCount; ++i) {
+            pCheckpointData2[i].stage = checkpoint_data[i].stage;
+            pCheckpointData2[i].pCheckpointMarker = checkpoint_data[i].pCheckpointMarker;
         }
-
-        device_data->vtable.GetQueueCheckpointDataNV(queue, pCheckpointDataCount, checkpoint_data.data());
-
-        if (pCheckpointData2 != nullptr) {
-            for (uint32_t i = 0; i < *pCheckpointDataCount; ++i) {
-                pCheckpointData2[i].stage = checkpoint_data[i].stage;
-                pCheckpointData2[i].pCheckpointMarker = checkpoint_data[i].pCheckpointMarker;
-            }
-        }
-    } catch (const std::bad_alloc& e) {
-        // We don't have a way to return an error here.
-        LOG("bad_alloc: %s\n", e.what());
     }
 }
 
@@ -1317,71 +1289,67 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateRenderPass2(VkDevice device, const VkRender
     extension_layer::CmdAlloc<VkSubpassDependency2> a2(allocator);
     CmdVector<VkSubpassDependency2> dependency_vec(a2);
 
-    try {
-        if (pCreateInfo->attachmentCount > 0) {
-            attachment_vec.reserve(pCreateInfo->attachmentCount);
+    if (pCreateInfo->attachmentCount > 0) {
+        attachment_vec.reserve(pCreateInfo->attachmentCount);
 
-            for (uint32_t i = 0; i < pCreateInfo->attachmentCount; i++) {
-                // pNext is shallow copied here.
-                VkAttachmentDescription2 attachment = pCreateInfo->pAttachments[i];
+        for (uint32_t i = 0; i < pCreateInfo->attachmentCount; i++) {
+            // pNext is shallow copied here.
+            VkAttachmentDescription2 attachment = pCreateInfo->pAttachments[i];
 
-                ImageAspect aspect = ImageAspectFromFormat(attachment.format);
-                if (aspect == kDepthAndStencil) {
-                    auto chain = const_cast<VkBaseInStructure*>(reinterpret_cast<const VkBaseInStructure*>(attachment.pNext));
-                    while (chain != nullptr) {
-                        if (chain->sType == VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT_KHR) {
-                            auto stencil_layout = reinterpret_cast<VkAttachmentDescriptionStencilLayoutKHR*>(chain);
-                            stencil_layout->stencilInitialLayout =
-                                ImageLayoutFromAspect(stencil_layout->stencilInitialLayout, kStencilOnly, 0);
-                            stencil_layout->stencilFinalLayout =
-                                ImageLayoutFromAspect(stencil_layout->stencilFinalLayout, kStencilOnly, 0);
-                            aspect = kDepthOnly;
-                            break;
-                        }
-                        chain = const_cast<VkBaseInStructure*>(chain->pNext);
-                    }
-                }
-                attachment.initialLayout = ImageLayoutFromAspect(attachment.initialLayout, aspect, 0);
-                attachment.finalLayout = ImageLayoutFromAspect(attachment.finalLayout, aspect, 0);
-
-                attachment_vec.emplace_back(std::move(attachment));
-            }
-            create_info.attachmentCount = VecSize(attachment_vec);
-            create_info.pAttachments = attachment_vec.data();
-        }
-
-        if (pCreateInfo->dependencyCount > 0) {
-            dependency_vec.reserve(pCreateInfo->dependencyCount);
-            const auto& features = device_data->features;
-            for (uint32_t i = 0; i < pCreateInfo->dependencyCount; i++) {
-                VkSubpassDependency2 dependency = pCreateInfo->pDependencies[i];
-                // so far, the only extension struct for this type is VkMemoryBarrier2KHR
-                auto chain = const_cast<VkBaseInStructure*>(reinterpret_cast<const VkBaseInStructure*>(dependency.pNext));
+            ImageAspect aspect = ImageAspectFromFormat(attachment.format);
+            if (aspect == kDepthAndStencil) {
+                auto chain = const_cast<VkBaseInStructure*>(reinterpret_cast<const VkBaseInStructure*>(attachment.pNext));
                 while (chain != nullptr) {
-                    if (chain->sType == VK_STRUCTURE_TYPE_MEMORY_BARRIER_2_KHR) {
-                        auto barrier = reinterpret_cast<VkMemoryBarrier2KHR*>(chain);
-                        dependency.srcStageMask = ConvertPipelineStageMask(barrier->srcStageMask, kFirst, features);
-                        dependency.dstStageMask = ConvertPipelineStageMask(barrier->dstStageMask, kSecond, features);
-                        dependency.srcAccessMask = ConvertAccessMask(barrier->srcAccessMask, barrier->srcStageMask, features);
-                        dependency.dstAccessMask = ConvertAccessMask(barrier->dstAccessMask, barrier->dstStageMask, features);
+                    if (chain->sType == VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT_KHR) {
+                        auto stencil_layout = reinterpret_cast<VkAttachmentDescriptionStencilLayoutKHR*>(chain);
+                        stencil_layout->stencilInitialLayout =
+                            ImageLayoutFromAspect(stencil_layout->stencilInitialLayout, kStencilOnly, 0);
+                        stencil_layout->stencilFinalLayout =
+                            ImageLayoutFromAspect(stencil_layout->stencilFinalLayout, kStencilOnly, 0);
+                        aspect = kDepthOnly;
+                        break;
                     }
                     chain = const_cast<VkBaseInStructure*>(chain->pNext);
                 }
-                dependency.pNext = nullptr;
-
-                if (dependency.srcStageMask == 0) {
-                    dependency.srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-                }
-                if (dependency.dstStageMask == 0) {
-                    dependency.dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-                }
-                dependency_vec.emplace_back(std::move(dependency));
             }
-            create_info.dependencyCount = VecSize(dependency_vec);
-            create_info.pDependencies = dependency_vec.data();
+            attachment.initialLayout = ImageLayoutFromAspect(attachment.initialLayout, aspect, 0);
+            attachment.finalLayout = ImageLayoutFromAspect(attachment.finalLayout, aspect, 0);
+
+            attachment_vec.emplace_back(std::move(attachment));
         }
-    } catch (std::bad_alloc&) {
-        return VK_ERROR_OUT_OF_HOST_MEMORY;
+        create_info.attachmentCount = VecSize(attachment_vec);
+        create_info.pAttachments = attachment_vec.data();
+    }
+
+    if (pCreateInfo->dependencyCount > 0) {
+        dependency_vec.reserve(pCreateInfo->dependencyCount);
+        const auto& features = device_data->features;
+        for (uint32_t i = 0; i < pCreateInfo->dependencyCount; i++) {
+            VkSubpassDependency2 dependency = pCreateInfo->pDependencies[i];
+            // so far, the only extension struct for this type is VkMemoryBarrier2KHR
+            auto chain = const_cast<VkBaseInStructure*>(reinterpret_cast<const VkBaseInStructure*>(dependency.pNext));
+            while (chain != nullptr) {
+                if (chain->sType == VK_STRUCTURE_TYPE_MEMORY_BARRIER_2_KHR) {
+                    auto barrier = reinterpret_cast<VkMemoryBarrier2KHR*>(chain);
+                    dependency.srcStageMask = ConvertPipelineStageMask(barrier->srcStageMask, kFirst, features);
+                    dependency.dstStageMask = ConvertPipelineStageMask(barrier->dstStageMask, kSecond, features);
+                    dependency.srcAccessMask = ConvertAccessMask(barrier->srcAccessMask, barrier->srcStageMask, features);
+                    dependency.dstAccessMask = ConvertAccessMask(barrier->dstAccessMask, barrier->dstStageMask, features);
+                }
+                chain = const_cast<VkBaseInStructure*>(chain->pNext);
+            }
+            dependency.pNext = nullptr;
+
+            if (dependency.srcStageMask == 0) {
+                dependency.srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            }
+            if (dependency.dstStageMask == 0) {
+                dependency.dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+            }
+            dependency_vec.emplace_back(std::move(dependency));
+        }
+        create_info.dependencyCount = VecSize(dependency_vec);
+        create_info.pDependencies = dependency_vec.data();
     }
     return device_data->vtable.CreateRenderPass2(device, &create_info, pAllocator, pRenderPass);
 }

@@ -345,7 +345,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreat
     if (result != VK_SUCCESS) {
         return result;
     }
-    try {
+    {
         auto instance_data =
             std::make_shared<InstanceData>(*pInstance, gpa, pAllocator ? pAllocator : &extension_layer::kDefaultAllocator);
 
@@ -355,10 +355,6 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo* pCreat
 
         InitLayerSettings(pCreateInfo, pAllocator, &instance_data->layer_settings);
         logging_enabled = instance_data->layer_settings.logging;
-    } catch (const std::bad_alloc&) {
-        auto destroy_instance = reinterpret_cast<PFN_vkDestroyInstance>(gpa(NULL, "vkDestroyInstance"));
-        destroy_instance(*pInstance, pAllocator);
-        result = VK_ERROR_OUT_OF_HOST_MEMORY;
     }
     return result;
 }
@@ -760,7 +756,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
     const bool computeStageSupport = (subgroupProps.supportedStages & VK_SHADER_STAGE_COMPUTE_BIT);
     const bool subgroupBasicSupport = subgroupProps.supportedOperations & VK_SUBGROUP_FEATURE_BASIC_BIT;
 
-    try {
+    {
         bool enable_layer = false;
         if (!decompressionFeature.memoryDecompression) {
             PRINT("Memory decompression feature not available in the driver, enabling decompression layer.\n");
@@ -815,10 +811,6 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, con
         }
 
         device_data_map.insert(DispatchKey(*pDevice), device_data);
-    } catch (const std::bad_alloc&) {
-        auto destroy_device = reinterpret_cast<PFN_vkDestroyDevice>(gdpa(*pDevice, "vkDestroyDevice"));
-        destroy_device(*pDevice, pAllocator);
-        result = VK_ERROR_OUT_OF_HOST_MEMORY;
     }
     return result;
 }
@@ -876,67 +868,54 @@ static VkPipelineStageFlags ConvertPipelineStageMask(VkPipelineStageFlags2KHR st
 
 VKAPI_ATTR void VKAPI_CALL CmdDecompressMemoryNV(VkCommandBuffer commandBuffer, uint32_t decompressRegionCount,
                                                  VkDecompressMemoryRegionNV const* pDecompressMemoryRegions) {
-    try {
-        auto device_data = GetDeviceData(commandBuffer);
+    auto device_data = GetDeviceData(commandBuffer);
 
-        if (device_data->vtable.CmdDecompressMemoryNV) {
-            device_data->vtable.CmdDecompressMemoryNV(commandBuffer, decompressRegionCount, pDecompressMemoryRegions);
-        } else {
-            device_data->vtable.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
-                                                device_data->pipelineDecompressSingle);
-            for (uint32_t t = 0; t < decompressRegionCount; t++) {
-                device_data->vtable.CmdPushConstants(commandBuffer, device_data->pipelineLayoutDecompressSingle,
-                                                     VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(VkDecompressMemoryRegionNV),
-                                                     (void*)&pDecompressMemoryRegions[t]);
-                device_data->vtable.CmdDispatch(commandBuffer, 1, 1, 1);
-                PRINT("Info: vkCmdDecompressMemoryNV: Using VK_LAYER_KHRONOS_memory_decompression layer\n");
-            }
+    if (device_data->vtable.CmdDecompressMemoryNV) {
+        device_data->vtable.CmdDecompressMemoryNV(commandBuffer, decompressRegionCount, pDecompressMemoryRegions);
+    } else {
+        device_data->vtable.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, device_data->pipelineDecompressSingle);
+        for (uint32_t t = 0; t < decompressRegionCount; t++) {
+            device_data->vtable.CmdPushConstants(commandBuffer, device_data->pipelineLayoutDecompressSingle,
+                                                 VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(VkDecompressMemoryRegionNV),
+                                                 (void*)&pDecompressMemoryRegions[t]);
+            device_data->vtable.CmdDispatch(commandBuffer, 1, 1, 1);
+            PRINT("Info: vkCmdDecompressMemoryNV: Using VK_LAYER_KHRONOS_memory_decompression layer\n");
         }
-    } catch (const std::bad_alloc& e) {
-        // We don't have a way to return an error here.
-        PRINT("bad_alloc: %s\n", e.what());
     }
 }
 
 VKAPI_ATTR void VKAPI_CALL CmdDecompressMemoryIndirectCountNV(VkCommandBuffer commandBuffer,
                                                               VkDeviceAddress indirectCommandsAddress,
                                                               VkDeviceAddress indirectCommandsCountAddress, uint32_t stride) {
-    try {
-        auto device_data = GetDeviceData(commandBuffer);
-        if (device_data->vtable.CmdDecompressMemoryIndirectCountNV) {
-            device_data->vtable.CmdDecompressMemoryIndirectCountNV(commandBuffer, indirectCommandsAddress,
-                                                                   indirectCommandsCountAddress, stride);
-        } else {
-            DeviceData::PushConstantDataCopy pushConstantDataCopy = {indirectCommandsCountAddress,
-                                                                     device_data->indirectDispatchBufferAddress};
-            device_data->vtable.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, device_data->pipelineCopy);
-            device_data->vtable.CmdPushConstants(commandBuffer, device_data->pipelineLayoutCopy, VK_SHADER_STAGE_COMPUTE_BIT, 0,
-                                                 sizeof(DeviceData::PushConstantDataCopy), &pushConstantDataCopy);
-            device_data->vtable.CmdDispatch(commandBuffer, 1, 1, 1);
+    auto device_data = GetDeviceData(commandBuffer);
+    if (device_data->vtable.CmdDecompressMemoryIndirectCountNV) {
+        device_data->vtable.CmdDecompressMemoryIndirectCountNV(commandBuffer, indirectCommandsAddress, indirectCommandsCountAddress,
+                                                               stride);
+    } else {
+        DeviceData::PushConstantDataCopy pushConstantDataCopy = {indirectCommandsCountAddress,
+                                                                 device_data->indirectDispatchBufferAddress};
+        device_data->vtable.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, device_data->pipelineCopy);
+        device_data->vtable.CmdPushConstants(commandBuffer, device_data->pipelineLayoutCopy, VK_SHADER_STAGE_COMPUTE_BIT, 0,
+                                             sizeof(DeviceData::PushConstantDataCopy), &pushConstantDataCopy);
+        device_data->vtable.CmdDispatch(commandBuffer, 1, 1, 1);
 
-            DeviceData::PushConstantDataDecompressMulti pushConstantData = {indirectCommandsAddress, stride};
-            {
-                VkBufferMemoryBarrier bufferBarrier = {VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
-                bufferBarrier.buffer = device_data->indirectDispatchBuffer;
-                bufferBarrier.offset = 0;
-                bufferBarrier.size = VK_WHOLE_SIZE;
-                bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                bufferBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
-                device_data->vtable.CmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                                                       VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, 0, 1, &bufferBarrier, 0, 0);
-            }
-
-            device_data->vtable.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
-                                                device_data->pipelineDecompressMulti);
-            device_data->vtable.CmdPushConstants(commandBuffer, device_data->pipelineLayoutDecompressMulti,
-                                                 VK_SHADER_STAGE_COMPUTE_BIT, 0,
-                                                 sizeof(DeviceData::PushConstantDataDecompressMulti), &pushConstantData);
-            device_data->vtable.CmdDispatchIndirect(commandBuffer, device_data->indirectDispatchBuffer, 0);
-            PRINT("Info: vkCmdDecompressMemoryIndirectCountNV: Using VK_LAYER_KHRONOS_memory_decompression layer\n");
+        DeviceData::PushConstantDataDecompressMulti pushConstantData = {indirectCommandsAddress, stride};
+        {
+            VkBufferMemoryBarrier bufferBarrier = {VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
+            bufferBarrier.buffer = device_data->indirectDispatchBuffer;
+            bufferBarrier.offset = 0;
+            bufferBarrier.size = VK_WHOLE_SIZE;
+            bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+            bufferBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+            device_data->vtable.CmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                                                   VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, 0, 1, &bufferBarrier, 0, 0);
         }
-    } catch (const std::bad_alloc& e) {
-        // We don't have a way to return an error here.
-        PRINT("bad_alloc: %s\n", e.what());
+
+        device_data->vtable.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, device_data->pipelineDecompressMulti);
+        device_data->vtable.CmdPushConstants(commandBuffer, device_data->pipelineLayoutDecompressMulti, VK_SHADER_STAGE_COMPUTE_BIT,
+                                             0, sizeof(DeviceData::PushConstantDataDecompressMulti), &pushConstantData);
+        device_data->vtable.CmdDispatchIndirect(commandBuffer, device_data->indirectDispatchBuffer, 0);
+        PRINT("Info: vkCmdDecompressMemoryIndirectCountNV: Using VK_LAYER_KHRONOS_memory_decompression layer\n");
     }
 }
 
