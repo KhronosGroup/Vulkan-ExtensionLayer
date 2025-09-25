@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2024 Valve Corporation
-# Copyright (c) 2014-2024 LunarG, Inc.
+# Copyright (c) 2014-2025 Valve Corporation
+# Copyright (c) 2014-2025 LunarG, Inc.
 # Copyright (c) 2019      Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,6 +39,20 @@ target_sources(VkLayer_khronos_shader_object PRIVATE
     shader_object/shader_object.cpp
     shader_object/generated/shader_object_full_draw_state_struct_members.cpp
 )
+
+if(NOT SHADER_OBJECT_ENABLE_EXCEPTIONS)
+    target_compile_definitions(VkLayer_khronos_shader_object PRIVATE VEL_NO_EXCEPTIONS=1)
+    if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU|Clang")
+        target_compile_options(VkLayer_khronos_shader_object PRIVATE -fno-exceptions)
+    endif()
+
+    if(MSVC)
+        target_compile_definitions(VkLayer_khronos_shader_object PRIVATE _HAS_EXCEPTIONS=0)
+        if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+            target_compile_options(VkLayer_khronos_shader_object PRIVATE -fno-exceptions)
+        endif()
+    endif()
+endif()
 
 add_library(VkLayer_khronos_memory_decompression MODULE)
 target_sources(VkLayer_khronos_memory_decompression PRIVATE

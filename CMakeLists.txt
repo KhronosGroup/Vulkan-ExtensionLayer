@@ -66,6 +66,9 @@ if (BUILD_WERROR)
     add_compile_options("$<IF:$<CXX_COMPILER_ID:MSVC>,/WX,-Werror>")
 endif()
 
+# By default the layers should always be built with exceptions disabled
+option(SHADER_OBJECT_ENABLE_EXCEPTIONS "Enable exceptions for the shader object layer" OFF)
+
 if(MSVC)
     # PDBs aren't generated on Release builds by default.
     add_compile_options("$<$<CONFIG:Release>:/Zi>")
