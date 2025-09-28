@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2024 The Khronos Group Inc.
- * Copyright (c) 2015-2024 Valve Corporation
- * Copyright (c) 2015-2024 LunarG, Inc.
+ * Copyright (c) 2015-2025 The Khronos Group Inc.
+ * Copyright (c) 2015-2025 Valve Corporation
+ * Copyright (c) 2015-2025 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 #include "vkrenderframework.h"
 
 #include "spirv/unified1/GLSL.std.450.h"
-#include "glslang/SPIRV/SPVRemapper.h"
+#include "spirv-tools/optimizer.hpp"
 
 #include <limits.h>
 #include <cmath>
@@ -787,6 +787,7 @@ bool VkTestFramework::GLSLtoSPV(VkPhysicalDeviceLimits const *const device_limit
 
     EShLanguage stage = FindLanguage(shader_type);
     glslang::TShader *shader = new glslang::TShader(stage);
+    spv_target_env target_env = SPV_ENV_UNIVERSAL_1_0;
     switch (spirv_minor_version) {
         default:
         case 0:
@@ -794,18 +795,23 @@ bool VkTestFramework::GLSLtoSPV(VkPhysicalDeviceLimits const *const device_limit
             break;
         case 1:
             shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_1);
+            target_env = SPV_ENV_UNIVERSAL_1_1;
             break;
         case 2:
             shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_2);
+            target_env = SPV_ENV_UNIVERSAL_1_2;
             break;
         case 3:
             shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
+            target_env = SPV_ENV_UNIVERSAL_1_3;
             break;
         case 4:
             shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_4);
+            target_env = SPV_ENV_UNIVERSAL_1_4;
             break;
         case 5:
             shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_5);
+            target_env = SPV_ENV_UNIVERSAL_1_5;
             break;
     }
 
@@ -851,15 +857,44 @@ bool VkTestFramework::GLSLtoSPV(VkPhysicalDeviceLimits const *const device_limit
     // Test the different modes of SPIR-V modification
     //
     if (this->m_canonicalize_spv) {
-        spv::spirvbin_t(0).remap(spirv, spv::spirvbin_t::ALL_BUT_STRIP);
+        spvtools::Optimizer opt(target_env);
+        opt.RegisterPass(spvtools::CreateCanonicalizeIdsPass());
+
+        std::vector<uint32_t> out;
+        if (!opt.Run(spirv.data(), spirv.size(), &out)) {
+            return false;
+        }
+
+        spirv.swap(out);
     }
 
     if (this->m_strip_spv) {
-        spv::spirvbin_t(0).remap(spirv, spv::spirvbin_t::STRIP);
+        spvtools::Optimizer opt(target_env);
+        opt.RegisterPass(spvtools::CreateStripDebugInfoPass());
+        opt.RegisterPass(spvtools::CreateStripNonSemanticInfoPass());
+        std::vector<uint32_t> out;
+        if (!opt.Run(spirv.data(), spirv.size(), &out)) {
+            return false;
+        }
+
+        spirv.swap(out);
     }
 
     if (this->m_do_everything_spv) {
-        spv::spirvbin_t(0).remap(spirv, spv::spirvbin_t::DO_EVERYTHING);
+        spvtools::Optimizer opt(target_env);
+        opt.RegisterPass(spvtools::CreateCanonicalizeIdsPass());
+        opt.RegisterPass(spvtools::CreateEliminateDeadFunctionsPass());
+        opt.RegisterPass(spvtools::CreateEliminateDeadMembersPass());
+        opt.RegisterSizePasses();
+        opt.RegisterPass(spvtools::CreateStripDebugInfoPass());
+        opt.RegisterPass(spvtools::CreateStripNonSemanticInfoPass());
+
+        std::vector<uint32_t> out;
+        if (opt.Run(spirv.data(), spirv.size(), &out)) {
+            return false;
+        }
+
+        spirv.swap(out);
     }
 
     delete shader;
