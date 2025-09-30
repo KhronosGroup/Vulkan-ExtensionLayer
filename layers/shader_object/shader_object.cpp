@@ -112,11 +112,15 @@ static uint64_t ChecksumFletcher64(uint32_t const* data, size_t count) {
 
 // These LayerDispatch* structs hold pointers to the next layer's version of these functions so that we can call down the chain
 
+typedef PFN_vkVoidFunction (VKAPI_PTR *PFN_vk_layerGetPhysicalDeviceProcAddr)(VkInstance instance, const char* pName);
+
 struct LayerDispatchInstance {
 #define ENTRY_POINT(name) PFN_vk##name name = nullptr;
 #define ENTRY_POINT_ALIAS(alias, canon)
     ENTRY_POINTS_INSTANCE
     ADDITIONAL_INSTANCE_FUNCTIONS
+    ENTRY_POINTS_PHYSICAL_DEVICE
+    ADDITIONAL_PHYSICAL_DEVICE_FUNCTIONS
     ENTRY_POINTS_DEVICE
     ADDITIONAL_DEVICE_FUNCTIONS
 #undef ENTRY_POINT_ALIAS
@@ -127,6 +131,8 @@ struct LayerDispatchInstance {
 #define ENTRY_POINT(name) ENTRY_POINT_ALIAS(name, name)
         ENTRY_POINTS_INSTANCE
         ADDITIONAL_INSTANCE_FUNCTIONS
+        ENTRY_POINTS_PHYSICAL_DEVICE
+        ADDITIONAL_PHYSICAL_DEVICE_FUNCTIONS
         ENTRY_POINTS_DEVICE
         ADDITIONAL_DEVICE_FUNCTIONS
 #undef ENTRY_POINT
@@ -1754,6 +1760,8 @@ void UpdateDrawState(CommandBufferData& data, VkCommandBuffer commandBuffer) {
 static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetInstanceProcAddr(VkInstance instance, const char* pName);
 
 static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetDeviceProcAddr(VkDevice device, const char* pName);
+
+static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL _layerGetPhysicalDeviceProcAddr(VkInstance instance, const char* pName);
 
 void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, LayerSettings* layer_settings) {
     assert(layer_settings != nullptr);
@@ -3415,12 +3423,13 @@ struct NameAndFunction {
 
 #define ENTRY_POINT_ALIAS(alias, canon) {"vk" #alias, (void*)shader_object::canon},
 #define ENTRY_POINT(name) ENTRY_POINT_ALIAS(name, name)
-static const NameAndFunction kFunctionMapInstance[] = {ENTRY_POINTS_INSTANCE ENTRY_POINTS_DEVICE};
+static const NameAndFunction kFunctionMapInstance[] = {ENTRY_POINTS_INSTANCE ENTRY_POINTS_PHYSICAL_DEVICE ENTRY_POINTS_DEVICE};
+static const NameAndFunction kFunctionMapPhysicalDevice[] = {ENTRY_POINTS_PHYSICAL_DEVICE};
 static const NameAndFunction kFunctionMapDevice[] = {ENTRY_POINTS_DEVICE};
 #undef ENTRY_POINT
 #undef ENTRY_POINT_ALIAS
 
-enum FunctionType { kInstanceFunctions = 0x1, kDeviceFunctions = 0x2 };
+enum FunctionType { kInstanceFunctions = 0x1, kPhysicalDeviceFunctions = 0x2, kDeviceFunctions = 0x4 };
 
 static void* FindFunctionByName(const char* pName, uint32_t functionType) {
     size_t num_elements = 0;
@@ -3431,8 +3440,9 @@ static void* FindFunctionByName(const char* pName, uint32_t functionType) {
         num_elements = GetArrayLength(kFunctionMap##type);                                   \
         map = kFunctionMap##type;                                                            \
     }
-
+    
     HANDLE_FUNCTION_TYPE(Instance);
+    HANDLE_FUNCTION_TYPE(PhysicalDevice);
     HANDLE_FUNCTION_TYPE(Device);
 
 #undef HANDLE_FUNCTION_TYPE
@@ -3457,7 +3467,7 @@ void* DeviceData::FindStateSettingFunctionByName(const char* pName) {
 
 static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetInstanceProcAddr(VkInstance instance, const char* pName) {
     // See if this is a proc we want to intercept
-    if (void* func = FindFunctionByName(pName, kInstanceFunctions | kDeviceFunctions)) {
+    if (void* func = FindFunctionByName(pName, kInstanceFunctions | kPhysicalDeviceFunctions | kDeviceFunctions)) {
         return reinterpret_cast<PFN_vkVoidFunction>(func);
     }
     // Otherwise, forward it to the next layer
@@ -3497,6 +3507,22 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetDeviceProcAddr(VkDevice devic
     return vtable.GetDeviceProcAddr(device, pName);
 }
 
+static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL _layerGetPhysicalDeviceProcAddr(VkInstance instance, const char* pName) {
+    // See if this is a proc we want to intercept
+    if (void* func = FindFunctionByName(pName, kPhysicalDeviceFunctions)) {
+        return reinterpret_cast<PFN_vkVoidFunction>(func);
+    }
+    if (FindFunctionByName(pName, kInstanceFunctions | kDeviceFunctions)) {
+        return nullptr;
+    }
+    // Otherwise, forward it to the next layer
+    auto instance_data_it = instance_data_map.Find(instance);
+    if (instance_data_it != instance_data_map.end()) {
+        return instance_data_it.GetValue()->vtable._layerGetPhysicalDeviceProcAddr(instance, pName);
+    }
+    return nullptr;
+}
+
 }  // namespace shader_object
 
 extern "C" VEL_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance instance, const char* pName) {
@@ -3505,4 +3531,8 @@ extern "C" VEL_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProc
 
 extern "C" VEL_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice device, const char* pName) {
     return shader_object::GetDeviceProcAddr(device, pName);
+}
+
+extern "C" VEL_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_layerGetPhysicalDeviceProcAddr(VkInstance instance, const char* pName) {
+    return shader_object::_layerGetPhysicalDeviceProcAddr(instance, pName);
 }
