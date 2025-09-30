@@ -2182,6 +2182,8 @@ static size_t vk_device_create_info_type_size(
         return sizeof(VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT:
         return sizeof(VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR:
+        return sizeof(VkPhysicalDeviceFragmentShadingRateFeaturesKHR);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES:
         return sizeof(VkPhysicalDeviceHostQueryResetFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT:
