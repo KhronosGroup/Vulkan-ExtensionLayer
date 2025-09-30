@@ -940,16 +940,21 @@
                     "GetInstanceProcAddr"
                 ],
                 [
+                    "_layerGetPhysicalDeviceProcAddr"
+                ],
+                [
                     "CreateInstance"
                 ],
                 [
                     "DestroyInstance"
                 ],
                 [
-                    "EnumerateDeviceExtensionProperties"
-                ],
-                [
                     "EnumerateInstanceExtensionProperties"
+                ]
+            ],
+            "physical_device": [
+                [
+                    "EnumerateDeviceExtensionProperties"
                 ],
                 [
                     "GetPhysicalDeviceFeatures2",
@@ -1240,6 +1245,8 @@
         },
         "forward": {
             "instance": [
+            ],
+            "physical_device": [
                 [
                     "GetPhysicalDeviceProperties"
                 ],

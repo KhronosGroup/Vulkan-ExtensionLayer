@@ -23,7 +23,7 @@ def create_generated_file(filename):
 // See shader_object_generator.py for modifications
 
 /*
- * Copyright 2023-2024 Nintendo
+ * Copyright 2023-2025 Nintendo
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -547,8 +547,10 @@ def generate_entry_points(data):
         out_file.write('\n\n')
 
     generate_x_macro('ENTRY_POINTS_INSTANCE', data['entry_points']['intercept']['instance'])
+    generate_x_macro('ENTRY_POINTS_PHYSICAL_DEVICE', data['entry_points']['intercept']['physical_device'])
     generate_x_macro('ENTRY_POINTS_DEVICE', data['entry_points']['intercept']['device'])
     generate_x_macro('ADDITIONAL_INSTANCE_FUNCTIONS', data['entry_points']['forward']['instance'])
+    generate_x_macro('ADDITIONAL_PHYSICAL_DEVICE_FUNCTIONS', data['entry_points']['forward']['physical_device'])
     generate_x_macro('ADDITIONAL_DEVICE_FUNCTIONS', data['entry_points']['forward']['device'])
 
     out_file.close()
