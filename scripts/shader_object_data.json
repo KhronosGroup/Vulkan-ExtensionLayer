@@ -950,6 +950,9 @@
                 ],
                 [
                     "EnumerateInstanceExtensionProperties"
+                ],
+                [
+                    "EnumerateInstanceLayerProperties"
                 ]
             ],
             "physical_device": [
