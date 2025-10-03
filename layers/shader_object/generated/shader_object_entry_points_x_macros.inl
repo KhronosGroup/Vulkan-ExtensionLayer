@@ -22,7 +22,8 @@
     ENTRY_POINT(_layerGetPhysicalDeviceProcAddr)\
     ENTRY_POINT(CreateInstance)\
     ENTRY_POINT(DestroyInstance)\
-    ENTRY_POINT(EnumerateInstanceExtensionProperties)
+    ENTRY_POINT(EnumerateInstanceExtensionProperties)\
+    ENTRY_POINT(EnumerateInstanceLayerProperties)
 
 #define ENTRY_POINTS_PHYSICAL_DEVICE\
     ENTRY_POINT(EnumerateDeviceExtensionProperties)\

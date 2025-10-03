@@ -81,13 +81,19 @@
 
 namespace shader_object {
 
-static const char* kLayerName = "VK_LAYER_KHRONOS_shader_object";
 static const VkExtensionProperties kExtensionProperties = {VK_EXT_SHADER_OBJECT_EXTENSION_NAME, VK_EXT_SHADER_OBJECT_SPEC_VERSION};
 
 // Instance extensions that this layer provides:
 const VkExtensionProperties kInstanceExtensionProperties[] = {
     VkExtensionProperties{VK_EXT_LAYER_SETTINGS_EXTENSION_NAME, VK_EXT_LAYER_SETTINGS_SPEC_VERSION}};
 const uint32_t kInstanceExtensionPropertiesCount = static_cast<uint32_t>(std::size(kInstanceExtensionProperties));
+
+static const VkLayerProperties kGlobalLayer = {
+    "VK_LAYER_KHRONOS_shader_object",
+    VK_HEADER_VERSION_COMPLETE,
+    1,
+    "Khronos Shader object layer",
+};
 
 template <typename T>
 T* AllocateArray(VkAllocationCallbacks const& allocator, uint32_t count, VkSystemAllocationScope scope) {
@@ -1769,7 +1775,7 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
     const VkLayerSettingsCreateInfoEXT* create_info = vkuFindLayerSettingsCreateInfo(pCreateInfo);
 
     VkuLayerSettingSet layer_setting_set = VK_NULL_HANDLE;
-    vkuCreateLayerSettingSet(kLayerName, create_info, pAllocator, nullptr, &layer_setting_set);
+    vkuCreateLayerSettingSet(shader_object::kGlobalLayer.layerName, create_info, pAllocator, nullptr, &layer_setting_set);
 
     static const char* setting_names[] = {kLayerSettingsForceEnable, kLayerSettingsDisablePipelinePreCaching, kLayerSettingsCustomSTypeInfo};
     uint32_t setting_name_count = static_cast<uint32_t>(std::size(setting_names));
@@ -1973,11 +1979,7 @@ static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceProperties2(VkPhysicalDevice 
 static VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice, const char* pLayerName,
                                                                          uint32_t* pPropertyCount,
                                                                          VkExtensionProperties* pProperties) {
-    auto  physical_device_data = physical_device_data_map.Get(physicalDevice);
-    auto  instance_data        = physical_device_data->instance;
-    auto& vtable               = instance_data->vtable;
-
-    if (pLayerName && strncmp(pLayerName, kLayerName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
+    if (pLayerName && strncmp(pLayerName, shader_object::kGlobalLayer.layerName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
         // User is asking for this layer
         *pPropertyCount = 1;
         if (pProperties) {
@@ -1985,6 +1987,11 @@ static VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysi
         }
         return VK_SUCCESS;
     }
+
+    auto  physical_device_data = physical_device_data_map.Get(physicalDevice);
+    auto  instance_data = physical_device_data->instance;
+    auto& vtable = instance_data->vtable;
+
     if (pLayerName) {
         // User is asking for a different layer
         return vtable.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
@@ -2070,11 +2077,24 @@ static VKAPI_ATTR VkResult VKAPI_CALL EnumerateDeviceExtensionProperties(VkPhysi
 
 static VKAPI_ATTR VkResult VKAPI_CALL EnumerateInstanceExtensionProperties(const char* pLayerName, uint32_t* pPropertyCount,
                                                                     VkExtensionProperties* pProperties) {
-    if (pLayerName && strncmp(pLayerName, shader_object::kLayerName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
+    if (pLayerName && strncmp(pLayerName, shader_object::kGlobalLayer.layerName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
         return EnumerateProperties(shader_object::kInstanceExtensionPropertiesCount,
                                    shader_object::kInstanceExtensionProperties, pPropertyCount, pProperties);
     }
     return VK_ERROR_LAYER_NOT_PRESENT;
+}
+
+static VKAPI_ATTR VkResult VKAPI_CALL EnumerateInstanceLayerProperties(uint32_t* pPropertyCount, VkLayerProperties* pProperties) {
+    if (pProperties == NULL) {
+        *pPropertyCount = 1;
+        return VK_SUCCESS;
+    }
+    if (*pPropertyCount < 1) {
+        return VK_INCOMPLETE;
+    }
+    *pPropertyCount = 1;
+    pProperties[0] = shader_object::kGlobalLayer;
+    return VK_SUCCESS;
 }
 
 static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevice, const VkDeviceCreateInfo* pCreateInfo,
@@ -3531,6 +3551,14 @@ extern "C" VEL_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProc
 
 extern "C" VEL_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice device, const char* pName) {
     return shader_object::GetDeviceProcAddr(device, pName);
+}
+
+extern "C" VEL_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionProperties(const char* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties) {
+    return shader_object::EnumerateInstanceExtensionProperties(pLayerName, pPropertyCount, pProperties);
+}
+
+extern "C" VEL_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(uint32_t* pPropertyCount, VkLayerProperties* pProperties) {
+    return shader_object::EnumerateInstanceLayerProperties(pPropertyCount, pProperties);
 }
 
 extern "C" VEL_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_layerGetPhysicalDeviceProcAddr(VkInstance instance, const char* pName) {
