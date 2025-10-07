@@ -2138,6 +2138,8 @@ static size_t vk_device_create_info_type_size(
         return sizeof(VkDeviceGroupDeviceCreateInfo);
     case VK_STRUCTURE_TYPE_DEVICE_MEMORY_OVERALLOCATION_CREATE_INFO_AMD:
         return sizeof(VkDeviceMemoryOverallocationCreateInfoAMD);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT:
+        return sizeof(VkPhysicalDevice4444FormatsFeaturesEXT);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES:
         return sizeof(VkPhysicalDevice16BitStorageFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES:
@@ -2174,6 +2176,10 @@ static size_t vk_device_create_info_type_size(
         return sizeof(VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXCLUSIVE_SCISSOR_FEATURES_NV:
         return sizeof(VkPhysicalDeviceExclusiveScissorFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceExtendedDynamicStateFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceExtendedDynamicState2FeaturesEXT);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2:
         return sizeof(VkPhysicalDeviceFeatures2);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT:
@@ -2188,6 +2194,8 @@ static size_t vk_device_create_info_type_size(
         return sizeof(VkPhysicalDeviceHostQueryResetFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT:
         return sizeof(VkPhysicalDeviceImageCompressionControlFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES:
+        return sizeof(VkPhysicalDeviceImageRobustnessFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES:
         return sizeof(VkPhysicalDeviceImagelessFramebufferFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES_EXT:
@@ -2210,6 +2218,8 @@ static size_t vk_device_create_info_type_size(
         return sizeof(VkPhysicalDevicePipelineCreationCacheControlFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR:
         return sizeof(VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES:
+        return sizeof(VkPhysicalDevicePrivateDataFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES:
         return sizeof(VkPhysicalDeviceProtectedMemoryFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV:
@@ -2234,6 +2244,8 @@ static size_t vk_device_create_info_type_size(
         return sizeof(VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV:
         return sizeof(VkPhysicalDeviceShaderImageFootprintFeaturesNV);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES:
+        return sizeof(VkPhysicalDeviceShaderIntegerDotProductFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL:
         return sizeof(VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV:
@@ -2246,6 +2258,8 @@ static size_t vk_device_create_info_type_size(
         return sizeof(VkPhysicalDeviceSubgroupSizeControlFeaturesEXT);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES:
         return sizeof(VkPhysicalDeviceSynchronization2Features);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES:
+        return sizeof(VkPhysicalDeviceShaderTerminateInvocationFeatures);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_FEATURES_EXT:
         return sizeof(VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES_EXT:
@@ -2268,8 +2282,12 @@ static size_t vk_device_create_info_type_size(
         return sizeof(VkPhysicalDeviceVulkan13Features);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES:
         return sizeof(VkPhysicalDeviceVulkanMemoryModelFeatures);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_2_PLANE_444_FORMATS_FEATURES_EXT:
+        return sizeof(VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT);
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_IMAGE_ARRAYS_FEATURES_EXT:
         return sizeof(VkPhysicalDeviceYcbcrImageArraysFeaturesEXT);
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES:
+        return sizeof(VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures);
     default:
         unreachable("Unknown structure for VkDeviceCreateInfo::pNext");
     }
