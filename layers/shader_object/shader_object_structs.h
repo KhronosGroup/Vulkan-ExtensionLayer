@@ -18,6 +18,8 @@
 
 // clang-format off
 
+#include <cstdint>
+#include <cstdlib>
 #include <type_traits>
 #include <cassert>
 #include <bitset>
