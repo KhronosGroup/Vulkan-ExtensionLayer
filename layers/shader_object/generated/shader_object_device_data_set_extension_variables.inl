@@ -19,17 +19,23 @@
 
 device_data->dynamic_rendering = dynamic_rendering_ptr ? *dynamic_rendering_ptr : dynamic_rendering_local;
 device_data->private_data = private_data_ptr ? *private_data_ptr : private_data_local;
-device_data->extended_dynamic_state_1 = extended_dynamic_state_1_ptr ? *extended_dynamic_state_1_ptr : extended_dynamic_state_1_local;
-device_data->extended_dynamic_state_2 = extended_dynamic_state_2_ptr ? *extended_dynamic_state_2_ptr : extended_dynamic_state_2_local;
-device_data->extended_dynamic_state_3 = extended_dynamic_state_3_ptr ? *extended_dynamic_state_3_ptr : extended_dynamic_state_3_local;
-device_data->vertex_input_dynamic = vertex_input_dynamic_ptr ? *vertex_input_dynamic_ptr : vertex_input_dynamic_local;
-device_data->graphics_pipeline_library = graphics_pipeline_library_ptr ? *graphics_pipeline_library_ptr : graphics_pipeline_library_local;
-device_data->dynamic_rendering_unused_attachments = dynamic_rendering_unused_attachments_ptr ? *dynamic_rendering_unused_attachments_ptr : dynamic_rendering_unused_attachments_local;
+device_data->extended_dynamic_state = extended_dynamic_state_ptr ? *extended_dynamic_state_ptr : extended_dynamic_state_local;
+device_data->extended_dynamic_state2 = extended_dynamic_state2_ptr ? *extended_dynamic_state2_ptr : extended_dynamic_state2_local;
+device_data->extended_dynamic_state3 = extended_dynamic_state3_ptr ? *extended_dynamic_state3_ptr : extended_dynamic_state3_local;
+device_data->vertex_input_dynamic_state =
+    vertex_input_dynamic_state_ptr ? *vertex_input_dynamic_state_ptr : vertex_input_dynamic_state_local;
+device_data->graphics_pipeline_library =
+    graphics_pipeline_library_ptr ? *graphics_pipeline_library_ptr : graphics_pipeline_library_local;
+device_data->multiview = multiview_ptr ? *multiview_ptr : multiview_local;
+device_data->dynamic_rendering_unused_attachments = dynamic_rendering_unused_attachments_ptr
+                                                        ? *dynamic_rendering_unused_attachments_ptr
+                                                        : dynamic_rendering_unused_attachments_local;
 device_data->transform_feedback = transform_feedback_ptr ? *transform_feedback_ptr : transform_feedback_local;
 device_data->depth_clip_enable = depth_clip_enable_ptr ? *depth_clip_enable_ptr : depth_clip_enable_local;
 device_data->provoking_vertex = provoking_vertex_ptr ? *provoking_vertex_ptr : provoking_vertex_local;
 device_data->line_rasterization = line_rasterization_ptr ? *line_rasterization_ptr : line_rasterization_local;
 device_data->depth_clip_control = depth_clip_control_ptr ? *depth_clip_control_ptr : depth_clip_control_local;
-device_data->nv_coverage_reduction_mode = nv_coverage_reduction_mode_ptr ? *nv_coverage_reduction_mode_ptr : nv_coverage_reduction_mode_local;
-device_data->nv_shading_rate_image = nv_shading_rate_image_ptr ? *nv_shading_rate_image_ptr : nv_shading_rate_image_local;
-device_data->nv_representative_fragment_test = nv_representative_fragment_test_ptr ? *nv_representative_fragment_test_ptr : nv_representative_fragment_test_local;
+device_data->coverage_reduction_mode = coverage_reduction_mode_ptr ? *coverage_reduction_mode_ptr : coverage_reduction_mode_local;
+device_data->shading_rate_image = shading_rate_image_ptr ? *shading_rate_image_ptr : shading_rate_image_local;
+device_data->representative_fragment_test =
+    representative_fragment_test_ptr ? *representative_fragment_test_ptr : representative_fragment_test_local;
