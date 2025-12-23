@@ -332,7 +332,7 @@ VkResult Shader::Create(DeviceData const& deviceData, VkShaderCreateInfoEXT cons
     // Copy data over from create info struct
 
     aligned_memory.CopyBytes<char>(shader->name, shader->name_byte_count, createInfo.pName, name_size);
-    
+
     aligned_memory.CopyBytes<uint32_t>(shader->spirv_data, shader->spirv_data_size, spirv_data, spirv_size);
 
     aligned_memory.CopyStruct(shader->push_constant_ranges, shader->num_push_constant_ranges, createInfo.pPushConstantRanges,
@@ -1240,9 +1240,9 @@ void AddGraphicsPipelineToCache(DeviceData const& deviceData, VkAllocationCallba
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
     };
     VkPipelineInputAssemblyStateCreateInfo input_assembly{
-        VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO, 
+        VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         nullptr,
-        0, 
+        0,
         primitive_topology
     };
     VkPipelineTessellationStateCreateInfo tessellation_state{
@@ -1340,7 +1340,7 @@ void AddGraphicsPipelineToCache(DeviceData const& deviceData, VkAllocationCallba
         VK_NULL_HANDLE,
         -1
     };
- 
+
     VkPipeline temp_pipeline;
     VkResult result = vtable.CreateGraphicsPipelines(deviceData.device, cache, 1, &create_info, nullptr, &temp_pipeline);
     if (result == VK_SUCCESS) {
@@ -1352,7 +1352,7 @@ void AddGraphicsPipelineToCache(DeviceData const& deviceData, VkAllocationCallba
 }
 
 PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, VkAllocationCallbacks allocator, VkPipelineCache cache,
-                                                VkPipelineLayout layout, VkGraphicsPipelineLibraryFlagBitsEXT pipelineLibraryFlags, 
+                                                VkPipelineLayout layout, VkGraphicsPipelineLibraryFlagBitsEXT pipelineLibraryFlags,
                                                 Shader** ppShaders, uint32_t shaderCount) {
     // Ensure that pipelineLibraryFlags doesn't have both VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT and VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT
     ASSERT((pipelineLibraryFlags &
@@ -1404,11 +1404,11 @@ PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, Vk
     auto viewport = VkViewport{0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
     auto scissor  = VkRect2D{{0, 0}, {1, 1}};
     VkPipelineViewportStateCreateInfo viewport_state{
-        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO, 
-        nullptr, 
-        0, 
+        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+        nullptr,
+        0,
         deviceData.HasDynamicState(VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT) ? 0u : 1u,
-        &viewport, 
+        &viewport,
         deviceData.HasDynamicState(VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT) ? 0u : 1u,
         &scissor
     };
@@ -1428,9 +1428,9 @@ PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, Vk
         1.0f
     };
     VkPipelineTessellationStateCreateInfo tessellation_state{
-        VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO, 
+        VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
         nullptr,
-        0, 
+        0,
         1
     };
     VkPipelineMultisampleStateCreateInfo multisample_state{
@@ -1587,14 +1587,14 @@ static VkResult PopulateCachesForShaders(DeviceData const& deviceData, VkAllocat
             if (vertex_or_mesh_shader) {
                 vertex_or_mesh_shader->partial_pipeline = CreatePartiallyCompiledPipeline(
                     deviceData, allocator, cache_for_linked_shaders, layout_for_linked_shaders,
-                    VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT, 
+                    VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT,
                     pre_rasterization_shaders, pre_rasterization_shader_count
                 );
             }
 
             if (fragment_shader) {
                 fragment_shader->partial_pipeline = CreatePartiallyCompiledPipeline(
-                    deviceData, allocator, cache_for_linked_shaders, layout_for_linked_shaders, 
+                    deviceData, allocator, cache_for_linked_shaders, layout_for_linked_shaders,
                     VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT,
                     &fragment_shader, 1
                 );
@@ -1833,7 +1833,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo*
     result = fpEnumeratePhysicalDevices(*pInstance, &physical_device_count, nullptr);
     ASSERT(result == VK_SUCCESS);
 
-    void* memory = allocator.pfnAllocation(allocator.pUserData, 
+    void* memory = allocator.pfnAllocation(allocator.pUserData,
         sizeof(InstanceData) + physical_device_count * (sizeof(VkPhysicalDevice) + sizeof(PhysicalDeviceData)),
         alignof(InstanceData), VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
     if (!memory) {
@@ -1933,14 +1933,14 @@ static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceFeatures2(VkPhysicalDevice ph
 
     if (shader_object_feature && (physical_device_data->supported_additional_extensions & SHADER_OBJECT) == 0) {
         ASSERT(reinterpret_cast<uintptr_t>(feature_before_shader_object->pNext) == reinterpret_cast<uintptr_t>(shader_object_feature));
-        
+
         // No native shader object in the driver, need to leave out shader object extension when calling underlying GetPhysicalDeviceFeatures2
         feature_before_shader_object->pNext = reinterpret_cast<VkBaseOutStructure*>(shader_object_feature->pNext);
         vtable.GetPhysicalDeviceFeatures2(physicalDevice, pFeatures);
         feature_before_shader_object->pNext = reinterpret_cast<VkBaseOutStructure*>(shader_object_feature);
 
         // The layer requires maintenance2 and dynamic_rendering extensions
-        uint32_t const required_extensions = DYNAMIC_RENDERING | MAINTENANCE_2;
+        uint32_t const required_extensions = DYNAMIC_RENDERING | MAINTENANCE2;
         if ((physical_device_data->supported_additional_extensions & required_extensions) == required_extensions) {
             shader_object_feature->shaderObject = VK_TRUE;
         } else {
@@ -2228,7 +2228,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
             if (current->pNext && current->pNext->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT) {
                 auto shader_object_feature = reinterpret_cast<vku::safe_VkPhysicalDeviceShaderObjectFeaturesEXT*>(current->pNext);
                 current->pNext = current->pNext->pNext;
-        
+
                 // Structure was allocated with new in SafePnextCopy
                 shader_object_feature->pNext = nullptr;
                 delete shader_object_feature;
@@ -2241,7 +2241,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
 #include "generated/shader_object_create_device_feature_structs.inl"
         device_features.pNext = appended_features_chain;
         instance_vtable.GetPhysicalDeviceFeatures2(physicalDevice, &device_features);
-        if ((!vulkan_1_3_ptr || vulkan_1_3_ptr->dynamicRendering == VK_FALSE) && (!dynamic_rendering_ptr || dynamic_rendering_ptr->dynamicRendering == VK_FALSE)) {
+        if ((!VK_VERSION_1_3_ptr || VK_VERSION_1_3_ptr->dynamicRendering == VK_FALSE) && (!dynamic_rendering_ptr || dynamic_rendering_ptr->dynamicRendering == VK_FALSE)) {
             // Dynamic rendering is required
             vku::FreePnextChain(device_next_chain);
             allocator.pfnFree(allocator.pUserData, enabled_extension_names);
@@ -2271,7 +2271,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
         };
 
         // Append to deep-copied pNext chain
-        if ((vulkan_1_3_ptr && vulkan_1_3_ptr->privateData == VK_TRUE) || (private_data_ptr && private_data_ptr->privateData == VK_TRUE)) {
+        if ((VK_VERSION_1_3_ptr && VK_VERSION_1_3_ptr->privateData == VK_TRUE) || (private_data_ptr && private_data_ptr->privateData == VK_TRUE)) {
             last->pNext = reinterpret_cast<VkBaseOutStructure*>(&reserved_private_data_slot);
         } else {
             last->pNext = appended_features_chain;
@@ -2307,7 +2307,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
 
         // Fill in device data
         device_data->device                           = *pDevice;
-        device_data->flags                            = enable_layer ? DeviceData::SHADER_OBJECT_LAYER_ENABLED : 0; 
+        device_data->flags                            = enable_layer ? DeviceData::SHADER_OBJECT_LAYER_ENABLED : 0;
         if (instance_data->layer_settings.disable_pipeline_pre_caching) {
             device_data->flags |= DeviceData::DISABLE_PIPELINE_PRE_CACHING;
         }
@@ -2327,7 +2327,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
 #include "generated/shader_object_device_data_dynamic_state_adding.inl"
 
         // Handle special case dynamic states
-        if (!extended_dynamic_state_1_ptr || extended_dynamic_state_1_ptr->extendedDynamicState == VK_FALSE) {
+        if (!extended_dynamic_state_ptr || extended_dynamic_state_ptr->extendedDynamicState == VK_FALSE) {
             // No VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT, so use VK_DYNAMIC_STATE_VIEWPORT instead
             device_data->AddDynamicState(VK_DYNAMIC_STATE_VIEWPORT);
             device_data->AddDynamicState(VK_DYNAMIC_STATE_SCISSOR);
@@ -2372,9 +2372,9 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
 
         // Find a supported depth stencil format (either VK_FORMAT_D24_UNORM_S8_UINT or VK_FORMAT_D32_SFLOAT_S8_UINT)
         VkImageFormatProperties format_properties;
-        VkResult format_result = instance_vtable.GetPhysicalDeviceImageFormatProperties(physicalDevice, 
-                                                                                        VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_TYPE_2D, 
-                                                                                        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+        VkResult format_result = instance_vtable.GetPhysicalDeviceImageFormatProperties(physicalDevice,
+                                                                                        VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_TYPE_2D,
+                                                                                        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                                                                                         0, &format_properties);
         if (format_result == VK_SUCCESS) {
             device_data->supported_depth_stencil_format = VK_FORMAT_D24_UNORM_S8_UINT;
@@ -2740,7 +2740,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL BeginCommandBuffer(VkCommandBuffer command
         draw_state->SetSampleMask(i, all_ones);
     }
 
-    if ((device_data->enabled_extensions & NV_VIEWPORT_SWIZZLE) != 0 && device_data->extended_dynamic_state_3.extendedDynamicState3ViewportSwizzle == VK_FALSE) {
+    if ((device_data->enabled_extensions & NV_VIEWPORT_SWIZZLE) != 0 && device_data->extended_dynamic_state3.extendedDynamicState3ViewportSwizzle == VK_FALSE) {
         // Reset viewport swizzles
         for (uint32_t i = 0; i < device_data->properties.limits.maxViewports; ++i) {
             VkViewportSwizzleNV default_swizzle{
@@ -2784,7 +2784,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdBeginRendering(VkCommandBuffer commandBuffe
 static VKAPI_ATTR void VKAPI_CALL CmdSetViewportWithCount(VkCommandBuffer commandBuffer, uint32_t viewportCount,
                                                           const VkViewport* pViewports) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_1.extendedDynamicState);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state.extendedDynamicState);
     cmd_data->GetDrawStateData()->SetNumViewports(viewportCount);
     cmd_data->device_data->vtable.CmdSetViewport(commandBuffer, 0, viewportCount, pViewports);
 }
@@ -2792,20 +2792,20 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetViewportWithCount(VkCommandBuffer comman
 static VKAPI_ATTR void VKAPI_CALL CmdSetScissorWithCount(VkCommandBuffer commandBuffer, uint32_t scissorCount,
                                                          const VkRect2D* pScissors) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_1.extendedDynamicState);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state.extendedDynamicState);
     cmd_data->GetDrawStateData()->SetNumScissors(scissorCount);
     cmd_data->device_data->vtable.CmdSetScissor(commandBuffer, 0, scissorCount, pScissors);
 }
 
-static VKAPI_ATTR void VKAPI_CALL CmdBindVertexBuffers2(VkCommandBuffer commandBuffer, 
-                                                        uint32_t firstBinding, uint32_t bindingCount, 
-                                                        const VkBuffer* pBuffers, const VkDeviceSize* pOffsets, 
+static VKAPI_ATTR void VKAPI_CALL CmdBindVertexBuffers2(VkCommandBuffer commandBuffer,
+                                                        uint32_t firstBinding, uint32_t bindingCount,
+                                                        const VkBuffer* pBuffers, const VkDeviceSize* pOffsets,
                                                         const VkDeviceSize* pSizes, const VkDeviceSize* pStrides) {
     auto cmd_data   = GetCommandBufferData(commandBuffer);
     auto draw_state = cmd_data->GetDrawStateData();
     auto& vtable    = cmd_data->device_data->vtable;
 
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_1.extendedDynamicState);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state.extendedDynamicState);
     if (pStrides) {
         auto bindings = draw_state->GetVertexInputBindingDescriptionPtr();
         for (uint32_t i = 0; i < bindingCount; ++i) {
@@ -2831,7 +2831,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetVertexInputEXT(VkCommandBuffer commandBu
                                                        uint32_t vertexAttributeDescriptionCount,
                                                        const VkVertexInputAttributeDescription2EXT* pVertexAttributeDescriptions) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->vertex_input_dynamic.vertexInputDynamicState);
+    ASSERT_VK_FALSE(cmd_data->device_data->vertex_input_dynamic_state.vertexInputDynamicState);
     FullDrawStateData* state = cmd_data->GetDrawStateData();
 
     state->SetNumVertexInputBindingDescriptions(vertexBindingDescriptionCount);
@@ -2879,7 +2879,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetPrimitiveTopology(VkCommandBuffer comman
         VK_PRIMITIVE_TOPOLOGY_PATCH_LIST
     };
 
-    if (device_data->extended_dynamic_state_1.extendedDynamicState == VK_TRUE) {
+    if (device_data->extended_dynamic_state.extendedDynamicState == VK_TRUE) {
         ASSERT((device_data->flags & DeviceData::HAS_PRIMITIVE_TOPLOGY_UNRESTRICTED) == 0);
 
         // Collapse the primitive topology into a common primitive topology by class so that pipeline comparison is correct
@@ -2893,75 +2893,75 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetPrimitiveTopology(VkCommandBuffer comman
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetPrimitiveRestartEnable(VkCommandBuffer commandBuffer, VkBool32 primitiveRestartEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_2.extendedDynamicState2);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state2.extendedDynamicState2);
     cmd_data->GetDrawStateData()->SetPrimitiveRestartEnable(primitiveRestartEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetRasterizerDiscardEnable(VkCommandBuffer commandBuffer, VkBool32 rasterizerDiscardEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_2.extendedDynamicState2);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state2.extendedDynamicState2);
     cmd_data->GetDrawStateData()->SetRasterizerDiscardEnable(rasterizerDiscardEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetRasterizationSamplesEXT(VkCommandBuffer commandBuffer,
                                                                 VkSampleCountFlagBits rasterizationSamples) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3RasterizationSamples);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3RasterizationSamples);
     cmd_data->GetDrawStateData()->SetRasterizationSamples(rasterizationSamples);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetPolygonModeEXT(VkCommandBuffer commandBuffer, VkPolygonMode polygonMode) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3PolygonMode);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3PolygonMode);
     cmd_data->GetDrawStateData()->SetPolygonMode(polygonMode);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetCullMode(VkCommandBuffer commandBuffer, VkCullModeFlags cullMode) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_1.extendedDynamicState);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state.extendedDynamicState);
     cmd_data->GetDrawStateData()->SetCullMode(cullMode);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetFrontFace(VkCommandBuffer commandBuffer, VkFrontFace frontFace) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_1.extendedDynamicState);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state.extendedDynamicState);
     cmd_data->GetDrawStateData()->SetFrontFace(frontFace);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetDepthTestEnable(VkCommandBuffer commandBuffer, VkBool32 depthTestEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_1.extendedDynamicState);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state.extendedDynamicState);
     cmd_data->GetDrawStateData()->SetDepthTestEnable(depthTestEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetDepthWriteEnable(VkCommandBuffer commandBuffer, VkBool32 depthWriteEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_1.extendedDynamicState);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state.extendedDynamicState);
     cmd_data->GetDrawStateData()->SetDepthWriteEnable(depthWriteEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetDepthCompareOp(VkCommandBuffer commandBuffer, VkCompareOp depthCompareOp) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_1.extendedDynamicState);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state.extendedDynamicState);
     cmd_data->GetDrawStateData()->SetDepthCompareOp(depthCompareOp);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetStencilTestEnable(VkCommandBuffer commandBuffer, VkBool32 stencilTestEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_1.extendedDynamicState);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state.extendedDynamicState);
     cmd_data->GetDrawStateData()->SetStencilTestEnable(stencilTestEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetLogicOpEnableEXT(VkCommandBuffer commandBuffer, VkBool32 logicOpEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3LogicOpEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3LogicOpEnable);
     cmd_data->GetDrawStateData()->SetLogicOpEnable(logicOpEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetColorBlendEnableEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment,
                                                             uint32_t attachmentCount, const VkBool32* pColorBlendEnables) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3ColorBlendEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3ColorBlendEnable);
     FullDrawStateData* state = cmd_data->GetDrawStateData();
     for (uint32_t i = 0; i < attachmentCount; ++i) {
         VkPipelineColorBlendAttachmentState blend_attachment_state = state->GetColorBlendAttachmentState(i + firstAttachment);
@@ -2974,7 +2974,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetColorBlendEquationEXT(VkCommandBuffer co
                                                               uint32_t attachmentCount,
                                                               const VkColorBlendEquationEXT* pColorBlendEquations) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3ColorBlendEquation);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3ColorBlendEquation);
     FullDrawStateData* state = cmd_data->GetDrawStateData();
     for (uint32_t i = 0; i < attachmentCount; ++i) {
         VkPipelineColorBlendAttachmentState blend_attachment_state = state->GetColorBlendAttachmentState(i + firstAttachment);
@@ -2993,7 +2993,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetColorBlendEquationEXT(VkCommandBuffer co
 static VKAPI_ATTR void VKAPI_CALL CmdSetColorWriteMaskEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment,
                                                           uint32_t attachmentCount, const VkColorComponentFlags* pColorWriteMasks) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3ColorWriteMask);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3ColorWriteMask);
     FullDrawStateData* state = cmd_data->GetDrawStateData();
     for (uint32_t i = 0; i < attachmentCount; ++i) {
         VkPipelineColorBlendAttachmentState color_blend_attachment_state = state->GetColorBlendAttachmentState(i + firstAttachment);
@@ -3005,26 +3005,26 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetColorWriteMaskEXT(VkCommandBuffer comman
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetDepthBoundsTestEnable(VkCommandBuffer commandBuffer, VkBool32 depthBoundsTestEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_1.extendedDynamicState);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state.extendedDynamicState);
     cmd_data->GetDrawStateData()->SetDepthBoundsTestEnable(depthBoundsTestEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetDepthBiasEnable(VkCommandBuffer commandBuffer, VkBool32 depthBiasEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_2.extendedDynamicState2);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state2.extendedDynamicState2);
     cmd_data->GetDrawStateData()->SetDepthBiasEnable(depthBiasEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetDepthClampEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthClampEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3DepthClampEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3DepthClampEnable);
     cmd_data->GetDrawStateData()->SetDepthClampEnable(depthClampEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetStencilOp(VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, VkStencilOp failOp,
                                                   VkStencilOp passOp, VkStencilOp depthFailOp, VkCompareOp compareOp) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_1.extendedDynamicState);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state.extendedDynamicState);
 
     FullDrawStateData* state = cmd_data->GetDrawStateData();
     VkStencilOpState stencil_op{};
@@ -3043,7 +3043,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetStencilOp(VkCommandBuffer commandBuffer,
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetLogicOpEXT(VkCommandBuffer commandBuffer, VkLogicOp logicOp) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_2.extendedDynamicState2LogicOp);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state2.extendedDynamicState2LogicOp);
     cmd_data->GetDrawStateData()->SetLogicOp(logicOp);
 }
 
@@ -3142,21 +3142,21 @@ static VKAPI_ATTR void VKAPI_CALL CmdDrawMeshTasksIndirectCountNV(VkCommandBuffe
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetPatchControlPointsEXT(VkCommandBuffer commandBuffer, uint32_t patchControlPoints) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_2.extendedDynamicState2PatchControlPoints);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state2.extendedDynamicState2PatchControlPoints);
     cmd_data->GetDrawStateData()->SetPatchControlPoints(patchControlPoints);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetTessellationDomainOriginEXT(VkCommandBuffer commandBuffer,
                                                                     VkTessellationDomainOrigin domainOrigin) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3TessellationDomainOrigin);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3TessellationDomainOrigin);
     cmd_data->GetDrawStateData()->SetDomainOrigin(domainOrigin);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetSampleMaskEXT(VkCommandBuffer commandBuffer, VkSampleCountFlagBits samples,
                                                       const VkSampleMask* pSampleMask) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3SampleMask);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3SampleMask);
     uint32_t length = CalculateRequiredGroupSize(samples, 32);
     for (uint32_t i = 0; i < length; ++i) {
         cmd_data->GetDrawStateData()->SetSampleMask(i, pSampleMask[i]);
@@ -3165,80 +3165,80 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetSampleMaskEXT(VkCommandBuffer commandBuf
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetAlphaToCoverageEnableEXT(VkCommandBuffer commandBuffer, VkBool32 alphaToCoverageEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3AlphaToCoverageEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3AlphaToCoverageEnable);
     cmd_data->GetDrawStateData()->SetAlphaToCoverageEnable(alphaToCoverageEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetAlphaToOneEnableEXT(VkCommandBuffer commandBuffer, VkBool32 alphaToOneEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3AlphaToOneEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3AlphaToOneEnable);
     cmd_data->GetDrawStateData()->SetAlphaToOneEnable(alphaToOneEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetRasterizationStreamEXT(VkCommandBuffer commandBuffer, uint32_t rasterizationStream) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3RasterizationStream);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3RasterizationStream);
     ASSERT_VK_TRUE(cmd_data->device_data->transform_feedback.transformFeedback);
     cmd_data->GetDrawStateData()->SetRasterizationStream(rasterizationStream);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetConservativeRasterizationModeEXT(VkCommandBuffer commandBuffer, VkConservativeRasterizationModeEXT conservativeRasterizationMode) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3ConservativeRasterizationMode);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3ConservativeRasterizationMode);
     cmd_data->GetDrawStateData()->SetConservativeRasterizationMode(conservativeRasterizationMode);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetExtraPrimitiveOverestimationSizeEXT(VkCommandBuffer commandBuffer, float extraPrimitiveOverestimationSize) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3ExtraPrimitiveOverestimationSize);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3ExtraPrimitiveOverestimationSize);
     cmd_data->GetDrawStateData()->SetExtraPrimitiveOverestimationSize(extraPrimitiveOverestimationSize);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetDepthClipEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthClipEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3DepthClipEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3DepthClipEnable);
     cmd_data->GetDrawStateData()->SetDepthClipEnable(depthClipEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetSampleLocationsEnableEXT(VkCommandBuffer commandBuffer, VkBool32 sampleLocationsEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3SampleLocationsEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3SampleLocationsEnable);
     cmd_data->GetDrawStateData()->SetSampleLocationsEnable(sampleLocationsEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetProvokingVertexModeEXT(VkCommandBuffer commandBuffer, VkProvokingVertexModeEXT provokingVertexMode) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3ProvokingVertexMode);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3ProvokingVertexMode);
     cmd_data->GetDrawStateData()->SetProvokingVertexMode(provokingVertexMode);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetLineRasterizationModeEXT(VkCommandBuffer commandBuffer, VkLineRasterizationModeEXT lineRasterizationMode) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3LineRasterizationMode);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3LineRasterizationMode);
     cmd_data->GetDrawStateData()->SetLineRasterizationMode(lineRasterizationMode);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetLineStippleEnableEXT(VkCommandBuffer commandBuffer, VkBool32 stippledLineEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3LineStippleEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3LineStippleEnable);
     cmd_data->GetDrawStateData()->SetStippledLineEnable(stippledLineEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetDepthClipNegativeOneToOneEXT(VkCommandBuffer commandBuffer, VkBool32 negativeOneToOne) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3DepthClipNegativeOneToOne);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3DepthClipNegativeOneToOne);
     cmd_data->GetDrawStateData()->SetNegativeOneToOne(negativeOneToOne);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetCoverageModulationModeNV(VkCommandBuffer commandBuffer, VkCoverageModulationModeNV coverageModulationMode) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3CoverageModulationMode);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3CoverageModulationMode);
     cmd_data->GetDrawStateData()->SetCoverageModulationMode(coverageModulationMode);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetCoverageModulationTableEnableNV(VkCommandBuffer commandBuffer, VkBool32 coverageModulationTableEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3CoverageModulationTableEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3CoverageModulationTableEnable);
     cmd_data->GetDrawStateData()->SetCoverageModulationTableEnable(coverageModulationTableEnable);
 }
 
@@ -3246,7 +3246,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetCoverageModulationTableNV(VkCommandBuffe
     auto cmd_data = GetCommandBufferData(commandBuffer);
     auto draw_state          = cmd_data->GetDrawStateData();
 
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3CoverageModulationTable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3CoverageModulationTable);
 
     draw_state->SetCoverageModulationTableCount(coverageModulationTableCount);
     for (uint32_t i = 0; i < coverageModulationTableCount; ++i) {
@@ -3256,25 +3256,25 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetCoverageModulationTableNV(VkCommandBuffe
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetCoverageReductionModeNV(VkCommandBuffer commandBuffer, VkCoverageReductionModeNV coverageReductionMode) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3CoverageReductionMode);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3CoverageReductionMode);
     cmd_data->GetDrawStateData()->SetCoverageReductionMode(coverageReductionMode);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetCoverageToColorEnableNV(VkCommandBuffer commandBuffer, VkBool32 coverageToColorEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3CoverageToColorEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3CoverageToColorEnable);
     cmd_data->GetDrawStateData()->SetCoverageToColorEnable(coverageToColorEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetCoverageToColorLocationNV(VkCommandBuffer commandBuffer, uint32_t coverageToColorLocation) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3CoverageToColorLocation);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3CoverageToColorLocation);
     cmd_data->GetDrawStateData()->SetCoverageToColorLocation(coverageToColorLocation);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetViewportWScalingEnableNV(VkCommandBuffer commandBuffer, VkBool32 viewportWScalingEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3ViewportWScalingEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3ViewportWScalingEnable);
     cmd_data->GetDrawStateData()->SetViewportWScalingEnable(viewportWScalingEnable);
 }
 
@@ -3282,7 +3282,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetViewportSwizzleNV(VkCommandBuffer comman
     auto cmd_data = GetCommandBufferData(commandBuffer);
     auto draw_state          = cmd_data->GetDrawStateData();
 
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3ViewportSwizzle);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3ViewportSwizzle);
 
     draw_state->SetViewportSwizzleCount(firstViewport + viewportCount);
     for (uint32_t i = 0; i < viewportCount; ++i) {
@@ -3292,13 +3292,13 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetViewportSwizzleNV(VkCommandBuffer comman
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetShadingRateImageEnableNV(VkCommandBuffer commandBuffer, VkBool32 shadingRateImageEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3ShadingRateImageEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3ShadingRateImageEnable);
     cmd_data->GetDrawStateData()->SetShadingRateImageEnable(shadingRateImageEnable);
 }
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetRepresentativeFragmentTestEnableNV(VkCommandBuffer commandBuffer, VkBool32 representativeFragmentTestEnable) {
     auto cmd_data = GetCommandBufferData(commandBuffer);
-    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state_3.extendedDynamicState3RepresentativeFragmentTestEnable);
+    ASSERT_VK_FALSE(cmd_data->device_data->extended_dynamic_state3.extendedDynamicState3RepresentativeFragmentTestEnable);
     cmd_data->GetDrawStateData()->SetRepresentativeFragmentTestEnable(representativeFragmentTestEnable);
 }
 
@@ -3371,7 +3371,7 @@ static VKAPI_ATTR void VKAPI_CALL GetPrivateData(VkDevice device, VkObjectType o
 }
 
 static VKAPI_ATTR VkResult CreateDescriptorUpdateTemplate(VkDevice device, const VkDescriptorUpdateTemplateCreateInfo* pCreateInfo,
-                                                          const VkAllocationCallbacks* pAllocator, 
+                                                          const VkAllocationCallbacks* pAllocator,
                                                           VkDescriptorUpdateTemplate* pDescriptorUpdateTemplate) {
     auto device_data = device_data_map.Get(device);
     VkResult result = device_data->vtable.CreateDescriptorUpdateTemplate(device, pCreateInfo, pAllocator, pDescriptorUpdateTemplate);
@@ -3381,7 +3381,7 @@ static VKAPI_ATTR VkResult CreateDescriptorUpdateTemplate(VkDevice device, const
     return result;
 }
 
-static VKAPI_ATTR void DestroyDescriptorUpdateTemplate(VkDevice device, VkDescriptorUpdateTemplate descriptorUpdateTemplate, 
+static VKAPI_ATTR void DestroyDescriptorUpdateTemplate(VkDevice device, VkDescriptorUpdateTemplate descriptorUpdateTemplate,
                                                        const VkAllocationCallbacks* pAllocator) {
     auto device_data = device_data_map.Get(device);
     device_data->vtable.DestroyDescriptorUpdateTemplate(device, descriptorUpdateTemplate, pAllocator);
@@ -3460,7 +3460,7 @@ static void* FindFunctionByName(const char* pName, uint32_t functionType) {
         num_elements = GetArrayLength(kFunctionMap##type);                                   \
         map = kFunctionMap##type;                                                            \
     }
-    
+
     HANDLE_FUNCTION_TYPE(Instance);
     HANDLE_FUNCTION_TYPE(PhysicalDevice);
     HANDLE_FUNCTION_TYPE(Device);
@@ -3509,7 +3509,7 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetDeviceProcAddr(VkDevice devic
         }
 
         if (strcmp(pName, "vkCmdSetColorBlendAdvancedEXT") == 0) {
-            // Special case. Even though it's illegal to call this function (because the extension and feature is missing), 
+            // Special case. Even though it's illegal to call this function (because the extension and feature is missing),
             // the layer must provide a non-null function pointer
             if (auto underlying_function = vtable.GetDeviceProcAddr(device, pName)) {
                 return underlying_function;
