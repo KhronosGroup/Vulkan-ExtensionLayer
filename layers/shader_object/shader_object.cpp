@@ -3391,7 +3391,7 @@ static VKAPI_ATTR void DestroyDescriptorUpdateTemplate(VkDevice device, VkDescri
 static VKAPI_ATTR VkResult VKAPI_CALL SetDebugUtilsObjectNameEXT(VkDevice device, const VkDebugUtilsObjectNameInfoEXT *pNameInfo) {
     DeviceData& data = *device_data_map.Get(device);
     VkResult result = VK_SUCCESS;
-    if (pNameInfo->objectType == VK_OBJECT_TYPE_SHADER_EXT) {
+    if (pNameInfo->objectType == VK_OBJECT_TYPE_SHADER_EXT && (data.flags & DeviceData::SHADER_OBJECT_LAYER_ENABLED)) {
         const auto shader = reinterpret_cast<Shader*>(pNameInfo->objectHandle);
         if (shader->stage == VK_SHADER_STAGE_COMPUTE_BIT) {
             SetComputeShaderDebugUtilsName(data, shader, pNameInfo);
@@ -3414,7 +3414,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL SetDebugUtilsObjectNameEXT(VkDevice device
 static VKAPI_ATTR VkResult VKAPI_CALL SetDebugUtilsObjectTagEXT(VkDevice device, const VkDebugUtilsObjectTagInfoEXT* pTagInfo) {
     DeviceData& data = *device_data_map.Get(device);
     VkResult result = VK_SUCCESS;
-    if (pTagInfo->objectType == VK_OBJECT_TYPE_SHADER_EXT) {
+    if (pTagInfo->objectType == VK_OBJECT_TYPE_SHADER_EXT && (data.flags & DeviceData::SHADER_OBJECT_LAYER_ENABLED)) {
         const auto shader = reinterpret_cast<Shader*>(pTagInfo->objectHandle);
         if (shader->stage == VK_SHADER_STAGE_COMPUTE_BIT) {
             SetComputeShaderDebugUtilsTag(data, shader, pTagInfo);
