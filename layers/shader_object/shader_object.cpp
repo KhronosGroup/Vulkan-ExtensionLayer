@@ -2771,12 +2771,16 @@ static VKAPI_ATTR void VKAPI_CALL CmdBeginRendering(VkCommandBuffer commandBuffe
         VkImageView view = pRenderingInfo->pDepthAttachment->imageView;
         VkFormat format = view == VK_NULL_HANDLE ? VK_FORMAT_UNDEFINED : cmd_data->device_data->image_view_format_map.Get(view);
         state->SetDepthAttachmentFormat(format);
+    } else {
+        state->SetDepthAttachmentFormat(VK_FORMAT_UNDEFINED);
     }
 
     if (pRenderingInfo->pStencilAttachment) {
         VkImageView view = pRenderingInfo->pStencilAttachment->imageView;
         VkFormat format = view == VK_NULL_HANDLE ? VK_FORMAT_UNDEFINED : cmd_data->device_data->image_view_format_map.Get(view);
         state->SetStencilAttachmentFormat(format);
+    } else {
+        state->SetStencilAttachmentFormat(VK_FORMAT_UNDEFINED);
     }
     cmd_data->device_data->vtable.CmdBeginRendering(commandBuffer, pRenderingInfo);
 }
