@@ -2753,6 +2753,22 @@ static VKAPI_ATTR VkResult VKAPI_CALL BeginCommandBuffer(VkCommandBuffer command
         }
     }
 
+    if (pBeginInfo->pInheritanceInfo) {
+        if (auto* rendering_info =
+                reinterpret_cast<const VkCommandBufferInheritanceRenderingInfo*>(
+                    FindStructureInChain(const_cast<VkBaseOutStructure*>(
+                        reinterpret_cast<const VkBaseOutStructure*>(pBeginInfo->pInheritanceInfo->pNext)),
+                    VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO))) {
+            for (uint32_t index = 0; index < rendering_info->colorAttachmentCount; ++index) {
+                draw_state->SetColorAttachmentFormat(index, rendering_info->pColorAttachmentFormats[index]);
+            }
+            draw_state->SetDepthAttachmentFormat(rendering_info->depthAttachmentFormat);
+            draw_state->SetStencilAttachmentFormat(rendering_info->stencilAttachmentFormat);
+            draw_state->SetRasterizationSamples(rendering_info->rasterizationSamples);
+            // viewMask must equal VkRenderingInfo::viewMask so ignore here
+        }
+    }
+
     cmd_data->last_seen_pipeline_layout_ = VK_NULL_HANDLE;
     return device_data->vtable.BeginCommandBuffer(commandBuffer, pBeginInfo);
 }
