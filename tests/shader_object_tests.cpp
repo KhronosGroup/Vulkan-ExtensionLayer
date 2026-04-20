@@ -1533,3 +1533,267 @@ TEST_F(ShaderObjectTest, SetDebugName) {
 
     m_errorMonitor->VerifyNotFound();
 }
+
+TEST_F(ShaderObjectTest, DescriptorHeap) {
+    TEST_DESCRIPTION("Test drawing with a vertex and fragment shader using descriptor heap");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    bool skipEmbeddedSamplerDebugUtilTest = !InstanceExtensionSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, 0);
+
+    if (!DeviceExtensionSupported(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, 0)) {
+        GTEST_SKIP() << kSkipPrefix << " VK_KHR_buffer_device_address not supported, skipping test";
+    } else if (!DeviceExtensionSupported(VK_KHR_MAINTENANCE_5_EXTENSION_NAME, 0)) {
+        GTEST_SKIP() << kSkipPrefix << " VK_KHR_maintenance5 not supported, skipping test";
+    } else if (!DeviceExtensionSupported(VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME, 0)) {
+        GTEST_SKIP() << kSkipPrefix << " VK_EXT_descriptor_heap not supported, skipping test";
+    }
+
+    m_device_extension_names.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+    m_device_extension_names.push_back(VK_KHR_MAINTENANCE_5_EXTENSION_NAME);
+    m_device_extension_names.push_back(VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME);
+    if (!CheckShaderObjectSupportAndInitState(false)) {
+        GTEST_SKIP() << kSkipPrefix << " shader object not supported, skipping test";
+    }
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+
+    m_errorMonitor->ExpectSuccess();
+
+    static const char vertSource[] = R"glsl(
+        #version 460
+        layout(set = 0, binding = 0) uniform VSData { vec4 uDrawOffset[4]; };
+        void main() {
+            vec2 pos = vec2(float(gl_VertexIndex & 1), float((gl_VertexIndex >> 1) & 1));
+            gl_Position = vec4(pos - 0.5f, 0.0f, 1.0f) + uDrawOffset[(gl_VertexIndex / 3) % 4];
+        }
+    )glsl";
+
+    static const char fragSource[] = R"glsl(
+        #version 460
+        layout(set = 0, binding = 1) uniform FSData { vec4 uDrawColor; };
+        layout(location = 0) out vec4 uFragColor;
+        void main(){
+           uFragColor = uDrawColor;
+        }
+    )glsl";
+
+    VkShaderStageFlagBits shaderStages[] = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
+
+    std::vector<unsigned int> spv[2];
+    GLSLtoSPV(&m_device->props.limits, VK_SHADER_STAGE_VERTEX_BIT, vertSource, spv[0], false, 0);
+    GLSLtoSPV(&m_device->props.limits, VK_SHADER_STAGE_FRAGMENT_BIT, fragSource, spv[1], false, 0);
+
+    VkSamplerCreateInfo embeddedSampler = vku::InitStructHelper();
+    embeddedSampler.magFilter = VK_FILTER_NEAREST;
+    embeddedSampler.minFilter = VK_FILTER_NEAREST;
+    embeddedSampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+    embeddedSampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    embeddedSampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    embeddedSampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    embeddedSampler.mipLodBias = 0.0;
+    embeddedSampler.anisotropyEnable = VK_FALSE;
+    embeddedSampler.maxAnisotropy = 1;
+    embeddedSampler.compareOp = VK_COMPARE_OP_NEVER;
+    embeddedSampler.minLod = 0.0;
+    embeddedSampler.maxLod = 0.0;
+    embeddedSampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    embeddedSampler.unnormalizedCoordinates = VK_FALSE;
+
+    VkDebugUtilsObjectNameInfoEXT embeddedSamplerDebugLabel;
+    if (!skipEmbeddedSamplerDebugUtilTest) {
+        embeddedSamplerDebugLabel.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        embeddedSamplerDebugLabel.pNext = nullptr;
+        embeddedSamplerDebugLabel.objectType = VK_OBJECT_TYPE_UNKNOWN;
+        embeddedSamplerDebugLabel.objectHandle = 0ull;
+        embeddedSamplerDebugLabel.pObjectName = "Embedded Sampler";
+
+        embeddedSampler.pNext = &embeddedSamplerDebugLabel;
+    }
+
+    VkDescriptorSetAndBindingMappingEXT mapping[3] = {};
+    mapping[0].sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT;
+    mapping[0].pNext = nullptr;
+    mapping[0].firstBinding = 0;
+    mapping[0].bindingCount = 1;
+    mapping[0].descriptorSet = 0;
+    mapping[0].resourceMask = VK_SPIRV_RESOURCE_TYPE_UNIFORM_BUFFER_BIT_EXT;
+    mapping[0].source = VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_DATA_EXT;
+    mapping[0].sourceData.pushDataOffset = 4 * sizeof(float);
+    mapping[1].sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT;
+    mapping[1].pNext = nullptr;
+    mapping[1].firstBinding = 1;
+    mapping[1].bindingCount = 1;
+    mapping[1].descriptorSet = 0;
+    mapping[1].resourceMask = VK_SPIRV_RESOURCE_TYPE_UNIFORM_BUFFER_BIT_EXT;
+    mapping[1].source = VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_DATA_EXT;
+    mapping[1].sourceData.pushDataOffset = 0;
+    // Unused mapping to test pEmbeddedSampler
+    mapping[2].sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT;
+    mapping[2].pNext = nullptr;
+    mapping[2].firstBinding = 2;
+    mapping[2].bindingCount = 1;
+    mapping[2].descriptorSet = 0;
+    mapping[2].resourceMask = VK_SPIRV_RESOURCE_TYPE_SAMPLER_BIT_EXT;
+    mapping[2].source = VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_CONSTANT_OFFSET_EXT;
+    mapping[2].sourceData.constantOffset.heapOffset = 0;
+    mapping[2].sourceData.constantOffset.heapArrayStride = 0;
+    mapping[2].sourceData.constantOffset.pEmbeddedSampler = &embeddedSampler;
+    mapping[2].sourceData.constantOffset.samplerHeapOffset = 0;
+    mapping[2].sourceData.constantOffset.samplerHeapArrayStride = 0;
+
+    VkShaderDescriptorSetAndBindingMappingInfoEXT mapping_info;
+    mapping_info.sType = VK_STRUCTURE_TYPE_SHADER_DESCRIPTOR_SET_AND_BINDING_MAPPING_INFO_EXT;
+    mapping_info.pNext = nullptr;
+    mapping_info.mappingCount = 3;
+    mapping_info.pMappings = mapping;
+
+    VkShaderStageFlagBits unusedShaderStages[] = {VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+                                                  VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, VK_SHADER_STAGE_GEOMETRY_BIT};
+    VkShaderEXT shaders[2];
+    VkShaderCreateInfoEXT createInfos[2];
+    for (uint32_t i = 0; i < 2; ++i) {
+        createInfos[i] = vku::InitStructHelper();
+        createInfos[i].pNext = &mapping_info;
+        createInfos[i].flags = VK_SHADER_CREATE_DESCRIPTOR_HEAP_BIT_EXT;
+        createInfos[i].stage = shaderStages[i];
+        if (i == 0) {
+            createInfos[i].nextStage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        }
+        createInfos[i].codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
+        createInfos[i].codeSize = spv[i].size() * sizeof(unsigned int);
+        createInfos[i].pCode = spv[i].data();
+        createInfos[i].pName = "main";
+    }
+
+    vkCreateShadersEXT(m_device->handle(), 2u, createInfos, nullptr, shaders);
+
+    VkBufferObj buffer;
+    buffer.init(*m_device, sizeof(float) * 4u, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+
+    VkBufferObj vertexBuffer;
+    vertexBuffer.init(*m_device, sizeof(float), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
+    VkImageCreateInfo imageInfo = vku::InitStructHelper();
+    imageInfo.flags = 0;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    imageInfo.extent = {static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height), 1};
+    imageInfo.mipLevels = 1u;
+    imageInfo.arrayLayers = 1u;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    imageInfo.queueFamilyIndexCount = 0u;
+    imageInfo.pQueueFamilyIndices = nullptr;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkImageObj image(m_device);
+    image.init(&imageInfo);
+    VkImageView view = image.targetView(imageInfo.format);
+
+    VkRenderingAttachmentInfo color_attachment = vku::InitStructHelper();
+    color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    color_attachment.imageView = view;
+
+    VkRenderingInfo begin_rendering_info = vku::InitStructHelper();
+    begin_rendering_info.flags = 0u;
+    begin_rendering_info.renderArea.offset.x = 0;
+    begin_rendering_info.renderArea.offset.y = 0;
+    begin_rendering_info.renderArea.extent.width = static_cast<uint32_t>(m_width);
+    begin_rendering_info.renderArea.extent.height = static_cast<uint32_t>(m_height);
+    begin_rendering_info.layerCount = 1u;
+    begin_rendering_info.viewMask = 0x0;
+    begin_rendering_info.colorAttachmentCount = 1u;
+    begin_rendering_info.pColorAttachments = &color_attachment;
+
+    m_commandBuffer->begin();
+
+    {
+        VkImageMemoryBarrier imageMemoryBarrier = vku::InitStructHelper();
+        imageMemoryBarrier.srcAccessMask = VK_ACCESS_NONE;
+        imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imageMemoryBarrier.image = image.handle();
+        imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageMemoryBarrier.subresourceRange.baseMipLevel = 0u;
+        imageMemoryBarrier.subresourceRange.levelCount = 1u;
+        imageMemoryBarrier.subresourceRange.baseArrayLayer = 0u;
+        imageMemoryBarrier.subresourceRange.layerCount = 1u;
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u, &imageMemoryBarrier);
+    }
+    vkCmdBeginRenderingKHR(m_commandBuffer->handle(), &begin_rendering_info);
+    vkCmdBindShadersEXT(m_commandBuffer->handle(), 2u, shaderStages, shaders);
+    for (const auto& unusedShader : unusedShaderStages) {
+        VkShaderEXT null_shader = VK_NULL_HANDLE;
+        vkCmdBindShadersEXT(m_commandBuffer->handle(), 1u, &unusedShader, &null_shader);
+    }
+    BindDefaultDynamicStates(vertexBuffer.handle(), false);
+    float pushData[5 * 4] = { 0.2f, 0.4f, 0.6f, 0.8f };
+    memset(&pushData[4], 0, sizeof(pushData) - 4 * sizeof(float));
+    VkPushDataInfoEXT pushDataInfo{ VK_STRUCTURE_TYPE_PUSH_DATA_INFO_EXT, nullptr, 0};
+    pushDataInfo.data.address = pushData;
+    pushDataInfo.data.size = sizeof(pushData);
+    vkCmdPushDataEXT(m_commandBuffer->handle(), &pushDataInfo);
+    vkCmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
+    vkCmdEndRenderingKHR(m_commandBuffer->handle());
+
+    {
+        VkImageMemoryBarrier imageMemoryBarrier = vku::InitStructHelper();
+        imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+        imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imageMemoryBarrier.image = image.handle();
+        imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageMemoryBarrier.subresourceRange.baseMipLevel = 0u;
+        imageMemoryBarrier.subresourceRange.levelCount = 1u;
+        imageMemoryBarrier.subresourceRange.baseArrayLayer = 0u;
+        imageMemoryBarrier.subresourceRange.layerCount = 1u;
+        vkCmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT, 0u, 0u, nullptr, 0u, nullptr, 1u, &imageMemoryBarrier);
+    }
+
+    VkBufferImageCopy copyRegion = {};
+    copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copyRegion.imageSubresource.mipLevel = 0u;
+    copyRegion.imageSubresource.baseArrayLayer = 0u;
+    copyRegion.imageSubresource.layerCount = 1u;
+    copyRegion.imageOffset.x = static_cast<int32_t>(m_width / 2) + 1;
+    copyRegion.imageOffset.y = static_cast<int32_t>(m_height / 2) + 1;
+    copyRegion.imageExtent.width = 1u;
+    copyRegion.imageExtent.height = 1u;
+    copyRegion.imageExtent.depth = 1u;
+
+    vkCmdCopyImageToBuffer(m_commandBuffer->handle(), image.handle(), VK_IMAGE_LAYOUT_GENERAL, buffer.handle(), 1u, &copyRegion);
+
+    m_commandBuffer->end();
+
+    SubmitAndWait();
+
+    float* data;
+    vkMapMemory(m_device->handle(), buffer.memory().handle(), 0u, sizeof(float) * 4u, 0u, (void**)&data);
+    float e = 0.01f;
+    for (uint32_t i = 0; i < 4; ++i) {
+        float expected = 0.2f + i * 0.2f;
+        if (std::fabs(data[i] - expected) > e) {
+            std::string msg = "Wrong pixel value " + std::to_string(data[i]) + ", expected " + std::to_string(0.2f + i * 0.2f);
+            m_errorMonitor->SetError(msg.c_str());
+        }
+    }
+
+    vkUnmapMemory(m_device->handle(), buffer.memory().handle());
+
+    vkDestroyShaderEXT(m_device->handle(), shaders[0], nullptr);
+    vkDestroyShaderEXT(m_device->handle(), shaders[1], nullptr);
+
+    m_errorMonitor->VerifyNotFound();
+}
