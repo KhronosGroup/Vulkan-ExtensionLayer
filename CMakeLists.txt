@@ -17,7 +17,7 @@
 # ~~~
 cmake_minimum_required(VERSION 3.22.1)
 
-project(VEL LANGUAGES CXX)
+project(VEL VERSION 1.4.335 LANGUAGES CXX)
 
 add_subdirectory(scripts)
 
@@ -84,6 +84,16 @@ find_package(VulkanUtilityLibraries CONFIG)
 
 add_subdirectory(layers)
 add_subdirectory(utils)
+
+option(EXTENSION_LAYER_CODEGEN "Enable vulkan loader code generation")
+if(EXTENSION_LAYER_CODEGEN)
+    find_package(Python3 REQUIRED)
+    add_custom_target(extension_layer_codegen
+        COMMAND Python3::Interpreter ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
+            "${VULKAN_HEADERS_INSTALL_DIR}/${CMAKE_INSTALL_DATADIR}/vulkan/registry"
+            --generated-version ${VulkanHeaders_VERSION} --incremental --api vulkan
+    )
+endif()
 
 option(BUILD_TESTS "Build tests")
 if(BUILD_TESTS)
