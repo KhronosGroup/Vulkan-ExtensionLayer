@@ -33,6 +33,7 @@
 #include <vulkan/vk_layer.h>
 #include <vulkan/layer/vk_layer_settings.hpp>
 #include <vulkan/utility/vk_safe_struct.hpp>
+#include <vulkan/utility/vk_struct_helper.hpp>
 
 #include "log.h"
 #include "vk_api_hash.h"
@@ -188,6 +189,7 @@ struct InstanceData {
     VkInstance            instance;
     VkPhysicalDevice*     physical_devices;
     uint32_t              physical_device_count;
+    uint32_t              api_version;
     LayerSettings         layer_settings;
 };
 
@@ -310,6 +312,99 @@ VkResult Shader::Create(DeviceData const& deviceData, VkShaderCreateInfoEXT cons
         aligned_memory.Add<VkSpecializationMapEntry>(createInfo.pSpecializationInfo->mapEntryCount);
     }
 
+    bool use_descriptor_heap = (createInfo.flags & VK_SHADER_CREATE_DESCRIPTOR_HEAP_BIT_EXT);
+    const VkShaderDescriptorSetAndBindingMappingInfoEXT* binding_mapping =
+        vku::FindStructInPNextChain<VkShaderDescriptorSetAndBindingMappingInfoEXT>(createInfo.pNext);
+
+    if (use_descriptor_heap && binding_mapping && binding_mapping->mappingCount > 0) {
+        aligned_memory.Add<VkDescriptorSetAndBindingMappingEXT>(binding_mapping->mappingCount);
+        auto update_sampler_info = [&](const VkSamplerCreateInfo* pEmbeddedSampler) {
+            if (pEmbeddedSampler) {
+                aligned_memory.Add<VkSamplerCreateInfo>();
+                auto* pNext = reinterpret_cast<const VkBaseInStructure*>(pEmbeddedSampler->pNext);
+                while (pNext) {
+                    switch (pNext->sType) {
+                        case VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT: {
+                            aligned_memory.Add<VkDebugUtilsObjectNameInfoEXT>();
+                            auto* pObject = reinterpret_cast<const VkDebugUtilsObjectNameInfoEXT*>(pNext);
+                            aligned_memory.Add<char>(std::strlen(pObject->pObjectName) + 1);
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT: {
+                            // This should not occur since VK_EXT_descriptor_buffer is superceded by VK_EXT_descriptor_heap
+                            ASSERT(false);
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_BLOCK_MATCH_WINDOW_CREATE_INFO_QCOM: {
+                            aligned_memory.Add<VkSamplerBlockMatchWindowCreateInfoQCOM>();
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_BORDER_COLOR_COMPONENT_MAPPING_CREATE_INFO_EXT: {
+                            aligned_memory.Add<VkSamplerBorderColorComponentMappingCreateInfoEXT>();
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_CUBIC_WEIGHTS_CREATE_INFO_QCOM: {
+                            aligned_memory.Add<VkSamplerCubicWeightsCreateInfoQCOM>();
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT: {
+                            aligned_memory.Add<VkSamplerCustomBorderColorCreateInfoEXT>();
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_INDEX_CREATE_INFO_EXT: {
+                            aligned_memory.Add<VkSamplerCustomBorderColorIndexCreateInfoEXT>();
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO: {
+                            aligned_memory.Add<VkSamplerReductionModeCreateInfo>();
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO: {
+                            aligned_memory.Add<VkSamplerYcbcrConversionInfo>();
+                            break;
+                        }
+                        default: {
+                            ASSERT(false);
+                            break;
+                        }
+                    }
+
+                    pNext = pNext->pNext;
+                }
+            }
+        };
+        for (uint32_t idx = 0; idx < binding_mapping->mappingCount; ++idx) {
+            auto& binding = binding_mapping->pMappings[idx];
+            switch (binding.source) {
+                case VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_CONSTANT_OFFSET_EXT:
+                    update_sampler_info(binding.sourceData.constantOffset.pEmbeddedSampler);
+                    break;
+                case VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT:
+                    update_sampler_info(binding.sourceData.pushIndex.pEmbeddedSampler);
+                    break;
+                case VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_EXT:
+                    update_sampler_info(binding.sourceData.indirectIndex.pEmbeddedSampler);
+                    break;
+                case VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_ARRAY_EXT:
+                    update_sampler_info(binding.sourceData.indirectIndexArray.pEmbeddedSampler);
+                    break;
+                case VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_SHADER_RECORD_INDEX_EXT:
+                    update_sampler_info(binding.sourceData.shaderRecordIndex.pEmbeddedSampler);
+                    break;
+                case VK_DESCRIPTOR_MAPPING_SOURCE_RESOURCE_HEAP_DATA_EXT:
+                case VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_DATA_EXT:
+                case VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_ADDRESS_EXT:
+                case VK_DESCRIPTOR_MAPPING_SOURCE_INDIRECT_ADDRESS_EXT:
+                case VK_DESCRIPTOR_MAPPING_SOURCE_SHADER_RECORD_DATA_EXT:
+                case VK_DESCRIPTOR_MAPPING_SOURCE_SHADER_RECORD_ADDRESS_EXT:
+                    break;
+                default:
+                    ASSERT(false);
+                    break;
+            }
+        }
+    }
+
     aligned_memory.Allocate(allocator, VkSystemAllocationScope::VK_SYSTEM_ALLOCATION_SCOPE_OBJECT);
     if (!aligned_memory) {
         return VK_ERROR_OUT_OF_HOST_MEMORY;
@@ -328,6 +423,8 @@ VkResult Shader::Create(DeviceData const& deviceData, VkShaderCreateInfoEXT cons
     if (createInfo.flags & VK_SHADER_CREATE_REQUIRE_FULL_SUBGROUPS_BIT_EXT) {
         shader->flags |= VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT;
     }
+
+    shader->use_descriptor_heap = use_descriptor_heap;
 
     // Copy data over from create info struct
 
@@ -352,6 +449,133 @@ VkResult Shader::Create(DeviceData const& deviceData, VkShaderCreateInfoEXT cons
 
         aligned_memory.CopyStruct(shader->specialization_info.pMapEntries, shader->specialization_info.mapEntryCount,
                                   createInfo.pSpecializationInfo->pMapEntries, createInfo.pSpecializationInfo->mapEntryCount);
+    }
+
+    if (use_descriptor_heap && binding_mapping && binding_mapping->mappingCount > 0) {
+        aligned_memory.CopyStruct<VkDescriptorSetAndBindingMappingEXT>(shader->descriptor_set_and_binding_mapping_ptr,
+                                                                       shader->num_descriptor_set_and_binding_mappings,
+                                                                       binding_mapping->pMappings, binding_mapping->mappingCount);
+        auto copy_sampler_info = [&](VkSamplerCreateInfo** pEmbeddedSampler) {
+            if (*pEmbeddedSampler) {
+                auto* pOutEmbeddedSampler = aligned_memory.GetNextAlignedPtr<VkSamplerCreateInfo>();
+                *pOutEmbeddedSampler = **pEmbeddedSampler;
+                auto* pInNext = reinterpret_cast<const VkBaseInStructure*>((*pEmbeddedSampler)->pNext);
+                auto* pOutNext = reinterpret_cast<VkBaseOutStructure*>(pOutEmbeddedSampler);
+
+                while (pInNext) {
+                    switch (pInNext->sType) {
+                        case VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT: {
+                            auto* pObject = aligned_memory.GetNextAlignedPtr<VkDebugUtilsObjectNameInfoEXT>();
+                            auto* pOrigObject = reinterpret_cast<const VkDebugUtilsObjectNameInfoEXT*>(pInNext);
+                            *pObject = *pOrigObject;
+                            pObject->pObjectName = aligned_memory.GetNextAlignedPtr<char>(std::strlen(pObject->pObjectName) + 1);
+                            std::strcpy(const_cast<char*>(pObject->pObjectName), pOrigObject->pObjectName);
+                            pObject->pNext = nullptr;
+                            pOutNext->pNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            pOutNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT: {
+                            // This should not occur since VK_EXT_descriptor_buffer is superceded by VK_EXT_descriptor_heap
+                            ASSERT(false);
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_BLOCK_MATCH_WINDOW_CREATE_INFO_QCOM: {
+                            auto* pObject = aligned_memory.GetNextAlignedPtr<VkSamplerBlockMatchWindowCreateInfoQCOM>();
+                            *pObject = *reinterpret_cast<const VkSamplerBlockMatchWindowCreateInfoQCOM*>(pInNext);
+                            pObject->pNext = nullptr;
+                            pOutNext->pNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            pOutNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_BORDER_COLOR_COMPONENT_MAPPING_CREATE_INFO_EXT: {
+                            auto* pObject = aligned_memory.GetNextAlignedPtr<VkSamplerBorderColorComponentMappingCreateInfoEXT>();
+                            *pObject = *reinterpret_cast<const VkSamplerBorderColorComponentMappingCreateInfoEXT*>(pInNext);
+                            pObject->pNext = nullptr;
+                            pOutNext->pNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            pOutNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_CUBIC_WEIGHTS_CREATE_INFO_QCOM: {
+                            auto* pObject = aligned_memory.GetNextAlignedPtr<VkSamplerCubicWeightsCreateInfoQCOM>();
+                            *pObject = *reinterpret_cast<const VkSamplerCubicWeightsCreateInfoQCOM*>(pInNext);
+                            pObject->pNext = nullptr;
+                            pOutNext->pNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            pOutNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT: {
+                            auto* pObject = aligned_memory.GetNextAlignedPtr<VkSamplerCustomBorderColorCreateInfoEXT>();
+                            *pObject = *reinterpret_cast<const VkSamplerCustomBorderColorCreateInfoEXT*>(pInNext);
+                            pObject->pNext = nullptr;
+                            pOutNext->pNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            pOutNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_INDEX_CREATE_INFO_EXT: {
+                            auto* pObject = aligned_memory.GetNextAlignedPtr<VkSamplerCustomBorderColorIndexCreateInfoEXT>();
+                            *pObject = *reinterpret_cast<const VkSamplerCustomBorderColorIndexCreateInfoEXT*>(pInNext);
+                            pObject->pNext = nullptr;
+                            pOutNext->pNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            pOutNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO: {
+                            auto* pObject = aligned_memory.GetNextAlignedPtr<VkSamplerReductionModeCreateInfo>();
+                            *pObject = *reinterpret_cast<const VkSamplerReductionModeCreateInfo*>(pInNext);
+                            pObject->pNext = nullptr;
+                            pOutNext->pNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            pOutNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            break;
+                        }
+                        case VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO: {
+                            auto* pObject = aligned_memory.GetNextAlignedPtr<VkSamplerYcbcrConversionInfo>();
+                            *pObject = *reinterpret_cast<const VkSamplerYcbcrConversionInfo*>(pInNext);
+                            pObject->pNext = nullptr;
+                            pOutNext->pNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            pOutNext = reinterpret_cast<VkBaseOutStructure*>(pObject);
+                            break;
+                        }
+                        default: {
+                            ASSERT(false);
+                            break;
+                        }
+                    }
+                    pInNext = pInNext->pNext;
+                }
+            }
+        };
+
+        for (uint32_t idx = 0; idx < binding_mapping->mappingCount; ++idx) {
+            auto& binding = shader->descriptor_set_and_binding_mapping_ptr[idx];
+            switch (binding.source) {
+                case VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_CONSTANT_OFFSET_EXT:
+                    copy_sampler_info(const_cast<VkSamplerCreateInfo**>(&binding.sourceData.constantOffset.pEmbeddedSampler));
+                    break;
+                case VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT:
+                    copy_sampler_info(const_cast<VkSamplerCreateInfo**>(&binding.sourceData.pushIndex.pEmbeddedSampler));
+                    break;
+                case VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_EXT:
+                    copy_sampler_info(const_cast<VkSamplerCreateInfo**>(&binding.sourceData.indirectIndex.pEmbeddedSampler));
+                    break;
+                case VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_ARRAY_EXT:
+                    copy_sampler_info(const_cast<VkSamplerCreateInfo**>(&binding.sourceData.indirectIndexArray.pEmbeddedSampler));
+                    break;
+                case VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_SHADER_RECORD_INDEX_EXT:
+                    copy_sampler_info(const_cast<VkSamplerCreateInfo**>(&binding.sourceData.shaderRecordIndex.pEmbeddedSampler));
+                    break;
+                case VK_DESCRIPTOR_MAPPING_SOURCE_RESOURCE_HEAP_DATA_EXT:
+                case VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_DATA_EXT:
+                case VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_ADDRESS_EXT:
+                case VK_DESCRIPTOR_MAPPING_SOURCE_INDIRECT_ADDRESS_EXT:
+                case VK_DESCRIPTOR_MAPPING_SOURCE_SHADER_RECORD_DATA_EXT:
+                case VK_DESCRIPTOR_MAPPING_SOURCE_SHADER_RECORD_ADDRESS_EXT:
+                    break;
+                default:
+                    ASSERT(false);
+                    break;
+            }
+        }
     }
 
     // Create shader module from SPIR-V
@@ -400,20 +624,26 @@ VkResult Shader::Create(DeviceData const& deviceData, VkShaderCreateInfoEXT cons
     } else if (createInfo.stage & VK_SHADER_STAGE_COMPUTE_BIT) {
         // Compute shaders do not require any additional data for a pipeline to be created
 
-        result = CreatePipelineLayoutForShader(deviceData, allocator, shader);
-        if (result != VK_SUCCESS) {
-            return result;
+        if (!shader->use_descriptor_heap) {
+            result = CreatePipelineLayoutForShader(deviceData, allocator, shader);
+            if (result != VK_SUCCESS) {
+                return result;
+            }
         }
+
+        VkShaderDescriptorSetAndBindingMappingInfoEXT mapping = {};
+        shader->FillBindingAndMappingStruct(mapping);
 
         VkPipelineShaderStageCreateInfo compute_stage{
             VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            nullptr,
+            &mapping,
             shader->flags,
             shader->stage,
             shader->shader_module,
             shader->name,
             shader->specialization_info_ptr
         };
+
         VkComputePipelineCreateInfo compute_pipeline_create_info{
             VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
             nullptr,
@@ -424,6 +654,17 @@ VkResult Shader::Create(DeviceData const& deviceData, VkShaderCreateInfoEXT cons
         if (createInfo.flags & VK_SHADER_CREATE_DISPATCH_BASE_BIT_EXT) {
             compute_pipeline_create_info.flags |= VK_PIPELINE_CREATE_DISPATCH_BASE;
         }
+
+        VkPipelineCreateFlags2CreateInfo pipeline_create_flag2_create_info = {};
+        if (shader->use_descriptor_heap) {
+            pipeline_create_flag2_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO;
+            pipeline_create_flag2_create_info.flags = compute_pipeline_create_info.flags | VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT;
+            compute_pipeline_create_info.pNext = &pipeline_create_flag2_create_info;
+        }
+
+        ASSERT((pipeline_create_flag2_create_info.flags & VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT) ||
+               compute_pipeline_create_info.layout != VK_NULL_HANDLE);
+
         result = vtable.CreateComputePipelines(deviceData.device, shader->cache, 1, &compute_pipeline_create_info, &allocator, &shader->partial_pipeline.pipeline);
     }
 
@@ -813,9 +1054,13 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
     // gather shaders
     uint32_t num_stages = 0;
     VkPipelineShaderStageCreateInfo stages[NUM_SHADERS] = {};
+    VkShaderDescriptorSetAndBindingMappingInfoEXT binding_mappings[NUM_SHADERS] = {};
     Shader* vertex_or_mesh_shader = nullptr;
 
     VkShaderStageFlags present_stages = 0;
+
+    VkPipelineCreateFlags2CreateInfo pipeline_create_flag2_create_info = {};
+    pipeline_create_flag2_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO;
 
     for (uint32_t shader_type = 0; shader_type < NUM_SHADERS; ++shader_type) {
         Shader* shader = state->GetComparableShader(shader_type).GetShaderPtr();
@@ -828,11 +1073,17 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
 
         VkPipelineShaderStageCreateInfo stage = {};
         stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        stage.pNext = &binding_mappings[num_stages];
         stage.flags = shader->flags;
         stage.module = shader->shader_module;
         stage.pName = shader->name;
         stage.stage = shader->stage;
         stage.pSpecializationInfo = shader->specialization_info_ptr;
+
+        shader->FillBindingAndMappingStruct(binding_mappings[num_stages]);
+        if (shader->use_descriptor_heap) {
+            pipeline_create_flag2_create_info.flags |= VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT;
+        }
 
         switch (shader_type) {
             case VERTEX_SHADER:
@@ -851,11 +1102,11 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
     ASSERT(vertex_or_mesh_shader != nullptr);
 
     VkPipelineLayout pipeline_layout = vertex_or_mesh_shader->pipeline_layout;
-    if (pipeline_layout == VK_NULL_HANDLE) {
-        pipeline_layout = cmd_data.last_seen_pipeline_layout_;
-    }
-    if (pipeline_layout == VK_NULL_HANDLE) {
-        pipeline_layout = cmd_data.device_data->dummy_pipeline_layout;
+    if (pipeline_create_flag2_create_info.flags & VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT) {
+        pipeline_layout = VK_NULL_HANDLE;
+    } else if (pipeline_layout == VK_NULL_HANDLE) {
+        pipeline_layout =
+            cmd_data.last_seen_pipeline_layout_ ? cmd_data.last_seen_pipeline_layout_ : cmd_data.device_data->dummy_pipeline_layout;
     }
 
     const uint32_t num_color_attachments = (device_data.enabled_extensions & DYNAMIC_RENDERING_UNUSED_ATTACHMENTS) ? device_data.properties.limits.maxColorAttachments : state->GetNumColorAttachments();
@@ -1089,6 +1340,13 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
         prev_next = prev_next->pNext;
     };
 
+    if (pipeline_create_flag2_create_info.flags & VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT) {
+        // Avoid future issues if create_info.flags becomes non-zero
+        pipeline_create_flag2_create_info.flags |= create_info.flags;
+
+        append_to_chain(&pipeline_create_flag2_create_info);
+    }
+
     if (device_data.enabled_extensions & DYNAMIC_RENDERING_UNUSED_ATTACHMENTS) {
         VkFormat lastFormat = VK_FORMAT_R8G8B8A8_UNORM;
         for (uint32_t i = 0; i < num_color_attachments; ++i) {
@@ -1187,6 +1445,9 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
         }
     }
 
+    ASSERT((pipeline_create_flag2_create_info.flags & VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT) ||
+           create_info.layout != VK_NULL_HANDLE);
+
     VkPipeline pipeline;
     VkResult result = cmd_data.device_data->vtable.CreateGraphicsPipelines(
         cmd_data.device_data->device, vertex_or_mesh_shader->cache, 1, &create_info, nullptr, &pipeline);
@@ -1198,7 +1459,7 @@ static VkPipeline CreateGraphicsPipelineForCommandBufferState(CommandBufferData&
     return pipeline;
 }
 
-enum PipelineCreationFlagBits { INCLUDE_COLOR = 0x1, INCLUDE_DEPTH = 0x2 };
+enum PipelineCreationFlagBits { INCLUDE_COLOR = 0x1, INCLUDE_DEPTH = 0x2, USE_DESCRIPTOR_HEAP = 0x4 };
 using PipelineCreationFlags = uint32_t;
 
 void AddGraphicsPipelineToCache(DeviceData const& deviceData, VkAllocationCallbacks allocator, VkPipelineCache cache,
@@ -1340,7 +1601,17 @@ void AddGraphicsPipelineToCache(DeviceData const& deviceData, VkAllocationCallba
         VK_NULL_HANDLE,
         -1
     };
- 
+
+    VkPipelineCreateFlags2CreateInfo pipeline_create_flag2_create_info = {};
+    if (options & PipelineCreationFlagBits::USE_DESCRIPTOR_HEAP) {
+        pipeline_create_flag2_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO;
+        pipeline_create_flag2_create_info.flags = create_info.flags | VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT;
+        rendering_info.pNext = &pipeline_create_flag2_create_info;
+    }
+
+    ASSERT((pipeline_create_flag2_create_info.flags & VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT) ||
+           create_info.layout != VK_NULL_HANDLE);
+
     VkPipeline temp_pipeline;
     VkResult result = vtable.CreateGraphicsPipelines(deviceData.device, cache, 1, &create_info, nullptr, &temp_pipeline);
     if (result == VK_SUCCESS) {
@@ -1360,6 +1631,9 @@ PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, Vk
            (VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT | VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT));
 
     VkPipelineShaderStageCreateInfo stages[NUM_SHADERS];
+    VkShaderDescriptorSetAndBindingMappingInfoEXT binding_mappings[NUM_SHADERS] = {};
+    bool use_descriptor_heap = false;
+
     VkGraphicsPipelineLibraryCreateInfoEXT gpl_create_info{
         VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT,
         nullptr,
@@ -1370,13 +1644,17 @@ PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, Vk
         auto shader = ppShaders[i];
         stages[i] = {
             VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            nullptr,
+            &binding_mappings[i],
             shader->flags,
             shader->stage,
             shader->shader_module,
             shader->name,
             shader->specialization_info_ptr
         };
+
+        shader->FillBindingAndMappingStruct(binding_mappings[i]);
+        use_descriptor_heap = use_descriptor_heap || shader->use_descriptor_heap;
+
         shader_stage_flags |= shader->stage;
         switch (shader->stage) {
             case VK_SHADER_STAGE_VERTEX_BIT:
@@ -1515,6 +1793,15 @@ PartialPipeline CreatePartiallyCompiledPipeline(DeviceData const& deviceData, Vk
     create_info.layout = layout;
     create_info.basePipelineIndex = -1;
 
+    VkPipelineCreateFlags2CreateInfo pipeline_create_flag2_create_info = {};
+    if (use_descriptor_heap) {
+        pipeline_create_flag2_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO;
+        pipeline_create_flag2_create_info.flags = create_info.flags | VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT;
+        gpl_create_info.pNext = &pipeline_create_flag2_create_info;
+    }
+
+    ASSERT(use_descriptor_heap || create_info.layout != VK_NULL_HANDLE);
+
     VkResult result = deviceData.vtable.CreateGraphicsPipelines(deviceData.device, cache, 1, &create_info, &allocator, &partial_pipeline.pipeline);
     ASSERT(result == VK_SUCCESS);
     UNUSED(result);
@@ -1537,11 +1824,13 @@ static VkResult PopulateCachesForShaders(DeviceData const& deviceData, VkAllocat
             Shader* vertex_or_mesh_shader = nullptr;
             Shader* fragment_shader = nullptr;
             uint32_t tess_shaders = 0;
+            bool use_descriptor_heap = false;
             for (uint32_t i = 0; i < shaderCount; ++i) {
                 auto shader = *reinterpret_cast<Shader**>(&pShaders[i]);
                 if (shader->stage == VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT || shader->stage == VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT) {
                     ++tess_shaders;
                 }
+                use_descriptor_heap = use_descriptor_heap || shader->use_descriptor_heap;
             }
             for (uint32_t i = 0; i < shaderCount; ++i) {
                 auto shader = *reinterpret_cast<Shader**>(&pShaders[i]);
@@ -1582,7 +1871,10 @@ static VkResult PopulateCachesForShaders(DeviceData const& deviceData, VkAllocat
             }
 
             ASSERT((!vertex_or_mesh_shader && !fragment_shader) || cache_for_linked_shaders != VK_NULL_HANDLE);
-            ASSERT((!vertex_or_mesh_shader && !fragment_shader) || layout_for_linked_shaders != VK_NULL_HANDLE);
+            ASSERT((!vertex_or_mesh_shader && !fragment_shader) || use_descriptor_heap ||
+                   layout_for_linked_shaders != VK_NULL_HANDLE);
+            ASSERT(!vertex_or_mesh_shader || !fragment_shader ||
+                   vertex_or_mesh_shader->use_descriptor_heap == fragment_shader->use_descriptor_heap);
 
             if (vertex_or_mesh_shader) {
                 vertex_or_mesh_shader->partial_pipeline = CreatePartiallyCompiledPipeline(
@@ -1628,9 +1920,11 @@ static VkResult PopulateCachesForShaders(DeviceData const& deviceData, VkAllocat
         bool has_fragment_shader = false;
         bool has_tesc = false;
         bool has_tese = false;
+        PipelineCreationFlags additional_pipeline_create_flags = 0u;
 
         // Gather shaders into stages for pipeline compilation
         VkPipelineShaderStageCreateInfo stages[NUM_SHADERS];
+        VkShaderDescriptorSetAndBindingMappingInfoEXT binding_mappings[NUM_SHADERS] = {};
         uint32_t graphics_shader_count = 0;
         for (uint32_t i = 0; i < shaderCount; ++i) {
             auto shader = *reinterpret_cast<Shader**>(&pShaders[i]);
@@ -1654,9 +1948,14 @@ static VkResult PopulateCachesForShaders(DeviceData const& deviceData, VkAllocat
                     break;
             }
 
+            shader->FillBindingAndMappingStruct(binding_mappings[i]);
+            if (shader->use_descriptor_heap) {
+                additional_pipeline_create_flags |= PipelineCreationFlagBits::USE_DESCRIPTOR_HEAP;
+            }
+
             stages[graphics_shader_count++] = {
                 VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-                nullptr,
+                &binding_mappings[i],
                 shader->flags,
                 shader->stage,
                 shader->shader_module,
@@ -1672,14 +1971,14 @@ static VkResult PopulateCachesForShaders(DeviceData const& deviceData, VkAllocat
 
         AddGraphicsPipelineToCache(deviceData, allocator,
             vertex_or_mesh_shader->cache, vertex_or_mesh_shader->pipeline_layout, graphics_shader_count, stages,
-            PipelineCreationFlagBits::INCLUDE_DEPTH);
+            PipelineCreationFlagBits::INCLUDE_DEPTH | additional_pipeline_create_flags);
         if (has_fragment_shader) {
             AddGraphicsPipelineToCache(deviceData, allocator,
                 vertex_or_mesh_shader->cache, vertex_or_mesh_shader->pipeline_layout, graphics_shader_count, stages,
-                PipelineCreationFlagBits::INCLUDE_COLOR);
+                PipelineCreationFlagBits::INCLUDE_COLOR | additional_pipeline_create_flags);
             AddGraphicsPipelineToCache(deviceData, allocator,
                 vertex_or_mesh_shader->cache, vertex_or_mesh_shader->pipeline_layout, graphics_shader_count, stages,
-                PipelineCreationFlagBits::INCLUDE_DEPTH | PipelineCreationFlagBits::INCLUDE_COLOR);
+                PipelineCreationFlagBits::INCLUDE_DEPTH | PipelineCreationFlagBits::INCLUDE_COLOR | additional_pipeline_create_flags);
         }
     }
 
@@ -1844,6 +2143,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateInstance(const VkInstanceCreateInfo*
     instance_data->instance = *pInstance;
     instance_data->physical_devices = reinterpret_cast<VkPhysicalDevice*>(instance_data + 1);
     instance_data->physical_device_count = physical_device_count;
+    instance_data->api_version = pCreateInfo->pApplicationInfo ? pCreateInfo->pApplicationInfo->apiVersion : VK_API_VERSION_1_0;
     instance_data->vtable.Initialize(*pInstance, fpGetInstanceProcAddr);
 
     InitLayerSettings(pCreateInfo, pAllocator, &instance_data->layer_settings);
@@ -2127,10 +2427,17 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateDevice(VkPhysicalDevice physicalDevi
         break;
     }
     bool shader_object_extension_requested = false;
+    bool descriptor_heap_extension_requested = false;
     for (uint32_t i = 0; i < pCreateInfo->enabledExtensionCount; ++i) {
         if (0 ==
             strncmp(pCreateInfo->ppEnabledExtensionNames[i], VK_EXT_SHADER_OBJECT_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE)) {
             shader_object_extension_requested = true;
+        } else if (0 == strncmp(pCreateInfo->ppEnabledExtensionNames[i], VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME,
+                                VK_MAX_EXTENSION_NAME_SIZE)) {
+            descriptor_heap_extension_requested = true;
+        }
+
+        if (shader_object_extension_requested && descriptor_heap_extension_requested) {
             break;
         }
     }
@@ -2538,7 +2845,9 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateShadersEXT(VkDevice device, uint32_t
     }
     if (result == VK_SUCCESS && are_graphics_shaders_linked && (vertex_or_mesh_shader || fragment_shader)) {
         Shader* shader_to_read_layout_from = vertex_or_mesh_shader ? vertex_or_mesh_shader : fragment_shader;
-        result = CreatePipelineLayoutForShader(device_data, allocator, shader_to_read_layout_from);
+        if (!shader_to_read_layout_from->use_descriptor_heap) {
+            result = CreatePipelineLayoutForShader(device_data, allocator, shader_to_read_layout_from);
+        }
     }
     if (result == VK_SUCCESS && !are_graphics_shaders_linked && device_data.graphics_pipeline_library.graphicsPipelineLibrary == VK_TRUE) {
         // Create layout for unlinked shaders that can have partial pipelines created
@@ -2548,7 +2857,9 @@ static VKAPI_ATTR VkResult VKAPI_CALL CreateShadersEXT(VkDevice device, uint32_t
                 case VK_SHADER_STAGE_VERTEX_BIT:
                 case VK_SHADER_STAGE_MESH_BIT_EXT:
                 case VK_SHADER_STAGE_FRAGMENT_BIT:
-                    result = CreatePipelineLayoutForShader(device_data, allocator, shader);
+                    if (!shader->use_descriptor_heap) {
+                        result = CreatePipelineLayoutForShader(device_data, allocator, shader);
+                    }
                     break;
                 default:
                     break;

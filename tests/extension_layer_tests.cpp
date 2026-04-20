@@ -256,6 +256,12 @@ bool VkExtensionLayerTest::CheckShaderObjectSupportAndInitState(bool meshShaders
         shader_object_features.pNext = &mesh_shader_features;
     }
 
+    auto descriptor_heap_features = vku::InitStruct<VkPhysicalDeviceDescriptorHeapFeaturesEXT>();
+    if (DeviceExtensionSupported(VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME)) {
+        descriptor_heap_features.pNext = features2.pNext;
+        features2.pNext = &descriptor_heap_features;
+    }
+
     vkGetPhysicalDeviceFeatures2(gpu(), &features2);
     if (!meshShaders) {
         mesh_shader_features.taskShader = VK_FALSE;

@@ -958,6 +958,13 @@ struct Shader {
     uint64_t GetPrivateData(DeviceData const& device_data, VkPrivateDataSlot slot);
     void     SetPrivateData(DeviceData const& device_data, VkPrivateDataSlot slot, uint64_t data);
 
+    inline void FillBindingAndMappingStruct(VkShaderDescriptorSetAndBindingMappingInfoEXT& mapping) const {
+        mapping.sType = VK_STRUCTURE_TYPE_SHADER_DESCRIPTOR_SET_AND_BINDING_MAPPING_INFO_EXT;
+        mapping.pNext = nullptr;
+        mapping.mappingCount = num_descriptor_set_and_binding_mappings;
+        mapping.pMappings = descriptor_set_and_binding_mapping_ptr;
+    }
+
     uint64_t id;
 
     const char* name;
@@ -997,6 +1004,11 @@ struct Shader {
 
     // If possible, holds a partial pipeline created with graphics pipeline library at create time that may be used to speed up draw time pipeline creation
     PartialPipeline partial_pipeline;
+
+    // Track VK_EXT_descriptor_heap related information
+    bool use_descriptor_heap = false;
+    uint32_t num_descriptor_set_and_binding_mappings = 0;
+    VkDescriptorSetAndBindingMappingEXT* descriptor_set_and_binding_mapping_ptr = nullptr;
 };
 
 class ShaderBinary {
