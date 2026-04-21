@@ -49,7 +49,7 @@
 
 #define NSEC_PER_SEC 1000000000ull
 
-#define unreachable(expr) assert(!(expr))
+#define VEL_UNREACHABLE(expr) assert(!(expr))
 
 #define MAX2(a, b) ((a) > (b) ? (a) : (b))
 #define MIN2(a, b) ((a) < (b) ? (a) : (b))

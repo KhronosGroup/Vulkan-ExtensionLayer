@@ -409,7 +409,7 @@ static VkLayerInstanceCreateInfo *get_instance_chain_info(const VkInstanceCreate
             ((VkLayerInstanceCreateInfo *) item)->function == func)
             return (VkLayerInstanceCreateInfo *) item;
     }
-    unreachable("instance chain info not found");
+    VEL_UNREACHABLE("instance chain info not found");
     return NULL;
 }
 
@@ -421,7 +421,7 @@ static VkLayerDeviceCreateInfo *get_device_chain_info(const VkDeviceCreateInfo *
             ((VkLayerDeviceCreateInfo *) item)->function == func)
             return (VkLayerDeviceCreateInfo *)item;
     }
-    unreachable("device chain info not found");
+    VEL_UNREACHABLE("device chain info not found");
     return NULL;
 }
 
@@ -1359,7 +1359,7 @@ vk_submit_structure_type_size(const VkBaseInStructure *item)
     case VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO:
         return sizeof(VkDeviceGroupSubmitInfo);
     default:
-        unreachable("Unknown structure for VkSubmitInfo::pNext");
+        VEL_UNREACHABLE("Unknown structure for VkSubmitInfo::pNext");
     }
     return 0;
 }
@@ -1649,7 +1649,7 @@ queue_submit_deferred_locked(struct queue_data *queue, uint32_t *out_advance)
             }
 
             default:
-                unreachable("invalid submit type");
+                VEL_UNREACHABLE("invalid submit type");
             }
 
             (*out_advance)++;
@@ -1672,7 +1672,7 @@ queue_submit_deferred_locked(struct queue_data *queue, uint32_t *out_advance)
                 break;
 
             default:
-                unreachable("invalid submit type");
+                VEL_UNREACHABLE("invalid submit type");
             }
         }
 
@@ -2289,7 +2289,7 @@ static size_t vk_device_create_info_type_size(
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES:
         return sizeof(VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures);
     default:
-        unreachable("Unknown structure for VkDeviceCreateInfo::pNext");
+        VEL_UNREACHABLE("Unknown structure for VkDeviceCreateInfo::pNext");
     }
     return 0;
 }
