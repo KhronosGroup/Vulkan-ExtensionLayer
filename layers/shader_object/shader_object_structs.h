@@ -978,6 +978,11 @@ struct Shader {
     VkDescriptorSetLayout* descriptor_set_layouts;
     uint32_t               num_descriptor_set_layouts;
 
+    // Track VK_EXT_descriptor_heap related information
+    bool use_descriptor_heap = false;
+    uint32_t num_descriptor_set_and_binding_mappings = 0;
+    VkDescriptorSetAndBindingMappingEXT* descriptor_set_and_binding_mapping_ptr = nullptr;
+
     // Points to specialization_info if there is any specialization info
     VkSpecializationInfo* specialization_info_ptr;
     VkSpecializationInfo  specialization_info;
@@ -1004,11 +1009,6 @@ struct Shader {
 
     // If possible, holds a partial pipeline created with graphics pipeline library at create time that may be used to speed up draw time pipeline creation
     PartialPipeline partial_pipeline;
-
-    // Track VK_EXT_descriptor_heap related information
-    bool use_descriptor_heap = false;
-    uint32_t num_descriptor_set_and_binding_mappings = 0;
-    VkDescriptorSetAndBindingMappingEXT* descriptor_set_and_binding_mapping_ptr = nullptr;
 };
 
 class ShaderBinary {
