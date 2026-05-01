@@ -1,5 +1,5 @@
-/* Copyright (c) 2020-2021,2023-2025 The Khronos Group Inc.
- * Copyright (c) 2020-2021,2023-2025 LunarG, Inc.
+/* Copyright (c) 2020-2021,2023-2026 The Khronos Group Inc.
+ * Copyright (c) 2020-2021,2023-2026 LunarG, Inc.
  * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -230,10 +230,6 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
 
     if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsForceEnable)) {
         vkuGetLayerSettingValue(layer_setting_set, kLayerSettingsForceEnable, layer_settings->force_enable);
-    }
-
-    if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsCustomSTypeInfo)) {
-        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, vku::GetCustomStypeInfo());
     }
 
     vkuDestroyLayerSettingSet(layer_setting_set, pAllocator);

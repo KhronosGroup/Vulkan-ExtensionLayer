@@ -2095,10 +2095,6 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
         vkuGetLayerSettingValue(layer_setting_set, kLayerSettingsDisablePipelinePreCaching, layer_settings->disable_pipeline_pre_caching);
     }
 
-    if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsCustomSTypeInfo)) {
-        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, vku::GetCustomStypeInfo());
-    }
-
     vkuDestroyLayerSettingSet(layer_setting_set, pAllocator);
 }
 

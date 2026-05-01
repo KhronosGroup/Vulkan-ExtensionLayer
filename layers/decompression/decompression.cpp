@@ -320,10 +320,6 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
         vkuGetLayerSettingValue(layer_setting_set, kLayerSettingsLogging, layer_settings->logging);
     }
 
-    if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsCustomSTypeInfo)) {
-        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, vku::GetCustomStypeInfo());
-    }
-
     vkuDestroyLayerSettingSet(layer_setting_set, pAllocator);
 }
 
