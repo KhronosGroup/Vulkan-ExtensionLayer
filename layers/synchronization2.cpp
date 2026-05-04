@@ -1,5 +1,5 @@
-/* Copyright (c) 2020-2021,2023-2025 The Khronos Group Inc.
- * Copyright (c) 2020-2021,2023-2025 LunarG, Inc.
+/* Copyright (c) 2020-2021,2023-2026 The Khronos Group Inc.
+ * Copyright (c) 2020-2021,2023-2026 LunarG, Inc.
  * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +37,6 @@
 #include "vk_common.h"
 
 #define kLayerSettingsForceEnable "force_enable"
-#define kLayerSettingsCustomSTypeInfo "custom_stype_list"
 
 namespace synchronization2 {
 
@@ -216,7 +215,6 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
 
     static const char* setting_names[] = {
         kLayerSettingsForceEnable,
-        kLayerSettingsCustomSTypeInfo
     };
     uint32_t setting_name_count = static_cast<uint32_t>(std::size(setting_names));
 
@@ -230,10 +228,6 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
 
     if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsForceEnable)) {
         vkuGetLayerSettingValue(layer_setting_set, kLayerSettingsForceEnable, layer_settings->force_enable);
-    }
-
-    if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsCustomSTypeInfo)) {
-        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, vku::GetCustomStypeInfo());
     }
 
     vkuDestroyLayerSettingSet(layer_setting_set, pAllocator);

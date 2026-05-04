@@ -44,7 +44,6 @@
 
 #define kLayerSettingsForceEnable "force_enable"
 #define kLayerSettingsDisablePipelinePreCaching "disable_pipeline_pre_caching"
-#define kLayerSettingsCustomSTypeInfo "custom_stype_list"
 
 #define SHADER_OBJECT_BINARY_VERSION 1
 
@@ -2076,7 +2075,7 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
     VkuLayerSettingSet layer_setting_set = VK_NULL_HANDLE;
     vkuCreateLayerSettingSet(shader_object::kGlobalLayer.layerName, create_info, pAllocator, nullptr, &layer_setting_set);
 
-    static const char* setting_names[] = {kLayerSettingsForceEnable, kLayerSettingsDisablePipelinePreCaching, kLayerSettingsCustomSTypeInfo};
+    static const char* setting_names[] = {kLayerSettingsForceEnable, kLayerSettingsDisablePipelinePreCaching};
     uint32_t setting_name_count = static_cast<uint32_t>(std::size(setting_names));
 
     std::vector<const char*> unknown_settings;
@@ -2093,10 +2092,6 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
 
     if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsDisablePipelinePreCaching)) {
         vkuGetLayerSettingValue(layer_setting_set, kLayerSettingsDisablePipelinePreCaching, layer_settings->disable_pipeline_pre_caching);
-    }
-
-    if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsCustomSTypeInfo)) {
-        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, vku::GetCustomStypeInfo());
     }
 
     vkuDestroyLayerSettingSet(layer_setting_set, pAllocator);

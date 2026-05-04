@@ -113,7 +113,6 @@ static const ByteCode kIndirectGInflateBytecode[] = {
 };
 
 #define kLayerSettingsForceEnable "force_enable"
-#define kLayerSettingsCustomSTypeInfo "custom_stype_list"
 #define kLayerSettingsLogging "logging"
 
 namespace memory_decompression {
@@ -301,7 +300,7 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
     VkuLayerSettingSet layer_setting_set = VK_NULL_HANDLE;
     vkuCreateLayerSettingSet(kGlobalLayer.layerName, create_info, pAllocator, nullptr, &layer_setting_set);
 
-    static const char* setting_names[] = {kLayerSettingsForceEnable, kLayerSettingsLogging, kLayerSettingsCustomSTypeInfo};
+    static const char* setting_names[] = {kLayerSettingsForceEnable, kLayerSettingsLogging};
     uint32_t setting_name_count = static_cast<uint32_t>(std::size(setting_names));
 
     std::vector<const char*> unknown_settings;
@@ -318,10 +317,6 @@ void InitLayerSettings(const VkInstanceCreateInfo* pCreateInfo, const VkAllocati
 
     if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsLogging)) {
         vkuGetLayerSettingValue(layer_setting_set, kLayerSettingsLogging, layer_settings->logging);
-    }
-
-    if (vkuHasLayerSetting(layer_setting_set, kLayerSettingsCustomSTypeInfo)) {
-        vkuGetLayerSettingValues(layer_setting_set, kLayerSettingsCustomSTypeInfo, vku::GetCustomStypeInfo());
     }
 
     vkuDestroyLayerSettingSet(layer_setting_set, pAllocator);
