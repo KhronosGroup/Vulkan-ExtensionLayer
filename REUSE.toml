@@ -3,19 +3,6 @@ version = 1
 [[annotations]]
 path = [
     ".gitignore",
-    ".clang-format",
-    "layers/vk_layer_settings.txt",
-    "layers/libVkLayer_khronos_timeline_semaphore.map",
-    "layers/libVkLayer_khronos_synchronization2.map",
-    "layers/libVkLayer_khronos_memory_decompression.map",
-    "layers/libVkLayer_khronos_shader_object.map",
-    "layers/json/VkLayer_khronos_memory_decompression.json.in",
-    "layers/json/VkLayer_khronos_synchronization2.json.in",
-    "layers/json/VkLayer_khronos_shader_object.json.in",
-    "layers/json/VkLayer_khronos_timeline_semaphore.json.in",
-    "layers/shader_object/generated/.clang-format",
-    "utils/generated/.clang-format",
-    "utils/log.h",
     ".github/workflows/reuse-compliance.yml",
 ]
 SPDX-FileCopyrightText = "The Khronos Group Inc."
@@ -31,17 +18,40 @@ SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
 path = [
-    "CMakeLists.txt",
-    "layers/CMakeLists.txt",
-    "utils/CMakeLists.txt",
-    "layers/VkLayer_khronos_synchronization2.def",
-    "layers/VkLayer_khronos_timeline_semaphore.def",
+    ".github/dependabot.yml",
+    "docs/shader_object_layer.md",
+    "docs/synchronization2_layer.md",
 ]
-SPDX-FileCopyrightText = ["Valve Corporation", "LunarG, Inc.", "Intel Corporation"]
+SPDX-FileCopyrightText = "LunarG, Inc."
+SPDX-License-Identifier = "CC-BY-ND-4.0"
+
+[[annotations]]
+path = [
+    "scripts/CMakeLists.txt",
+    "layers/vk_layer_settings.txt",
+    "layers/libVkLayer_khronos_synchronization2.map",
+    "layers/json/VkLayer_khronos_synchronization2.json.in",
+]
+SPDX-FileCopyrightText = "LunarG, Inc."
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "scripts/clang-format-diff.py"
+SPDX-FileCopyrightText = "LLVM Project"
+SPDX-License-Identifier = "Apache-2.0 WITH LLVM-exception"
+
+[[annotations]]
+path = [
+    "layers/libVkLayer_khronos_memory_decompression.map",
+    "layers/json/VkLayer_khronos_memory_decompression.json.in",
+]
+SPDX-FileCopyrightText = ["Nvidia Corporation"]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
 path = [
+    "layers/libVkLayer_khronos_timeline_semaphore.map",
+    "layers/json/VkLayer_khronos_timeline_semaphore.json.in",
     "layers/vk_common.h",
     "layers/hash_table.cpp",
     "layers/hash_table.h",
@@ -50,28 +60,62 @@ path = [
     "layers/list.h",
     "layers/timeline_semaphore.c",
 ]
-SPDX-FileCopyrightText = "Intel Corporation"
+SPDX-FileCopyrightText = ["Intel"]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
 path = [
-    "layers/synchronization2.h",
-    "layers/synchronization2.cpp"
-]
-SPDX-FileCopyrightText = ["The Khronos Group Inc.", "LunarG, Inc.", "Advanced Micro Devices, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = [
+    "layers/json/VkLayer_khronos_shader_object.json.in",
+    "layers/libVkLayer_khronos_shader_object.map",
     "layers/vk_api_hash.h",
+    "layers/shader_object/generated/.clang-format",
     "layers/VkLayer_khronos_shader_object.def",
     "layers/shader_object/shader_object_util.h",
     "layers/shader_object/shader_object_structs.h",
     "layers/shader_object/shader_object.cpp",
     "layers/shader_object/generated/**",
     "scripts/shader_object_generator.py",
+    "tests/shader_object_tests.cpp",
+    "tests/shader_object_tests.h",
 ]
 SPDX-FileCopyrightText = "Nintendo"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+    ".clang-format",
+    "utils/generated/.clang-format",
+    "utils/log.h",
+    "utils/allocator.h",
+    "utils/allocator.cpp",
+]
+SPDX-FileCopyrightText = ["LunarG, Inc.", "The Khronos Group Inc."]
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+    "tests/android/**",
+    "tests/CMakeLists.txt",
+    "scripts/github_ci_build_desktop.py",
+    "scripts/android.py",
+    "scripts/check_code_format.py",
+    "scripts/known_good.json",
+    "scripts/shader_object_data.json",
+    ".github/workflows/format.yml",
+    ".github/workflows/ci.yml",
+]
+SPDX-FileCopyrightText = ["Valve Corporation", "LunarG, Inc."]
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+    "CMakeLists.txt",
+    "layers/CMakeLists.txt",
+    "utils/CMakeLists.txt",
+    "layers/VkLayer_khronos_synchronization2.def",
+    "layers/VkLayer_khronos_timeline_semaphore.def",
+]
+SPDX-FileCopyrightText = ["Valve Corporation", "LunarG, Inc.", "Intel Corporation"]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
@@ -92,18 +136,10 @@ SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
 path = [
-    "utils/allocator.h",
-    "utils/allocator.cpp",
+    "layers/synchronization2.h",
+    "layers/synchronization2.cpp"
 ]
-SPDX-FileCopyrightText = ["The Khronos Group Inc.", "LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = [
-    "tests/extension_layer_tests.cpp",
-    "tests/extension_layer_tests.h",
-]
-SPDX-FileCopyrightText = ["The Khronos Group Inc.", "Valve Corporation", "LunarG, Inc.", "Google, Inc.", "Nvidia Corporation"]
+SPDX-FileCopyrightText = ["The Khronos Group Inc.", "LunarG, Inc.", "Advanced Micro Devices, Inc."]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
@@ -117,49 +153,14 @@ SPDX-FileCopyrightText = ["The Khronos Group Inc.", "Valve Corporation", "LunarG
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = [
-    "tests/shader_object_tests.cpp",
-    "tests/shader_object_tests.h",
-]
-SPDX-FileCopyrightText = ["LunarG, Inc.", "Nintendo"]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = [
-    "tests/android/**",
-    "tests/CMakeLists.txt",
-    "scripts/github_ci_build_desktop.py",
-    "scripts/android.py",
-    "scripts/check_code_format.py",
-    "scripts/known_good.json",
-    "scripts/shader_object_data.json",
-    ".github/workflows/format.yml",
-    ".github/workflows/ci.yml",
-]
-SPDX-FileCopyrightText = ["Valve Corporation", "LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "scripts/CMakeLists.txt"
-SPDX-FileCopyrightText = "LunarG, Inc."
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "scripts/clang-format-diff.py"
-SPDX-FileCopyrightText = "LLVM Project"
-SPDX-License-Identifier = "Apache-2.0 WITH LLVM-exception"
-
-[[annotations]]
 path = "scripts/update_deps.py"
 SPDX-FileCopyrightText = ["The Glslang Authors", "Valve Corporation", "LunarG, Inc.", "RasterGrid Kft."]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
 path = [
-    ".github/dependabot.yml",
-    "docs/shader_object_layer.md",
-    "docs/synchronization2_layer.md",
+    "tests/extension_layer_tests.cpp",
+    "tests/extension_layer_tests.h",
 ]
-SPDX-FileCopyrightText = "LunarG, Inc."
-SPDX-License-Identifier = "CC-BY-ND-4.0"
-
+SPDX-FileCopyrightText = ["The Khronos Group Inc.", "Valve Corporation", "LunarG, Inc.", "Google, Inc.", "Nvidia Corporation"]
+SPDX-License-Identifier = "Apache-2.0"
