@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015-2022 The Khronos Group Inc.
  * Copyright (c) 2015-2026 Valve Corporation
- * Copyright (c) 2015-2027 LunarG, Inc.
+ * Copyright (c) 2015-2026 LunarG, Inc.
  * Copyright (c) 2015-2022 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +32,10 @@
 #include <vulkan/utility/vk_format_utils.h>
 
 #include <vulkan/utility/vk_struct_helper.hpp>
+
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+#include <wayland-client.h>
+#endif
 
 using std::string;
 using std::strncmp;
@@ -639,18 +643,79 @@ bool VkRenderFramework::InitSurface(float width, float height) {
     if (err != VK_SUCCESS) return false;
 #endif
 
-#if defined(VK_USE_PLATFORM_XLIB_KHR)
-    Display *dpy = XOpenDisplay(NULL);
-    if (dpy) {
-        int s = DefaultScreen(dpy);
-        Window window = XCreateSimpleWindow(dpy, RootWindow(dpy, s), 0, 0, (int)m_width, (int)m_height, 1, BlackPixel(dpy, s),
-                                            WhitePixel(dpy, s));
-        VkXlibSurfaceCreateInfoKHR surface_create_info = {};
-        surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
-        surface_create_info.dpy = dpy;
-        surface_create_info.window = window;
-        VkResult err = vkCreateXlibSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+    if (m_surface == VK_NULL_HANDLE) {
+        wl_display *display = nullptr;
+        wl_registry *registry = nullptr;
+        wl_surface *surface = nullptr;
+        wl_compositor *compositor = nullptr;
+        display = wl_display_connect(nullptr);
+        if (!display) {
+            return false;
+        }
+
+        auto global = [](void *data, struct wl_registry *registry, uint32_t id, const char *interface, uint32_t version) {
+            (void)version;
+            const std::string_view interface_str = interface;
+            if (interface_str == "wl_compositor") {
+                auto compositor = reinterpret_cast<wl_compositor **>(data);
+                *compositor = reinterpret_cast<wl_compositor *>(wl_registry_bind(registry, id, &wl_compositor_interface, 1));
+            }
+        };
+
+        auto global_remove = [](void *data, struct wl_registry *registry, uint32_t id) {
+            (void)data;
+            (void)registry;
+            (void)id;
+        };
+
+        registry = wl_display_get_registry(display);
+        if (!registry) {
+            return false;
+        }
+
+        const wl_registry_listener registry_listener = {global, global_remove};
+
+        wl_registry_add_listener(registry, &registry_listener, &compositor);
+
+        wl_display_dispatch(display);
+        if (!compositor) {
+            return false;
+        }
+
+        surface = wl_compositor_create_surface(compositor);
+        if (!surface) {
+            return false;
+        }
+
+        const uint32_t version = wl_surface_get_version(surface);
+        if (version == 0) {
+            return false;
+        }
+
+        VkWaylandSurfaceCreateInfoKHR surface_create_info = {};
+        surface_create_info.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+        surface_create_info.display = display;
+        surface_create_info.surface = surface;
+        VkResult err = vkCreateWaylandSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
         if (err != VK_SUCCESS) return false;
+    }
+#endif
+
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+    if (m_surface == VK_NULL_HANDLE) {
+        Display *dpy = XOpenDisplay(NULL);
+        if (dpy) {
+            int s = DefaultScreen(dpy);
+            Window window = XCreateSimpleWindow(dpy, RootWindow(dpy, s), 0, 0, (int)m_width, (int)m_height, 1, BlackPixel(dpy, s),
+                                                WhitePixel(dpy, s));
+            VkXlibSurfaceCreateInfoKHR surface_create_info = {};
+            surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
+            surface_create_info.dpy = dpy;
+            surface_create_info.window = window;
+            VkResult err = vkCreateXlibSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
+            if (err != VK_SUCCESS) return false;
+        }
     }
 #endif
 

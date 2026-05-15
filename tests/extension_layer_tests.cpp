@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015-2022 The Khronos Group Inc.
- * Copyright (c) 2015-2024 Valve Corporation
- * Copyright (c) 2015-2024 LunarG, Inc.
+ * Copyright (c) 2015-2026 Valve Corporation
+ * Copyright (c) 2015-2026 LunarG, Inc.
  * Copyright (c) 2015-2022 Google, Inc.
  * Copyright (c) 2015-2023 Nvidia Corporation.
  *
@@ -27,6 +27,10 @@
  */
 #include "extension_layer_tests.h"
 #include <vulkan/utility/vk_struct_helper.hpp>
+
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+#include <wayland-client.h>
+#endif
 
 // Global list of sType,size identifiers
 std::vector<std::pair<uint32_t, uint32_t>> custom_stype_info{};
@@ -360,6 +364,17 @@ bool VkExtensionLayerTest::AddSurfaceInstanceExtension() {
     }
     instance_extensions_.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
     bSupport = true;
+#endif
+
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+    if (!InstanceExtensionSupported(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME)) {
+        printf("%s %s extension not supported\n", kSkipPrefix, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
+        return false;
+    }
+    if (!bSupport && wl_display_connect(nullptr)) {
+        instance_extensions_.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
+        bSupport = true;
+    }
 #endif
 
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
