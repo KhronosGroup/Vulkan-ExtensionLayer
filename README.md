@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: The Khronos Group Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Vulkan Extension Layer (VEL)
 
 ## Introduction
