@@ -7,7 +7,7 @@
             "build_dir": "Vulkan-Headers/build",
             "install_dir": "Vulkan-Headers/build/install",
             "cmake_options": [],
-            "commit": "v1.4.356"
+            "commit": "v1.4.357"
         },
         {
             "name": "Vulkan-Utility-Libraries",
@@ -15,7 +15,7 @@
             "sub_dir": "Vulkan-Utility-Libraries",
             "build_dir": "Vulkan-Utility-Libraries/build",
             "install_dir": "Vulkan-Utility-Libraries/build/install",
-            "commit": "v1.4.356",
+            "commit": "v1.4.357",
             "deps": [
                 {
                     "var_name": "VULKAN_HEADERS_INSTALL_DIR",
@@ -29,7 +29,7 @@
             "sub_dir": "glslang",
             "build_dir": "glslang/build",
             "install_dir": "glslang/build/install",
-            "commit": "275822a6261ee689aadb1da5f09a0ec2f058685c",
+            "commit": "168d452a4f460d24b588fed08477a81c44ee27a1",
             "cmake_options": [
                 "-DENABLE_OPT=OFF"
             ],
@@ -43,7 +43,7 @@
             "sub_dir": "SPIRV-Headers",
             "build_dir": "SPIRV-Headers/build",
             "install_dir": "SPIRV-Headers/build/install",
-            "commit": "ad9184e76a66b1001c29db9b0a3e87f646c64de0",
+            "commit": "29981f65241605e08b0ede4cfeb999fe3b723c6a",
             "optional": [
                 "tests"
             ]
@@ -60,7 +60,7 @@
                 "-DSPIRV_SKIP_TESTS=ON",
                 "-DSPIRV_SKIP_EXECUTABLES=ON"
             ],
-            "commit": "0539c81f69a3daeb706fd3477dca61435b475156",
+            "commit": "b707790a898e44038547df54580022fc1cf89c3d",
             "optional": [
                 "tests"
             ]
