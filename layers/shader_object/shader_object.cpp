@@ -542,6 +542,8 @@ VkResult Shader::Create(DeviceData const& deviceData, VkShaderCreateInfoEXT cons
                     }
                     pInNext = pInNext->pNext;
                 }
+
+                *pEmbeddedSampler = pOutEmbeddedSampler;
             }
         };
 
