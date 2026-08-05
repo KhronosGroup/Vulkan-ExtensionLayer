@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2025 Valve Corporation
-# Copyright (c) 2014-2025 LunarG, Inc.
+# Copyright (c) 2014-2026 Valve Corporation
+# Copyright (c) 2014-2026 LunarG, Inc.
 # Copyright (c) 2019      Intel Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -81,6 +81,15 @@ endif()
 
 find_package(VulkanHeaders CONFIG)
 find_package(VulkanUtilityLibraries CONFIG)
+
+# Workaround AppleClang using the wrong headers when there are headers in /usr/local/include
+if (CMAKE_CXX_COMPILER_ID STREQUAL AppleClang AND TARGET Vulkan::Headers AND TARGET Vulkan::LayerSettings AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.25)
+    set_target_properties(Vulkan::Headers PROPERTIES SYSTEM OFF)
+    set_target_properties(Vulkan::LayerSettings PROPERTIES SYSTEM OFF)
+    set_target_properties(Vulkan::UtilityHeaders PROPERTIES SYSTEM OFF)
+    set_target_properties(Vulkan::SafeStruct PROPERTIES SYSTEM OFF)
+endif()
+
 
 add_subdirectory(layers)
 add_subdirectory(utils)
