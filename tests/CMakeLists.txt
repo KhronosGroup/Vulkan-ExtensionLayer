@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2025 Valve Corporation
-# Copyright (c) 2014-2025 LunarG, Inc.
+# Copyright (c) 2014-2026 Valve Corporation
+# Copyright (c) 2014-2026 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -76,6 +76,27 @@ find_package(GTest REQUIRED CONFIG QUIET)
 find_package(glslang REQUIRED CONFIG QUIET)
 
 find_package(volk QUIET CONFIG)
+
+# Workaround AppleClang using the wrong headers when there are headers in /usr/local/include
+if (CMAKE_CXX_COMPILER_ID STREQUAL AppleClang AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.25)
+    if (TARGET SPIRV-Headers::SPIRV-Headers)
+        set_target_properties(SPIRV-Headers::SPIRV-Headers PROPERTIES SYSTEM OFF)
+    endif()
+    if (TARGET SPIRV-Tools)
+        set_target_properties(SPIRV-Tools PROPERTIES SYSTEM OFF)
+    elseif(TARGET SPIRV-Tools-static)
+        set_target_properties(SPIRV-Tools-static PROPERTIES SYSTEM OFF)
+    elseif(TARGET SPIRV-Tools-shared)
+        set_target_properties(SPIRV-Tools-shared PROPERTIES SYSTEM OFF)
+    endif()
+    if (TARGET glslang::SPIRV)
+        set_target_properties(glslang::SPIRV PROPERTIES SYSTEM OFF)
+    endif()
+    if (TARGET volk::volk_headers)
+        set_target_properties(volk::volk_headers PROPERTIES SYSTEM OFF)
+    endif()
+endif()
+
 
 target_link_libraries(vk_extension_layer_tests PRIVATE
     VkExtLayer_utils
