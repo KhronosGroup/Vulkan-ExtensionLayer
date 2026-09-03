@@ -551,7 +551,10 @@ void VkRenderFramework::InitState(VkPhysicalDeviceFeatures *features, void *crea
     RemoveIf(m_device_extension_names, ExtensionNotSupportedWithReporting);
 
 #ifdef __APPLE__
-    m_device_extension_names.push_back("VK_KHR_portability_subset");
+    // Only enable portability subset if the driver actually exposes it. (KosmicKrisp does not)
+    if (DeviceExtensionSupported("VK_KHR_portability_subset")) {
+        m_device_extension_names.push_back("VK_KHR_portability_subset");
+    }
 #endif
 
     m_device = new VkDeviceObj(0, gpu_, m_device_extension_names, features, create_device_pnext);
