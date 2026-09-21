@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: The Khronos Group Inc.
+SPDX-FileCopyrightText: LunarG, Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Build Instructions
 
 1. [Requirements](#requirements)

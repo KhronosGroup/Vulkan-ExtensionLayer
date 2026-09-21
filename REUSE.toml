@@ -1,274 +1,166 @@
 version = 1
-SPDX-PackageName = "Vulkan Extension Layer"
-SPDX-PackageSupplier = "The Khronos Group, Inc."
-SPDX-PackageDownloadLocation = "https://github.com/KhronosGroup/Vulkan-ExtensionLayer/"
 
 [[annotations]]
-path = "layers/decompression/**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2023-2025 The Khronos Group, Inc.", "2023 NVIDIA CORPORATION & AFFILIATES"]
-SPDX-License-Identifier = "Apache-2.0 OR MIT"
-
-[[annotations]]
-path = "layers/README.txt"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2023-2025 The Khronos Group, Inc.", "2023 NVIDIA CORPORATION & AFFILIATES"]
-SPDX-License-Identifier = "CC-BY-4.0"
-
-[[annotations]]
-path = "layers/json/**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2023-2025 The Khronos Group, Inc.", "2023 NVIDIA CORPORATION & AFFILIATES"]
+path = [
+    ".gitignore",
+    ".github/workflows/reuse-compliance.yml",
+]
+SPDX-FileCopyrightText = "The Khronos Group Inc."
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = "layers/shader_object/**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2023-2024 Nintendo"
+path = [
+    "layers/decompression/**",
+    "docs/memory_decompression_layer.md",
+]
+SPDX-FileCopyrightText = ["The Khronos Group Inc.", "Nvidia Corporation"]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = ["layers/libVkLayer_**", "layers/vk_layer_settings.txt"]
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2025 The Khronos Group, Inc."
-SPDX-License-Identifier = "Apache-2.0"
+path = [
+    ".github/dependabot.yml",
+    "docs/shader_object_layer.md",
+    "docs/synchronization2_layer.md",
+]
+SPDX-FileCopyrightText = "LunarG, Inc."
+SPDX-License-Identifier = "CC-BY-ND-4.0"
 
 [[annotations]]
-path = "layers/VkLayer_khronos_memory_decompression.def"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2023 Nvidia Corporation"
-SPDX-License-Identifier = "Apache-2.0 OR MIT"
-
-[[annotations]]
-path = ["layers/VkLayer_khronos_shader_object.def", "layers/vk_api_hash.h"]
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2023 Nintendo"
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = ["layers/VkLayer_khronos_synchronization2.def", "layers/VkLayer_khronos_timeline_semaphore.def"]
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2023 The Khronos Group Inc.", "2015-2023 Valve Corporation", "2015-2023 LunarG, Inc.", "2020      Intel Corporation"]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = ["layers/hash_table.**", "layers/list.h", "layers/timeline_semaphore.c", "layers/vk_alloc.h", "layers/vk_common.h", "layers/vk_util.h"]
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2019 Intel Corporation"
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "layers/synchronization2.cpp"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2020-2021,2023-2024 The Khronos Group Inc.", "2020-2021,2023-2024 LunarG, Inc.", "2020-2021 Advanced Micro Devices, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "layers/synchronization2.h"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2020-2021,2024 The Khronos Group Inc.", "2020-2021,2024 LunarG, Inc.", "2020-2021,2024 Advanced Micro Devices, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "layers/CMakeLists.txt"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2014-2024 Valve Corporation", "2014-2024 LunarG, Inc.", "2019      Intel Corporation"]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = ["**.md", ".clang-format", "utils/generated/.clang-format", ".github/**.yml", ".gitignore", "tests/android/README.md"]
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2025 The Khronos Group, Inc."
-SPDX-License-Identifier = "CC-BY-4.0"
-
-[[annotations]]
-path = "CMakeLists.txt"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2014-2025 Valve Corporation", "2014-2025 LunarG, Inc.", "2019      Intel Corporation."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = ["utils/allocator.cpp", "utils/allocator.h"]
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2020-2021 The Khronos Group Inc.", "2020-2021 LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "utils/log.h"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2021 The Khronos Group Inc."
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "utils/vk_string_utils.h"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2017, 2019-2020 The Khronos Group Inc.", "2015-2017, 2019-2020 Valve Corporation", "2015-2017, 2019-2020 LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "utils/cast_utils.h"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2019 The Khronos Group Inc.", "2019-2023 Valve Corporation", "2019-2023 LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "utils/CMakeLists.txt"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2014-2024 Valve Corporation", "2014-2024 LunarG, Inc.", "2019      Intel Corporation"]
+path = [
+    "scripts/CMakeLists.txt",
+    "layers/vk_layer_settings.txt",
+    "layers/libVkLayer_khronos_synchronization2.map",
+    "layers/json/VkLayer_khronos_synchronization2.json.in",
+]
+SPDX-FileCopyrightText = "LunarG, Inc."
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
 path = "scripts/clang-format-diff.py"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2025 The Khronos Group Inc."
+SPDX-FileCopyrightText = "LLVM Project"
 SPDX-License-Identifier = "Apache-2.0 WITH LLVM-exception"
 
 [[annotations]]
-path = "scripts/**.json"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2025 The Khronos Group Inc."
+path = [
+    "layers/libVkLayer_khronos_memory_decompression.map",
+    "layers/json/VkLayer_khronos_memory_decompression.json.in",
+]
+SPDX-FileCopyrightText = ["Nvidia Corporation"]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = "scripts/CMakeLists.txt"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2023 LunarG, Inc."
+path = [
+    "layers/libVkLayer_khronos_timeline_semaphore.map",
+    "layers/json/VkLayer_khronos_timeline_semaphore.json.in",
+    "layers/vk_common.h",
+    "layers/hash_table.cpp",
+    "layers/hash_table.h",
+    "layers/vk_util.h",
+    "layers/vk_alloc.h",
+    "layers/list.h",
+    "layers/timeline_semaphore.c",
+]
+SPDX-FileCopyrightText = ["Intel"]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = "scripts/android.py"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2023 Valve Corporation", "2023 LunarG, Inc."]
+path = [
+    "layers/json/VkLayer_khronos_shader_object.json.in",
+    "layers/libVkLayer_khronos_shader_object.map",
+    "layers/vk_api_hash.h",
+    "layers/shader_object/generated/.clang-format",
+    "layers/VkLayer_khronos_shader_object.def",
+    "layers/shader_object/shader_object_util.h",
+    "layers/shader_object/shader_object_structs.h",
+    "layers/shader_object/shader_object.cpp",
+    "layers/shader_object/generated/**",
+    "scripts/shader_object_generator.py",
+    "tests/shader_object_tests.cpp",
+    "tests/shader_object_tests.h",
+]
+SPDX-FileCopyrightText = "Nintendo"
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = "scripts/check_code_format.py"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2020-2023 Valve Corporation", "2020-2023 LunarG, Inc."]
+path = [
+    ".clang-format",
+    "utils/generated/.clang-format",
+    "utils/log.h",
+    "utils/allocator.h",
+    "utils/allocator.cpp",
+]
+SPDX-FileCopyrightText = ["LunarG, Inc.", "The Khronos Group Inc."]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = "scripts/common_ci.py"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2017, 2019-2024 The Khronos Group Inc.", "2015-2017, 2019-2024 Valve Corporation", "2015-2017, 2019-2024 LunarG, Inc."]
+path = [
+    "tests/android/**",
+    "tests/CMakeLists.txt",
+    "scripts/github_ci_build_desktop.py",
+    "scripts/android.py",
+    "scripts/check_code_format.py",
+    "scripts/known_good.json",
+    "scripts/shader_object_data.json",
+    ".github/workflows/format.yml",
+    ".github/workflows/ci.yml",
+]
+SPDX-FileCopyrightText = ["Valve Corporation", "LunarG, Inc."]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = "scripts/github_ci_build_desktop.py"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2020-2021 Valve Corporation", "2020-2021 LunarG, Inc."]
+path = [
+    "CMakeLists.txt",
+    "layers/CMakeLists.txt",
+    "utils/CMakeLists.txt",
+    "layers/VkLayer_khronos_synchronization2.def",
+    "layers/VkLayer_khronos_timeline_semaphore.def",
+]
+SPDX-FileCopyrightText = ["Valve Corporation", "LunarG, Inc.", "Intel Corporation"]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = "scripts/shader_object_generator.py"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2023-2024 Nintendo"
+path = [
+    "utils/cast_utils.h",
+    "utils/vk_string_utils.h",
+    "tests/test_common.h",
+    "tests/vktestframework.h",
+    "tests/vktestframework.cpp",
+    "tests/vktestbinding.h",
+    "tests/vktestbinding.cpp",
+    "tests/test_environment.h",
+    "tests/test_environment.cpp",
+    "scripts/common_ci.py",
+]
+SPDX-FileCopyrightText = ["The Khronos Group Inc.", "Valve Corporation", "LunarG, Inc."]
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+    "layers/synchronization2.h",
+    "layers/synchronization2.cpp"
+]
+SPDX-FileCopyrightText = ["The Khronos Group Inc.", "LunarG, Inc.", "Advanced Micro Devices, Inc."]
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+    "tests/vkrenderframework.h",
+    "tests/vkrenderframework.cpp",
+    "tests/synchronization2_tests.cpp",
+    "tests/synchronization2_tests.h",
+]
+SPDX-FileCopyrightText = ["The Khronos Group Inc.", "Valve Corporation", "LunarG, Inc.", "Google, Inc."]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
 path = "scripts/update_deps.py"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2017 The Glslang Authors. All rights reserved.", "2018-2023 Valve Corporation", "2018-2023 LunarG, Inc.", "2023-2023 RasterGrid Kft."]
+SPDX-FileCopyrightText = ["The Glslang Authors", "Valve Corporation", "LunarG, Inc.", "RasterGrid Kft."]
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = ["tests/android/android.map", "tests/android/AndroidManifest.xml"]
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2025 The Khronos Group, Inc."
-SPDX-License-Identifier = "CC-BY-4.0"
-
-[[annotations]]
-path = "tests/CMakeLists.txt"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2014-2024 Valve Corporation", "2014-2024 LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/android/CMakeLists.txt"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2023 Valve Corporation", "2023 LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/decompression**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2023 The Khronos Group Inc.", "2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/extension_layer_tests.cpp"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2022 The Khronos Group Inc.", "2015-2024 Valve Corporation", "2015-2024 LunarG, Inc.", "2015-2022 Google, Inc.", "2015-2023 Nvidia Corporation."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/extension_layer_tests.h"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2022 The Khronos Group Inc.", "2015-2024 Valve Corporation", "2015-2024 LunarG, Inc.", "2015-2022 Google, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/shader_object_tests.**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2023-2024 LunarG, Inc.", "2023-2024 Nintendo"]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/synchronization2_tests.**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2024 The Khronos Group Inc.", "2015-2024 Valve Corporation", "2015-2024 LunarG, Inc.", "2015-2022 Google, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/test_common.h"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2023 The Khronos Group Inc.", "2015-2023 Valve Corporation", "2015-2023 LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/test_environment.cpp"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2021 The Khronos Group Inc.", "2015-2023 Valve Corporation", "2015-2023 LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/test_environment.h"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2023 The Khronos Group Inc.", "2015-2023 Valve Corporation", "2015-2023 LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/vkrenderframework.cpp"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2022 The Khronos Group Inc.", "2015-2023 Valve Corporation", "2015-2023 LunarG, Inc.", "2015-2022 Google, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/vkrenderframework.h"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2023 The Khronos Group Inc.", "2015-2023 Valve Corporation", "2015-2023 LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/vktestbinding.cpp"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2023 The Khronos Group Inc.", "2015-2023 Valve Corporation", "2015-2022 LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/vktestbinding.h"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2016, 2020-2023 The Khronos Group Inc.", "2015-2016, 2020-2023 Valve Corporation", "2015-2016, 2020-2023 LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/vktestframework.cpp"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2024 The Khronos Group Inc.", "2015-2024 Valve Corporation", "2015-2024 LunarG, Inc."]
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/vktestframework.h"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2015-2023 The Khronos Group Inc.", "2015-2023 Valve Corporation", "2015-2023 LunarG, Inc."]
+path = [
+    "tests/extension_layer_tests.cpp",
+    "tests/extension_layer_tests.h",
+]
+SPDX-FileCopyrightText = ["The Khronos Group Inc.", "Valve Corporation", "LunarG, Inc.", "Google, Inc.", "Nvidia Corporation"]
 SPDX-License-Identifier = "Apache-2.0"
